@@ -1,0 +1,491 @@
+services:
+  auth-postgres:
+    image: postgres:17
+    container_name: auth-postgres
+    environment:
+      POSTGRES_USER: ${AUTH_DB_USERNAME}
+      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
+      POSTGRES_DB: ${AUTH_DB_NAME}
+    restart: on-failure
+    volumes:
+      - auth_postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/databases/bank_system:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${AUTH_DB_PORT}:${POSTGRES_DB_PORT}"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${AUTH_DB_USERNAME} -p ${POSTGRES_DB_PORT}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  user-postgres:
+    image: postgres:17
+    container_name: user-postgres
+    environment:
+      POSTGRES_USER: ${USER_DB_USERNAME}
+      POSTGRES_PASSWORD: ${USER_DB_PASSWORD}
+      POSTGRES_DB: ${USER_DB_NAME}
+    restart: on-failure
+    volumes:
+      - user_postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/databases/bank_system:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${USER_DB_PORT}:${POSTGRES_DB_PORT}"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${USER_DB_USERNAME} -p ${POSTGRES_DB_PORT}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  card-postgres:
+    image: postgres:17
+    container_name: card-postgres
+    environment:
+      POSTGRES_USER: ${CARD_DB_USERNAME}
+      POSTGRES_PASSWORD: ${CARD_DB_PASSWORD}
+      POSTGRES_DB: ${CARD_DB_NAME}
+    restart: on-failure
+    volumes:
+      - card_postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/databases/bank_system:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${CARD_DB_PORT}:${POSTGRES_DB_PORT}"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${CARD_DB_USERNAME} -p ${POSTGRES_DB_PORT}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  order-postgres:
+    image: postgres:17
+    container_name: order-postgres
+    environment:
+      POSTGRES_USER: ${ORDER_DB_USERNAME}
+      POSTGRES_PASSWORD: ${ORDER_DB_PASSWORD}
+      POSTGRES_DB: ${ORDER_DB_NAME}
+    restart: on-failure
+    volumes:
+      - order_postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/databases/bank_system:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${ORDER_DB_PORT}:${POSTGRES_DB_PORT}"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${ORDER_DB_USERNAME} -p ${POSTGRES_DB_PORT}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  payment-postgres:
+    image: postgres:17
+    container_name: payment-postgres
+    environment:
+      POSTGRES_USER: ${PAYMENT_DB_USERNAME}
+      POSTGRES_PASSWORD: ${PAYMENT_DB_PASSWORD}
+      POSTGRES_DB: ${PAYMENT_DB_NAME}
+    restart: on-failure
+    volumes:
+      - payment_postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/databases/bank_system:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${PAYMENT_DB_PORT}:${POSTGRES_DB_PORT}"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${PAYMENT_DB_USERNAME} -p ${POSTGRES_DB_PORT}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  transaction-postgres:
+    image: postgres:17
+    container_name: transaction-postgres
+    environment:
+      POSTGRES_USER: ${TRANSACTION_DB_USERNAME}
+      POSTGRES_PASSWORD: ${TRANSACTION_DB_PASSWORD}
+      POSTGRES_DB: ${TRANSACTION_DB_NAME}
+    restart: on-failure
+    volumes:
+      - transaction_postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/databases/bank_system:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${TRANSACTION_DB_PORT}:${POSTGRES_DB_PORT}"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${TRANSACTION_DB_USERNAME} -p ${POSTGRES_DB_PORT}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  invoice-postgres:
+    image: postgres:17
+    container_name: invoice-postgres
+    environment:
+      POSTGRES_USER: ${INVOICE_DB_USERNAME}
+      POSTGRES_PASSWORD: ${INVOICE_DB_PASSWORD}
+      POSTGRES_DB: ${INVOICE_DB_NAME}
+    restart: on-failure
+    volumes:
+      - invoice_postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/databases/bank_system:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${INVOICE_DB_PORT}:${POSTGRES_DB_PORT}"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${INVOICE_DB_USERNAME} -p ${POSTGRES_DB_PORT}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  notification-postgres:
+    image: postgres:17
+    container_name: notification-postgres
+    environment:
+      POSTGRES_USER: ${NOTIFICATION_DB_USERNAME}
+      POSTGRES_PASSWORD: ${NOTIFICATION_DB_PASSWORD}
+      POSTGRES_DB: ${NOTIFICATION_DB_NAME}
+    restart: on-failure
+    volumes:
+      - notification_postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/databases/bank_system:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${NOTIFICATION_DB_PORT}:${POSTGRES_DB_PORT}"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${NOTIFICATION_DB_USERNAME} -p ${POSTGRES_DB_PORT}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  auth-postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: auth-postgres-exporter
+    depends_on:
+      auth-postgres:
+        condition: service_healthy
+    environment:
+      DATA_SOURCE_NAME: postgresql://${AUTH_DB_USERNAME}:${AUTH_DB_PASSWORD}@${AUTH_HOST}:${POSTGRES_DB_PORT}/${AUTH_DB_NAME}?sslmode=disable
+    ports:
+      - "${AUTH_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
+
+  user-postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: user-postgres-exporter
+    depends_on:
+      user-postgres:
+        condition: service_healthy
+    environment:
+      DATA_SOURCE_NAME: postgresql://${USER_DB_USERNAME}:${USER_DB_PASSWORD}@${USER_HOST}:${POSTGRES_DB_PORT}/${USER_DB_NAME}?sslmode=disable
+    ports:
+      - "${USER_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
+
+  card-postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: card-postgres-exporter
+    depends_on:
+      card-postgres:
+        condition: service_healthy
+    environment:
+      DATA_SOURCE_NAME: postgresql://${CARD_DB_USERNAME}:${CARD_DB_PASSWORD}@${CARD_HOST}:${POSTGRES_DB_PORT}/${CARD_DB_NAME}?sslmode=disable
+    ports:
+      - "${CARD_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
+
+  order-postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: order-postgres-exporter
+    depends_on:
+      order-postgres:
+        condition: service_healthy
+    environment:
+      DATA_SOURCE_NAME: postgresql://${ORDER_DB_USERNAME}:${ORDER_DB_PASSWORD}@${ORDER_HOST}:${POSTGRES_DB_PORT}/${ORDER_DB_NAME}?sslmode=disable
+    ports:
+      - "${ORDER_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
+
+  payment-postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: payment-postgres-exporter
+    depends_on:
+      payment-postgres:
+        condition: service_healthy
+    environment:
+      DATA_SOURCE_NAME: postgresql://${PAYMENT_DB_USERNAME}:${PAYMENT_DB_PASSWORD}@${PAYMENT_HOST}:${POSTGRES_DB_PORT}/${PAYMENT_DB_NAME}?sslmode=disable
+    ports:
+      - "${PAYMENT_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
+
+  transaction-postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: transaction-postgres-exporter
+    depends_on:
+      transaction-postgres:
+        condition: service_healthy
+    environment:
+      DATA_SOURCE_NAME: postgresql://${TRANSACTION_DB_USERNAME}:${TRANSACTION_DB_PASSWORD}@${TRANSACTION_HOST}:${POSTGRES_DB_PORT}/${TRANSACTION_DB_NAME}?sslmode=disable
+    ports:
+      - "${TRANSACTION_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
+
+  invoice-postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: invoice-postgres-exporter
+    depends_on:
+      invoice-postgres:
+        condition: service_healthy
+    environment:
+      DATA_SOURCE_NAME: postgresql://${INVOICE_DB_USERNAME}:${INVOICE_DB_PASSWORD}@${INVOICE_HOST}:${POSTGRES_DB_PORT}/${INVOICE_DB_NAME}?sslmode=disable
+    ports:
+      - "${INVOICE_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
+
+  notification-postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: notification-postgres-exporter
+    depends_on:
+      notification-postgres:
+        condition: service_healthy
+    environment:
+      DATA_SOURCE_NAME: postgresql://${NOTIFICATION_DB_USERNAME}:${NOTIFICATION_DB_PASSWORD}@${NOTIFICATION_HOST}:${POSTGRES_DB_PORT}/${NOTIFICATION_DB_NAME}?sslmode=disable
+    ports:
+      - "${NOTIFICATION_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
+
+  nexus:
+    image: sonatype/nexus3:3.76.0
+    container_name: nexus
+    ports:
+      - "${NEXUS_PORT}:${NEXUS_PORT}"
+    environment:
+      NEXUS_SECURITY_INITIAL_PASSWORD: admin
+      NEXUS_SECURITY_RANDOMPASSWORD: false
+    volumes:
+      - nexus-data:/nexus-data
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://${HOST}:${NEXUS_PORT}/service/rest/v1/status" ]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "${PROMETHEUS_PORT}:${PROMETHEUS_PORT}"
+    volumes:
+      - ./infrastructure/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "http://${HOST}:${PROMETHEUS_PORT}/-/healthy" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  loki:
+    image: grafana/loki:2.9.2
+    container_name: loki
+    ports:
+      - "${LOKI_PORT}:${LOKI_PORT}"
+    volumes:
+      - ./infrastructure/loki/loki-config.yaml:/etc/loki/loki-config.yaml:ro
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://${HOST}:${LOKI_PORT}/ready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  tempo:
+    image: grafana/tempo:2.4.1
+    container_name: tempo
+    command: [ "-config.file=/etc/tempo/tempo.yaml" ]
+    volumes:
+      - ./infrastructure/tempo/tempo.yaml:/etc/tempo/tempo.yaml
+      - tempo_data:/var/tempo
+    ports:
+      - "${TEMPO_DEF_PORT}:${TEMPO_DEF_PORT}"
+      - "${OTLP_GRPC_PORT}:${OTLP_GRPC_PORT}"
+      - "${OTLP_HTTP_PORT}:${OTLP_HTTP_PORT}"
+
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
+    user: root
+    ports:
+      - "${ALLOY_PORT}:${ALLOY_PORT}" # HTTP interface
+      - "${OTLP_GRPC_PORT}:${OTLP_GRPC_PORT}"
+      - "${OTLP_HTTP_PORT}:${OTLP_HTTP_PORT}"
+    volumes:
+      - ./infrastructure/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/log:/var/log:ro
+    environment:
+      GRAFANA_LOKI_URL: http://loki:${LOKI_PORT}/loki/api/v1/push
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:${ALLOY_PORT}
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+
+  grafana:
+    image: grafana/grafana:10.3.1
+    container_name: grafana
+    ports:
+      - "${GRAFANA_PORT}:${GRAFANA_PORT}"
+    depends_on:
+      prometheus:
+        condition: service_healthy
+      loki:
+        condition: service_healthy
+      tempo:
+        condition: service_started
+      alloy:
+        condition: service_started
+    restart: on-failure
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: true
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_METRICS_ENABLED: "true"
+    volumes:
+      - ./infrastructure/grafana/provisioning:/etc/grafana/provisioning
+      - ./infrastructure/grafana/dashboards:/var/lib/grafana/dashboards
+      - nexus-data:/nexus-data
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "http://${HOST}:${GRAFANA_PORT}/api/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:6.2.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_PORT}
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "${ZOOKEEPER_PORT}:${ZOOKEEPER_PORT}"
+    restart: on-failure
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_log:/var/lib/zookeeper/log
+
+  kafka1:
+    image: confluentinc/cp-kafka:6.2.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "${KAFKA1_PORT}:${KAFKA1_PORT}"
+    restart: on-failure
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:${ZOOKEEPER_PORT}
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:${KAFKA1_INTERNAL_PORT},EXTERNAL://0.0.0.0:${KAFKA1_PORT}
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka1:${KAFKA1_INTERNAL_PORT},EXTERNAL://${HOST}:${KAFKA1_PORT}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+    volumes:
+      - kafka1_data:/var/lib/kafka/data
+
+  kafka2:
+    image: confluentinc/cp-kafka:6.2.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "${KAFKA2_PORT}:${KAFKA2_PORT}"
+    restart: on-failure
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:${ZOOKEEPER_PORT}
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:${KAFKA2_INTERNAL_PORT},EXTERNAL://0.0.0.0:${KAFKA2_PORT}
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka2:${KAFKA2_INTERNAL_PORT},EXTERNAL://${HOST}:${KAFKA2_PORT}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+    volumes:
+      - kafka2_data:/var/lib/kafka/data
+
+  kafka3:
+    image: confluentinc/cp-kafka:6.2.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "${KAFKA3_PORT}:${KAFKA3_PORT}"
+    restart: on-failure
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:${ZOOKEEPER_PORT}
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:${KAFKA3_INTERNAL_PORT},EXTERNAL://0.0.0.0:${KAFKA3_PORT}
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka3:${KAFKA3_INTERNAL_PORT},EXTERNAL://${HOST}:${KAFKA3_PORT}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+    volumes:
+      - kafka3_data:/var/lib/kafka/data
+
+  rabbitmq:
+    image: rabbitmq:3.10.7-management
+    ports:
+      - "${RABBITMQ_PORT}:${RABBITMQ_PORT}"
+      - "${RABBITMQ_WEB_PORT}:${RABBITMQ_WEB_PORT}"
+    restart: on-failure
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:8.2.1
+    restart: on-failure
+    ports:
+      - "${REDIS_PORT}:${REDIS_PORT}"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  artifacts:
+  tempo_data:
+  nexus-data:
+  loki_data:
+  loki_chunks:
+  loki_index:
+  loki_rules:
+
+  auth_postgres_data:
+  user_postgres_data:
+  card_postgres_data:
+  order_postgres_data:
+  payment_postgres_data:
+  transaction_postgres_data:
+  invoice_postgres_data:
+  notification_postgres_data:
+
+  zookeeper_data:
+  zookeeper_log:
+  kafka1_data:
+  kafka2_data:
+  kafka3_data:
+
+  rabbitmq_data:
+
+  redis_data:

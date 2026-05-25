@@ -1,0 +1,102 @@
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: [ "prometheus:9090" ]
+
+  - job_name: auth-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [ 'auth-service:8090' ]
+
+  - job_name: user-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [ 'user-service:8091' ]
+
+  - job_name: card-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [ 'card-service:8092' ]
+
+  - job_name: order-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [ 'order-service:8093' ]
+
+  - job_name: payment-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [ 'payment-service:8094' ]
+
+  - job_name: transaction-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [ 'transaction-service:8095' ]
+
+  - job_name: invoice-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [ 'invoice-service:8096' ]
+
+  - job_name: notification-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [ 'notification-service:8097' ]
+
+  - job_name: grafana
+    metrics_path: /metrics
+    static_configs:
+      - targets: [ 'grafana:3000' ]
+
+  - job_name: alloy
+    metrics_path: /metrics
+    static_configs:
+      - targets: [ 'alloy:9080' ]
+
+  - job_name: loki
+    metrics_path: /metrics
+    static_configs:
+      - targets: [ 'loki:3100' ]
+
+  - job_name: tempo
+    metrics_path: /metrics
+    static_configs:
+      - targets: [ 'tempo:3200' ]
+
+  - job_name: auth-postgres
+    static_configs:
+      - targets: [ 'auth-postgres-exporter:9187' ]
+
+  - job_name: user-postgres
+    static_configs:
+      - targets: [ 'user-postgres-exporter:9187' ]
+
+  - job_name: card-postgres
+    static_configs:
+      - targets: [ 'card-postgres-exporter:9187' ]
+
+  - job_name: order-postgres
+    static_configs:
+      - targets: [ 'order-postgres-exporter:9187' ]
+
+  - job_name: payment-postgres
+    static_configs:
+      - targets: [ 'payment-postgres-exporter:9187' ]
+
+  - job_name: transaction-postgres
+    static_configs:
+      - targets: [ 'transaction-postgres-exporter:9187' ]
+
+  - job_name: invoice-postgres
+    static_configs:
+      - targets: [ 'invoice-postgres-exporter:9187' ]
+
+  - job_name: notification-postgres
+    static_configs:
+      - targets: [ 'notification-postgres-exporter:9187' ]
