@@ -1,13 +1,6 @@
-import org.gradle.api.GradleException
 import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.api.tasks.SourceSetContainer
-import org.gradle.api.tasks.compile.JavaCompile
-import org.gradle.jvm.tasks.Jar
-import org.gradle.kotlin.dsl.*
-import java.io.File
 
 val versions = mapOf(
-	"springBootBoomVersion" to "3.5.8",
 	"jakartaValidationVersion" to "3.0.2",
 	"fasterxmlJacksonVersion" to "2.17.2",
 	"lombokVersion" to "1.18.34",
@@ -16,8 +9,8 @@ val versions = mapOf(
 
 plugins {
 	idea
-	`java-library`
-	`maven-publish`
+	java
+	id("maven-publish")
 	id("io.spring.dependency-management") version "1.1.7"
 }
 
@@ -26,7 +19,7 @@ version = "1.0.0-SNAPSHOT"
 
 java {
 	toolchain {
-		languageVersion.set(JavaLanguageVersion.of(21))
+		languageVersion.set(JavaLanguageVersion.of(17))
 	}
 }
 
@@ -36,9 +29,11 @@ repositories {
 
 dependencyManagement {
 	imports {
-		mavenBom("org.springframework.boot:spring-boot-dependencies:${versions["springBootBoomVersions"]}")
+		mavenBom("org.springframework.boot:spring-boot-dependencies:3.2.4")
 	}
 }
+
+configurations.all { resolutionStrategy.cacheChangingModulesFor(0, "seconds") }
 
 dependencies {
 	implementation("jakarta.validation:jakarta.validation-api:${versions["jakartaValidationVersion"]}")
@@ -46,297 +41,137 @@ dependencies {
 
 	compileOnly("org.projectlombok:lombok:${versions["lombokVersion"]}")
 	compileOnly("org.springdoc:springdoc-openapi-starter-common:${versions["springdocOpenapi"]}")
+
+	annotationProcessor("org.projectlombok:lombok:${versions["lombokVersion"]}")
 }
 
-tasks.test {
+tasks.withType<Test> {
 	useJUnitPlatform()
 }
 
-/*
-──────────────────────────────────────────────────────
-============== Specifications ==============
-──────────────────────────────────────────────────────
-*/
+tasks.jar {
+	enabled = true
+	archiveBaseName.set(project.name)
+	archiveVersion.set(project.version.toString())
 
-val specsDir = file("specifications")
-
-val foundSpecifications: List<File> =
-	specsDir
-		.listFiles()
-		?.filter {
-			it.extension == "yaml" ||
-					it.extension == "yml" ||
-					it.extension == "json"
-		}
-		?: emptyList()
-
-fun buildGenerateApiTaskName(specName: String): String =
-	"generate${specName.replaceFirstChar(Char::uppercase)}Api"
-
-fun buildJarTaskName(specName: String): String =
-	"${specName}Jar"
-
-fun generatedOutputDir(specName: String) =
-	layout.buildDirectory.dir("generated/$specName")
-
-val sourceSets = the<SourceSetContainer>()
-
-/*
-──────────────────────────────────────────────────────
-============== Generated JARs ==============
-──────────────────────────────────────────────────────
-*/
-
-val generatedJarTasks = mutableListOf<TaskProvider<Jar>>()
-
-foundSpecifications.forEach { specFile ->
-
-	val specName = specFile.nameWithoutExtension
-
-	val sourceSetName = specName
-
-	val generatedJavaDir =
-		generatedOutputDir(specName).map {
-			it.asFile.resolve("src/main/java")
-		}
-
-	val sourceSet = sourceSets.create(sourceSetName) {
-
-		java.srcDir(generatedJavaDir)
-
-		compileClasspath += sourceSets["main"].compileClasspath
-		runtimeClasspath += output + compileClasspath
-	}
-
-	/*
-    ──────────────────────────────────────────────────────
-    ============== Generate Sources ==============
-    ──────────────────────────────────────────────────────
-    */
-
-	val generateTask = tasks.register(
-		buildGenerateApiTaskName(specName)
-	) {
-
-		outputs.dir(generatedOutputDir(specName))
-
-		doLast {
-
-			val outputDir =
-				generatedOutputDir(specName)
-					.get()
-					.asFile
-					.resolve("src/main/java/com/generated/$specName")
-
-			outputDir.mkdirs()
-
-			val className =
-				specName.replaceFirstChar(Char::uppercase)
-
-			val generatedFile =
-				outputDir.resolve("${className}Api.java")
-
-			generatedFile.writeText(
-				"""
-                package com.generated.$specName;
-
-                public class ${className}Api {
-
-                    public static String name() {
-                        return "$specName";
-                    }
-                }
-                """.trimIndent()
-			)
-
-			println("Generated sources for: $specName")
-		}
-	}
-
-	/*
-    ──────────────────────────────────────────────────────
-    ============== Compile ==============
-    ──────────────────────────────────────────────────────
-    */
-
-	val compileTask = tasks.register<JavaCompile>(
-		"compile${sourceSetName.replaceFirstChar(Char::uppercase)}Java"
-	) {
-
-		dependsOn(generateTask)
-
-		source = sourceSet.java
-
-		classpath = sourceSet.compileClasspath
-
-		destinationDirectory.set(
-			layout.buildDirectory.dir("classes/$sourceSetName")
+	manifest {
+		attributes(
+			"Implementation-Title" to project.name,
+			"Implementation-Version" to project.version
 		)
-
-		options.encoding = "UTF-8"
 	}
-
-	/*
-    ──────────────────────────────────────────────────────
-    ============== JAR ==============
-    ──────────────────────────────────────────────────────
-    */
-
-	val jarTask = tasks.register<Jar>(
-		buildJarTaskName(specName)
-	) {
-
-		group = "build"
-
-		dependsOn(compileTask)
-
-		archiveBaseName.set(specName)
-
-		archiveVersion.set(project.version.toString())
-
-		destinationDirectory.set(
-			layout.buildDirectory.dir("libs")
-		)
-
-		from(
-			layout.buildDirectory.dir("classes/$sourceSetName")
-		)
-
-		doFirst {
-			println("Building JAR for: $specName")
-		}
-	}
-
-	generatedJarTasks += jarTask
 }
 
 /*
 ──────────────────────────────────────────────────────
-============== Build Lifecycle ==============
+============== Resolve NEXUS credentials ==============
 ──────────────────────────────────────────────────────
 */
 
-tasks.named("build") {
-	dependsOn(generatedJarTasks)
+file(".env").takeIf { it.exists() }?.readLines()?.forEach {
+	if (it.contains("=") && !it.startsWith("#")) {
+		val (k, v) = it.split("=", limit = 2)
+		System.setProperty(k.trim(), v.trim())
+		logger.lifecycle("Loaded env: ${k.trim()}=${v.trim()}")
+	}
 }
 
-/*
-──────────────────────────────────────────────────────
-============== Load .env ==============
-──────────────────────────────────────────────────────
-*/
+val nexusUrl = System.getenv("NEXUS_URL") ?: System.getProperty("NEXUS_URL")
+val nexusUser = System.getenv("NEXUS_USERNAME") ?: System.getProperty("NEXUS_USERNAME")
+val nexusPassword = System.getenv("NEXUS_PASSWORD") ?: System.getProperty("NEXUS_PASSWORD")
 
-file(".env")
-	.takeIf { it.exists() }
-	?.readLines()
-	?.forEach { line ->
-
-		if (line.contains("=")) {
-
-			val (key, value) =
-				line.split("=", limit = 2)
-
-			System.setProperty(
-				key.trim(),
-				value.trim()
-			)
-		}
-	}
-
-/*
-──────────────────────────────────────────────────────
-============== Nexus Credentials ==============
-──────────────────────────────────────────────────────
-*/
-
-val nexusUrl =
-	System.getenv("NEXUS_URL")
-		?: System.getProperty("NEXUS_URL")
-
-val nexusUser =
-	System.getenv("NEXUS_USERNAME")
-		?: System.getProperty("NEXUS_USERNAME")
-
-val nexusPassword =
-	System.getenv("NEXUS_PASSWORD")
-		?: System.getProperty("NEXUS_PASSWORD")
-
-if (
-	nexusUrl.isNullOrBlank() ||
-	nexusUser.isNullOrBlank() ||
-	nexusPassword.isNullOrBlank()
-) {
+if (nexusUrl.isNullOrBlank() || nexusUser.isNullOrBlank() || nexusPassword.isNullOrBlank()) {
 	throw GradleException(
 		"""
-        Nexus credentials are missing.
-
-        Required:
-        - NEXUS_URL
-        - NEXUS_USERNAME
-        - NEXUS_PASSWORD
+        NEXUS credentials are missing!
+        
+        Create .env file in project root with:
+        NEXUS_URL=http://your-nexus:8081/repository/maven-releases/
+        NEXUS_USERNAME=your-username
+        NEXUS_PASSWORD=your-password
         """.trimIndent()
 	)
 }
 
 /*
 ──────────────────────────────────────────────────────
-============== Publishing ==============
+============== Nexus Publishing ==============
 ──────────────────────────────────────────────────────
 */
 
 publishing {
-
 	publications {
+		create<MavenPublication>("mavenJava") {
+			groupId = project.group.toString()
+			artifactId = project.name
+			version = project.version.toString()
 
-		foundSpecifications.forEach { specFile ->
+			from(components["java"])
 
-			val specName =
-				specFile.nameWithoutExtension
+			pom {
+				name.set(project.name)
+				description.set("Common library for Bank Card Management System")
+				url.set("https://github.com/seecret1/ProdBankSystem")
 
-			create<MavenPublication>(
-				"publish${specName.replaceFirstChar(Char::uppercase)}"
-			) {
+				licenses {
+					license {
+						name.set("Apache License 2.0")
+						url.set("https://www.apache.org/licenses/LICENSE-2.0")
+					}
+				}
 
-				groupId = project.group.toString()
+				developers {
+					developer {
+						id.set("seecret1")
+						name.set("seecret1")
+						email.set("support@bankapp.com")
+					}
+				}
 
-				artifactId = specName
-
-				version = project.version.toString()
-
-				artifact(
-					tasks.named(
-						buildJarTaskName(specName)
-					)
-				)
-
-				pom {
-
-					name.set("Generated API: $specName")
-
-					description.set(
-						"OpenAPI generated library for $specName"
-					)
+				scm {
+					connection.set("scm:git:https://github.com/seecret1/ProdBankSystem.git")
+					developerConnection.set("scm:git:ssh://github.com/seecret1/ProdBankSystem.git")
+					url.set("https://github.com/seecret1/ProdBankSystem")
 				}
 			}
 		}
 	}
 
 	repositories {
-
 		maven {
-
 			name = "nexus"
-
 			url = uri(nexusUrl)
-
 			isAllowInsecureProtocol = true
-
 			credentials {
-
 				username = nexusUser
-
 				password = nexusPassword
 			}
 		}
+	}
+}
+
+// Дополнительная задача для проверки публикации
+tasks.register("checkPublication") {
+	doLast {
+		val separator = "=".repeat(60)
+		println(separator)
+		println("📦 Publication details:")
+		println("   GroupId: ${project.group}")
+		println("   ArtifactId: ${project.name}")
+		println("   Version: ${project.version}")
+		println("   Repository: $nexusUrl")
+		println(separator)
+	}
+}
+
+tasks.named("publish") {
+	dependsOn("checkPublication")
+	doFirst {
+		println("🚀 Publishing to Nexus...")
+	}
+	doLast {
+		println("✅ Publishing completed!")
+		val nexusPath = nexusUrl + project.group.toString().replace('.', '/') + "/" + project.name + "/" + project.version + "/"
+		println("📌 Check at: $nexusPath")
 	}
 }
