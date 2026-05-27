@@ -38,9 +38,11 @@ configurations.all { resolutionStrategy.cacheChangingModulesFor(0, "seconds") }
 dependencies {
 	implementation("jakarta.validation:jakarta.validation-api:${versions["jakartaValidationVersion"]}")
 	implementation("com.fasterxml.jackson.core:jackson-annotations:${versions["fasterxmlJacksonVersion"]}")
+	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+
+	implementation("org.springdoc:springdoc-openapi-starter-common:${versions["springdocOpenapi"]}")
 
 	compileOnly("org.projectlombok:lombok:${versions["lombokVersion"]}")
-	compileOnly("org.springdoc:springdoc-openapi-starter-common:${versions["springdocOpenapi"]}")
 
 	annotationProcessor("org.projectlombok:lombok:${versions["lombokVersion"]}")
 }
