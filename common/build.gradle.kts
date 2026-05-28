@@ -10,6 +10,7 @@ val versions = mapOf(
 plugins {
 	idea
 	java
+	id("java-library")
 	id("maven-publish")
 	id("io.spring.dependency-management") version "1.1.7"
 }
@@ -36,14 +37,21 @@ dependencyManagement {
 configurations.all { resolutionStrategy.cacheChangingModulesFor(0, "seconds") }
 
 dependencies {
-	implementation("jakarta.validation:jakarta.validation-api:${versions["jakartaValidationVersion"]}")
-	implementation("com.fasterxml.jackson.core:jackson-annotations:${versions["fasterxmlJacksonVersion"]}")
+	api("io.micrometer:micrometer-registry-prometheus")
+	api("io.github.openfeign:feign-micrometer:13.6")
+	api("io.opentelemetry:opentelemetry-exporter-otlp")
+	api("io.micrometer:micrometer-observation")
+	api("io.micrometer:micrometer-tracing")
+	api("io.micrometer:micrometer-tracing-bridge-otel")
+	api("ch.qos.logback:logback-classic:1.5.18")
+
+	api("jakarta.validation:jakarta.validation-api:${versions["jakartaValidationVersion"]}")
+	api("com.fasterxml.jackson.core:jackson-annotations:${versions["fasterxmlJacksonVersion"]}")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
-	implementation("org.springdoc:springdoc-openapi-starter-common:${versions["springdocOpenapi"]}")
+	api("org.springdoc:springdoc-openapi-starter-common:${versions["springdocOpenapi"]}")
 
 	compileOnly("org.projectlombok:lombok:${versions["lombokVersion"]}")
-
 	annotationProcessor("org.projectlombok:lombok:${versions["lombokVersion"]}")
 }
 
