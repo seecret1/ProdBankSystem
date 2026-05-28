@@ -1,23 +1,4 @@
 services:
-  auth-postgres:
-    image: postgres:17
-    container_name: auth-postgres
-    environment:
-      POSTGRES_USER: ${AUTH_DB_USERNAME}
-      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
-      POSTGRES_DB: ${AUTH_DB_NAME}
-    restart: on-failure
-    volumes:
-      - auth_postgres_data:/var/lib/postgresql/data
-      - ./infrastructure/databases/bank:/docker-entrypoint-initdb.d:ro
-    ports:
-      - "${AUTH_DB_PORT}:${POSTGRES_DB_PORT}"
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${AUTH_DB_USERNAME} -p ${POSTGRES_DB_PORT}" ]
-      interval: 10s
-      timeout: 5s
-      retries: 20
-
   user-postgres:
     image: postgres:17
     container_name: user-postgres
@@ -150,17 +131,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 20
-
-  auth-postgres-exporter:
-    image: prometheuscommunity/postgres-exporter:latest
-    container_name: auth-postgres-exporter
-    depends_on:
-      auth-postgres:
-        condition: service_healthy
-    environment:
-      DATA_SOURCE_NAME: postgresql://${AUTH_DB_USERNAME}:${AUTH_DB_PASSWORD}@${AUTH_HOST}:${POSTGRES_DB_PORT}/${AUTH_DB_USERNAME}?sslmode=disable
-    ports:
-      - "${AUTH_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
 
   user-postgres-exporter:
     image: prometheuscommunity/postgres-exporter:latest
@@ -469,7 +439,6 @@ volumes:
   loki_index:
   loki_rules:
 
-  auth_postgres_data:
   user_postgres_data:
   card_postgres_data:
   order_postgres_data:
