@@ -1,4 +1,5 @@
 val versions = mapOf(
+	"mapstructVersion" to "1.5.5.Final",
 	"commonVersion" to "1.0.0-SNAPSHOT",
 	"springdocOpenapiStarterWebmvcUiVersion" to "2.5.0",
 	"logbackClassicVersion" to "1.5.18",
@@ -46,6 +47,9 @@ dependencies {
 	annotationProcessor("org.projectlombok:lombok")
 	testCompileOnly("org.projectlombok:lombok")
 	testAnnotationProcessor("org.projectlombok:lombok")
+
+	compileOnly("org.mapstruct:mapstruct:${versions["mapstructVersion"]}")
+	annotationProcessor("org.mapstruct:mapstruct-processor:${versions["mapstructVersion"]}")
 
 	implementation("org.postgresql:postgresql")
 	implementation("org.flywaydb:flyway-database-postgresql")

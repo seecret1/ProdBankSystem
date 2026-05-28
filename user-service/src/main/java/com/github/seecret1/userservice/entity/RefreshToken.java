@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
-@Table(name = "refresh_tokens")
+@Table(name = "refresh_tokens", schema = "person_bank")
 @AllArgsConstructor
 @NoArgsConstructor
 public class RefreshToken {

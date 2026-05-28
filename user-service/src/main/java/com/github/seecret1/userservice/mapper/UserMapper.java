@@ -1,70 +1,47 @@
 package com.github.seecret1.userservice.mapper;
 
-import com.github.seecret1.userservice.dto.request.CreateUserRequest;
-import com.github.seecret1.userservice.dto.request.SignUpRequest;
-import com.github.seecret1.userservice.dto.response.UserResponse;
-import com.github.seecret1.userservice.entity.RoleType;
+import com.github.seecret1.userservice.dto.request.IndividualWriteDto;
+import com.github.seecret1.userservice.entity.Individual;
 import com.github.seecret1.userservice.entity.User;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import com.github.seecret1.userservice.utils.DateTimeUtil;
+import lombok.Setter;
+import org.mapstruct.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.List;
+import static org.mapstruct.InjectionStrategy.CONSTRUCTOR;
+import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 
-@Component
-@RequiredArgsConstructor
-public final class UserMapper {
-
-    public UserResponse toResponse(User user) {
-        return new UserResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getMiddleName(),
-                user.getBirthDate(),
-                user.getRole(),
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
-                user.getDeleted(),
-                user.getDeletedAt(),
-                user.getDeletedBy()
-        );
-    }
-
-    public CreateUserRequest toCreateUserRequest(SignUpRequest request) {
-        return new CreateUserRequest(
-                request.username(),
-                request.email(),
-                request.password(),
-                request.firstName(),
-                request.lastName(),
-                request.middleName(),
-                request.birthDate(),
-                RoleType.ROLE_USER
-        );
-    }
-
-    public List<UserResponse> toListResponse(List<User> users) {
-        List<UserResponse> list = new ArrayList<>(users.size());
-
-        for (var response : users) {
-            list.add(toResponse(response));
+@Mapper(
+        componentModel = SPRING,
+        injectionStrategy = CONSTRUCTOR,
+        uses = {
+                AddressMapper.class
         }
-        return list;
-    }
+)
+@Setter(onMethod_ = @Autowired)
+public abstract class UserMapper {
 
-    public User toEntity(CreateUserRequest request) {
-        User user = new User();
-        user.setUsername(request.username());
-        user.setEmail(request.email());
-        user.setPassword(request.password());
-        user.setFirstName(request.firstName());
-        user.setLastName(request.lastName());
-        user.setMiddleName(request.middleName());
-        user.setBirthDate(request.birthDate());
-        user.setRole(request.role());
-        return user;
-    }
+        protected DateTimeUtil dateTimeUtil;
+
+        @Named("toUser")
+        @Mapping(target = "deleted", constant = "false")
+        @Mapping(target = "createdAt", expression = "java(dateTimeUtil.now())")
+        @Mapping(target = "updatedAt", expression = "java(dateTimeUtil.now())")
+        @Mapping(target = "address", source = ".", qualifiedByName = "toAddress")
+        public abstract User to(IndividualWriteDto dto);
+
+        @BeanMapping(ignoreByDefault = true)
+        @Mapping(target = "updatedAt", expression = "java(dateTimeUtil.now())")
+        @Mapping(target = "firstName", source = "firstName")
+        @Mapping(target = "lastName", source = "lastName")
+        @Mapping(target = "address", expression = "java(addressMapper.update(user, dto))")
+        public abstract User update(
+                @MappingTarget
+                User user,
+                IndividualWriteDto dto
+        );
+
+        public User update(Individual individual, IndividualWriteDto dto) {
+                return update(individual.getUser(), dto);
+        }
 }

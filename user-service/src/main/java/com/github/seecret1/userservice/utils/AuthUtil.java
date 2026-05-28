@@ -6,7 +6,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @UtilityClass
-public class AuthUtils {
+public class AuthUtil {
 
     public String getCurrentUserId(UserDetails userDetails) {
         if (userDetails instanceof CustomUserDetails details) {

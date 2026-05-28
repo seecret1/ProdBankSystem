@@ -4,7 +4,7 @@ val versions = mapOf(
 	"jakartaValidationVersion" to "3.0.2",
 	"fasterxmlJacksonVersion" to "2.17.2",
 	"lombokVersion" to "1.18.34",
-	"springdocOpenapi" to "2.5.0"
+	"hibernateEnversVersion" to "6.4.4.Final"
 )
 
 plugins {
@@ -47,9 +47,8 @@ dependencies {
 
 	api("jakarta.validation:jakarta.validation-api:${versions["jakartaValidationVersion"]}")
 	api("com.fasterxml.jackson.core:jackson-annotations:${versions["fasterxmlJacksonVersion"]}")
-	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
-	api("org.springdoc:springdoc-openapi-starter-common:${versions["springdocOpenapi"]}")
+	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
 	compileOnly("org.projectlombok:lombok:${versions["lombokVersion"]}")
 	annotationProcessor("org.projectlombok:lombok:${versions["lombokVersion"]}")

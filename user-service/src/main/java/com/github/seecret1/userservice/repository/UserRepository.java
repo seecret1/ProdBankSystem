@@ -28,10 +28,6 @@ public interface UserRepository extends JpaRepository<User, String>, JpaSpecific
 
     Optional<User> findByEmail(String email);
 
-    @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END " +
-            "FROM User u WHERE u.id = :criterial OR u.email = :criterial OR u.username = :criterial")
-    boolean existsUserByCriterial(String criterial);
-
     boolean existsByUsernameOrEmail(String username, String email);
 
     default Optional<User> findByCriterial(String searchCriterial) {

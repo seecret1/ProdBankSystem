@@ -9,7 +9,7 @@ import com.github.seecret1.userservice.entity.User;
 import com.github.seecret1.userservice.exception.AuthException;
 import com.github.seecret1.userservice.exception.RegisterUserException;
 import com.github.seecret1.userservice.exception.UserNotFoundException;
-import com.github.seecret1.userservice.mapper.UserMapper;
+import com.github.seecret1.userservice.mapper.UserManualMapper;
 import com.github.seecret1.userservice.model.UserFilterModel;
 import com.github.seecret1.userservice.repository.UserRepository;
 import com.github.seecret1.userservice.repository.specification.UserSpecification;
@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
 
     private final UserRepository userRepository;
 
-    private final UserMapper userMapper;
+    private final UserManualMapper userManualMapper;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -50,7 +50,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
         return new PageResponse<>(
                 page.getTotalElements(),
                 page.getTotalPages(),
-                userMapper.toListResponse(page.getContent())
+                userManualMapper.toListResponse(page.getContent())
         );
     }
 
@@ -67,7 +67,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
         return new PageResponse<>(
                 page.getTotalElements(),
                 page.getTotalPages(),
-                userMapper.toListResponse(page.getContent())
+                userManualMapper.toListResponse(page.getContent())
         );
     }
 
@@ -84,7 +84,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
         return new PageResponse<>(
                 page.getTotalElements(),
                 page.getTotalPages(),
-                userMapper.toListResponse(page.getContent())
+                userManualMapper.toListResponse(page.getContent())
         );
     }
 
@@ -97,7 +97,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
                         "User not found by criterial: " + criterial
                 ));
         log.debug("Found user by criterial. User: {}", user);
-        return userMapper.toResponse(user);
+        return userManualMapper.toResponse(user);
     }
 
     @Override
@@ -116,12 +116,12 @@ public class UserServiceImpl implements UserService, InternalUserService {
                     )
             );
         }
-        User user = userMapper.toEntity(request);
+        User user = userManualMapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
 
         log.debug("Success create user: {}", user);
-        return userMapper.toResponse(user);
+        return userManualMapper.toResponse(user);
     }
 
     @Override
@@ -146,7 +146,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
         User savedUser = userRepository.save(existingUser);
 
         log.debug("Success full update user: {}", savedUser);
-        return userMapper.toResponse(savedUser);
+        return userManualMapper.toResponse(savedUser);
     }
 
     @Override
@@ -171,7 +171,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
 
             userRepository.save(userUpdate);
             log.debug("Success update user: {}", userUpdate);
-            return userMapper.toResponse(userUpdate);
+            return userManualMapper.toResponse(userUpdate);
 
         } catch (DataIntegrityViolationException ex) {
             throw new AuthException(ex.getMessage());

@@ -1,0 +1,24 @@
+package com.github.seecret1.userservice.dto.response;
+
+import java.time.Instant;
+
+public record AddressDto(
+
+        Boolean deleted,
+
+        Instant createdAt,
+
+        Instant updatedAt,
+
+        Instant deletedAt,
+
+        String deletedBy,
+
+        String address,
+
+        String zipCode,
+
+        String city
+
+) {
+}

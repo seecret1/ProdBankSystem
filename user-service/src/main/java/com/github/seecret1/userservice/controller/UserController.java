@@ -7,7 +7,7 @@ import com.github.seecret1.userservice.dto.request.UpdateUserRequest;
 import com.github.seecret1.userservice.dto.response.UserResponse;
 import com.github.seecret1.userservice.model.UserFilterModel;
 import com.github.seecret1.userservice.service.UserService;
-import com.github.seecret1.userservice.utils.AuthUtils;
+import com.github.seecret1.userservice.utils.AuthUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -132,7 +132,7 @@ public class UserController {
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         return ResponseEntity.ok(userService.updateYour(
-                AuthUtils.getCurrentUserId(userDetails),
+                AuthUtil.getCurrentUserId(userDetails),
                 request
         ));
     }
@@ -153,7 +153,7 @@ public class UserController {
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         userService.delete(
-                AuthUtils.getCurrentUserId(userDetails),
+                AuthUtil.getCurrentUserId(userDetails),
                 criterial
         );
         return ResponseEntity.noContent().build();

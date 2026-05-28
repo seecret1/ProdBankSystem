@@ -35,6 +35,7 @@ public record CreateUserRequest(
     @NotNull(message = "birth date must be set!")
     LocalDate birthDate,
 
-    @NotNull
+    @NotNull(message = "role must be set!")
     RoleType role
+
 ) { }

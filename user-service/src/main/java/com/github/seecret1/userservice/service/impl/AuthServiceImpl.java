@@ -7,14 +7,14 @@ import com.github.seecret1.userservice.dto.request.SignUpRequest;
 import com.github.seecret1.userservice.dto.response.JwtAuthenticationDto;
 import com.github.seecret1.userservice.entity.User;
 import com.github.seecret1.userservice.exception.AuthException;
-import com.github.seecret1.userservice.mapper.UserMapper;
+import com.github.seecret1.userservice.mapper.UserManualMapper;
 import com.github.seecret1.userservice.repository.RefreshTokenRepository;
 import com.github.seecret1.userservice.security.CustomUserDetails;
 import com.github.seecret1.userservice.security.jwt.JwtService;
 import com.github.seecret1.userservice.service.AuthService;
 import com.github.seecret1.userservice.service.InternalUserService;
 import com.github.seecret1.userservice.service.UserService;
-import com.github.seecret1.userservice.utils.AuthUtils;
+import com.github.seecret1.userservice.utils.AuthUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,7 +30,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserService userService;
 
-    private final UserMapper userMapper;
+    private final UserManualMapper userManualMapper;
 
     private final InternalUserService internalUserService;
 
@@ -65,7 +65,7 @@ public class AuthServiceImpl implements AuthService {
         log.info("Sign up user. User email: {}; username: {}",
                 email, request.username());
 
-        userService.create(userMapper.toCreateUserRequest(request));
+        userService.create(userManualMapper.toCreateUserRequest(request));
         log.debug("User successful sign up: {}", email);
 
         return jwtService.generateAuthToken(email);
@@ -85,7 +85,7 @@ public class AuthServiceImpl implements AuthService {
             throw new AuthException("User sign out using this token");
         }
 
-        CustomUserDetails userDetails = AuthUtils.getAuthenticatedUser();
+        CustomUserDetails userDetails = AuthUtil.getAuthenticatedUser();
         log.info("Sign out user: {}", userDetails.getUsername());
 
         if (!refreshTokenEntity.getUser().getId().equals(userDetails.getId())) {

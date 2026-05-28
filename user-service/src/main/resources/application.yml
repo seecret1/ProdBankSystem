@@ -11,10 +11,6 @@ spring:
     url: jdbc:postgresql://localhost:5433/user_db
     username: ${USER_DB_USERNAME}
     password: ${USER_DB_PASSWORD}
-    hikari:
-      schema: bank_schema
-      connection-init-sql: CREATE SCHEMA IF NOT EXISTS bank_schema
-      connection-timeout: 10000
 
   jpa:
     generate-ddl: false
