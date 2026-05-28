@@ -1,0 +1,78 @@
+server:
+  port: 8091
+
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  datasource:
+    url: jdbc:postgresql://localhost:5433/user_db
+    username: ${USER_DB_USERNAME}
+    password: ${USER_DB_PASSWORD}
+    hikari:
+      schema: bank_schema
+      connection-init-sql: CREATE SCHEMA IF NOT EXISTS bank_schema
+      connection-timeout: 10000
+
+  jpa:
+    generate-ddl: false
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+
+user-service:
+  jwt:
+    secret: ${SECRET_KEY}
+    tokenExpiration: 10m
+    refreshTokenExpiration: 60m
+
+encryption:
+  secret: ${ENCRYPTION_SECRET}
+
+springdoc:
+  api-docs:
+    path: /api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operationsSorter: method
+    tagsSorter: alpha
+    try-it-out-enabled: true
+    filter: true
+  show-actuator: true
+  packages-to-scan: com.github.seecret1.userservice.controller
+  paths-to-match: /api/v1/**
+
+logging:
+  config: "classpath:logback.xml"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    prometheus:
+      access: read_only
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+
+otel:
+  exporter:
+    otlp:
+      endpoint:
+        ${OTLP_EXPORTER_ENDPOINT:http://localhost:4318}
+      protocol: http/protobuf
+  logs:
+    exporter: none
+  metrics:
+    exporter: none
