@@ -1,6 +1,7 @@
 package com.github.seecret1.userservice.service.impl;
 
 import com.github.seecret1.common.dto.PageResponse;
+import com.github.seecret1.common.model.PageModel;
 import com.github.seecret1.userservice.dto.request.IndividualWriteDto;
 import com.github.seecret1.userservice.dto.response.IndividualDto;
 import com.github.seecret1.userservice.dto.response.IndividualWriteResponseDto;
@@ -10,6 +11,7 @@ import com.github.seecret1.userservice.repository.IndividualRepository;
 import com.github.seecret1.userservice.service.IndividualService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,8 +35,9 @@ public class IndividualServiceImpl implements IndividualService {
     }
 
     @Override
-    public PageResponse<IndividualWriteResponseDto> findByEmails(Set<String> emails) {
-        var page = individualRepository.findAllByEmails(emails);
+    public PageResponse<IndividualWriteResponseDto> findByEmails(Set<String> emails, PageModel pageModel) {
+        Pageable pageable = pageModel.toPageRequest();
+        var page = individualRepository.findAllByEmails(emails, pageable);
         return new PageResponse<>(
                 page.getTotalElements(),
                 page.getTotalPages(),
