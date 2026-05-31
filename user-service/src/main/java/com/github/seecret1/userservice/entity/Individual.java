@@ -16,14 +16,14 @@ import org.hibernate.envers.RelationTargetAuditMode;
 public class Individual extends BaseEntity {
 
     @Size(max = 64)
-    @Column(name = "passport_number", nullable = false, length = 64)
+    @Column(name = "passport_number", length = 64)
     private String passportNumber;
 
     @Size(max = 64)
-    @Column(name = "phone_number", nullable = false, length = 64)
+    @Column(name = "phone_number", length = 64)
     private String phoneNumber;
 
-    @OneToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
-    @JoinColumn(name = "user_id", nullable = false)
+    @OneToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 }

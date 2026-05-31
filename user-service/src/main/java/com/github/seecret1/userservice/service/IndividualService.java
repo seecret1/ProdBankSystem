@@ -10,7 +10,7 @@ import java.util.Set;
 
 public interface IndividualService {
 
-    IndividualResponse register(IndividualRequest request);
+    IndividualResponse recordPersonalData(String userId, IndividualRequest request);
 
     PageResponse<IndividualResponse> findByEmails(Set<String> emails, PageModel pageModel);
 

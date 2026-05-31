@@ -12,6 +12,8 @@ import java.util.Set;
 
 public interface IndividualRepository extends JpaRepository<Individual, String> {
 
+    boolean existsByUserId(String userId);
+
     @Query("""
         FROM Individual i WHERE (:emails) IS NULL OR i.user.email IN :emails
         """)

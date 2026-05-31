@@ -61,6 +61,9 @@ public class User extends BaseEntity {
     @JoinColumn(name = "address_id", nullable = false)
     private Address address;
 
+    @OneToOne(mappedBy = "user")
+    private Individual individual;
+
     public void softDelete(String deletedBy) {
         setDeleted(true);
         setDeletedAt(Instant.now());

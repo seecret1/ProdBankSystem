@@ -13,10 +13,13 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
+import com.github.seecret1.userservice.utils.AuthUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,17 +35,23 @@ public class IndividualController {
     private final IndividualService individualService;
 
     @PostMapping
-    @Operation(summary = "Register individual", description = "Create client profile with linked user account")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Complete client profile", description = "Link personal data to the authenticated user account")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Individual successfully registered"),
             @ApiResponse(responseCode = "400", description = "Validation error"),
             @ApiResponse(responseCode = "409", description = "User or individual already exists")
     })
     public ResponseEntity<IndividualResponse> recordPersonalData(
-            @Valid @RequestBody IndividualRequest request
+            @Valid @RequestBody IndividualRequest request,
+            @AuthenticationPrincipal UserDetails userDetails
     ) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(individualService.register(request));
+                .body(individualService.recordPersonalData(
+                        AuthUtil.getCurrentUserId(userDetails),
+                        request
+                ));
     }
 
     @GetMapping("/{id}")
@@ -96,7 +105,7 @@ public class IndividualController {
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Soft delete individual")
     public ResponseEntity<Void> hardDelete(@PathVariable String id) {
-        individualService.softDelete(id);
+        individualService.hardDelete(id);
         return ResponseEntity.noContent().build();
     }
 }

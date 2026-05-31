@@ -202,4 +202,11 @@ public class UserServiceImpl implements UserService, InternalUserService {
         log.debug("Found user entity by criterial. User: {}", user);
         return user;
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public User findUserEntityById(String id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+    }
 }

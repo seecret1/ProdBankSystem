@@ -1,5 +1,6 @@
 package com.github.seecret1.userservice.mapper;
 
+import com.github.seecret1.userservice.dto.AddressWriteDto;
 import com.github.seecret1.userservice.dto.request.IndividualRequest;
 import com.github.seecret1.userservice.dto.response.AddressDto;
 import com.github.seecret1.userservice.entity.Address;
@@ -9,7 +10,11 @@ import com.github.seecret1.userservice.exception.PersonException;
 import com.github.seecret1.userservice.repository.CountryRepository;
 import com.github.seecret1.userservice.utils.DateTimeUtil;
 import lombok.Setter;
-import org.mapstruct.*;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.mapstruct.InjectionStrategy.CONSTRUCTOR;
@@ -23,32 +28,32 @@ public abstract class AddressMapper {
     protected DateTimeUtil dateTimeUtil;
 
     @Named("toAddress")
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "deleted", constant = "false")
+    @Mapping(target = "deletedAt", ignore = true)
+    @Mapping(target = "deletedBy", ignore = true)
     @Mapping(target = "createdAt", expression = "java(dateTimeUtil.now())")
     @Mapping(target = "updatedAt", expression = "java(dateTimeUtil.now())")
-    @Mapping(target = "city", source = "address.city")
-    @Mapping(target = "zipCode", source = "address.zipCode")
-    @Mapping(target = "address", source = "address.address")
-    @Mapping(target = "country", source = "address.countryCode", qualifiedByName = "toCountry")
-    public abstract Address to(IndividualRequest dto);
+    @Mapping(target = "country", source = "countryCode", qualifiedByName = "toCountry")
+    public abstract Address toAddress(AddressWriteDto dto);
 
     @Named("fromAddress")
-    @Mapping(target = "city", source = "city")
-    @Mapping(target = "zipCode", source = "zipCode")
-    @Mapping(target = "address", source = "address")
-    @Mapping(target = "countryCode", source = "country.code")
-    public abstract AddressDto from(Address address);
+    @Mapping(target = "deleted", source = "deleted")
+    @Mapping(target = "createdAt", source = "createdAt")
+    @Mapping(target = "updatedAt", source = "updatedAt")
+    @Mapping(target = "deletedAt", source = "deletedAt")
+    @Mapping(target = "deletedBy", source = "deletedBy")
+    public abstract AddressDto fromAddress(Address address);
 
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "updatedAt", expression = "java(dateTimeUtil.now())")
-    @Mapping(target = "city", source = "address.city")
-    @Mapping(target = "zipCode", source = "address.zipCode")
-    @Mapping(target = "address", source = "address.address")
-    @Mapping(target = "country", source = "address.countryCode", qualifiedByName = "toCountry")
-    public abstract Address update(
-            @MappingTarget
-            Address address,
-            IndividualRequest dto
+    @Mapping(target = "city", source = "city")
+    @Mapping(target = "zipCode", source = "zipCode")
+    @Mapping(target = "address", source = "address")
+    @Mapping(target = "country", source = "countryCode", qualifiedByName = "toCountry")
+    public abstract Address updateAddress(
+            @MappingTarget Address address,
+            AddressWriteDto dto
     );
 
     @Named("toCountry")
@@ -58,6 +63,9 @@ public abstract class AddressMapper {
     }
 
     public Address update(User user, IndividualRequest dto) {
-        return update(user.getAddress(), dto);
+        if (dto.address() == null) {
+            return user.getAddress();
+        }
+        return updateAddress(user.getAddress(), dto.address());
     }
 }

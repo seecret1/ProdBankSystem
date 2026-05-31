@@ -67,6 +67,7 @@ public final class UserManualMapper {
         user.setLastName(request.lastName());
         user.setMiddleName(request.middleName());
         user.setBirthDate(request.birthDate());
+        user.setStatus(request.status());
         user.setRole(request.role());
         return user;
     }

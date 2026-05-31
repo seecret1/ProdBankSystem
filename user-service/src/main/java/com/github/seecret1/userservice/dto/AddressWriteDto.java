@@ -1,17 +1,20 @@
 package com.github.seecret1.userservice.dto;
 
-public class AddressWriteDto {
+import jakarta.validation.constraints.NotBlank;
 
-    private String address;
+public record AddressWriteDto(
 
-    private String zipCode;
+        @NotBlank
+        String address,
 
-    private String city;
+        @NotBlank
+        String zipCode,
 
-    private String countryCode;
+        @NotBlank
+        String city,
 
-    public AddressWriteDto address(String address) {
-        this.address = address;
-        return this;
-    }
+        @NotBlank
+        String countryCode
+
+) {
 }

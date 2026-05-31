@@ -23,19 +23,20 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 @Mapper(
         componentModel = SPRING,
         injectionStrategy = CONSTRUCTOR,
-        uses = {
-                UserMapper.class,
-                AddressMapper.class,
-        }
+        uses = AddressMapper.class
 )
 @Setter(onMethod_ = @Autowired)
 public abstract class IndividualMapper {
 
     protected DateTimeUtil dateTimeUtil;
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "deleted", constant = "false")
+    @Mapping(target = "deletedAt", ignore = true)
+    @Mapping(target = "deletedBy", ignore = true)
     @Mapping(target = "createdAt", expression = "java(dateTimeUtil.now())")
     @Mapping(target = "updatedAt", expression = "java(dateTimeUtil.now())")
+    @Mapping(target = "user", ignore = true)
     public abstract Individual toEntity(IndividualRequest dto);
 
     @Mapping(target = "firstName", source = "user.firstName")
@@ -45,6 +46,11 @@ public abstract class IndividualMapper {
     @Mapping(target = "address", source = "user.address", qualifiedByName = "fromAddress")
     public abstract IndividualDto toDto(Individual individual);
 
+    @Mapping(target = "firstName", source = "user.firstName")
+    @Mapping(target = "lastName", source = "user.lastName")
+    @Mapping(target = "middleName", source = "user.middleName")
+    @Mapping(target = "email", source = "user.email")
+    @Mapping(target = "address", source = "user.address", qualifiedByName = "fromAddress")
     public abstract IndividualResponse toResponseDto(Individual individual);
 
     public List<IndividualDto> toDto(List<Individual> individuals) {
@@ -68,7 +74,7 @@ public abstract class IndividualMapper {
     @Mapping(target = "updatedAt", expression = "java(dateTimeUtil.now())")
     @Mapping(target = "passportNumber", source = "passportNumber")
     @Mapping(target = "phoneNumber", source = "phoneNumber")
-    @Mapping(target = "user", expression = "java(userMapper.update(individual, dto))")
+    @Mapping(target = "user", ignore = true)
     public abstract void update(
             @MappingTarget
             Individual individual,
