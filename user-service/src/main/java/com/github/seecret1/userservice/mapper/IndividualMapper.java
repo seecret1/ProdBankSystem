@@ -1,8 +1,8 @@
 package com.github.seecret1.userservice.mapper;
 
-import com.github.seecret1.userservice.dto.request.IndividualWriteDto;
+import com.github.seecret1.userservice.dto.request.IndividualRequest;
 import com.github.seecret1.userservice.dto.response.IndividualDto;
-import com.github.seecret1.userservice.dto.response.IndividualWriteResponseDto;
+import com.github.seecret1.userservice.dto.response.IndividualResponse;
 import com.github.seecret1.userservice.entity.Individual;
 import com.github.seecret1.userservice.utils.DateTimeUtil;
 import lombok.Setter;
@@ -36,16 +36,16 @@ public abstract class IndividualMapper {
     @Mapping(target = "deleted", constant = "false")
     @Mapping(target = "createdAt", expression = "java(dateTimeUtil.now())")
     @Mapping(target = "updatedAt", expression = "java(dateTimeUtil.now())")
-    @Mapping(target = "user", source = ".", qualifiedByName = "toUser")
-    public abstract Individual toEntity(IndividualWriteDto dto);
+    public abstract Individual toEntity(IndividualRequest dto);
 
     @Mapping(target = "firstName", source = "user.firstName")
     @Mapping(target = "lastName", source = "user.lastName")
+    @Mapping(target = "middleName", source = "user.middleName")
     @Mapping(target = "email", source = "user.email")
     @Mapping(target = "address", source = "user.address", qualifiedByName = "fromAddress")
     public abstract IndividualDto toDto(Individual individual);
 
-    public abstract IndividualWriteResponseDto toResponseDto(Individual individual);
+    public abstract IndividualResponse toResponseDto(Individual individual);
 
     public List<IndividualDto> toDto(List<Individual> individuals) {
         return isEmpty(individuals)
@@ -55,7 +55,7 @@ public abstract class IndividualMapper {
                 .collect(Collectors.toList());
     }
 
-    public List<IndividualWriteResponseDto> toResponseDto(List<Individual> individuals) {
+    public List<IndividualResponse> toResponseDto(List<Individual> individuals) {
         return isEmpty(individuals)
                 ? Collections.emptyList()
                 : individuals.stream()
@@ -72,7 +72,7 @@ public abstract class IndividualMapper {
     public abstract void update(
             @MappingTarget
             Individual individual,
-            IndividualWriteDto dto
+            IndividualRequest dto
     );
 }
 

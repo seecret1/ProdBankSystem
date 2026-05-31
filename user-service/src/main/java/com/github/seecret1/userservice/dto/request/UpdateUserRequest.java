@@ -1,6 +1,5 @@
 package com.github.seecret1.userservice.dto.request;
 
-import com.github.seecret1.userservice.entity.RoleType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 
@@ -13,8 +12,6 @@ public record UpdateUserRequest(
     String email,
 
     @Size(min = 8, message = "Size of password must start from {min}")
-    String password,
-
-    RoleType role
+    String password
 
 ) { }

@@ -1,12 +1,16 @@
-package com.github.seecret1.userservice.dto.request;
+package com.github.seecret1.userservice.dto.response;
 
 import com.github.seecret1.userservice.dto.AddressWriteDto;
 
-public record IndividualWriteDto(
+public record IndividualResponse(
+
+        String id,
 
         String firstName,
 
         String lastName,
+
+        String middleName,
 
         String email,
 

@@ -17,21 +17,25 @@ public record SignUpRequest(
     @Email(message = "Invalid email address")
     String email,
 
+    @Size(min = 8, max = 100, message = "Password must be between {min} and {max} characters")
     @NotBlank(message = "Password must be set!")
-    @Size(min = 8, message = "Size of password must start from {min}")
     String password,
 
+    @Size(min = 8, max = 100, message = "Password must be between {min} and {max} characters")
+    @NotBlank(message = "Confirm password must be set!")
+    String confirmPassword,
+
     @NotBlank(message = "First name must be set!")
-    @Size(max = 80, message = "Size of first name must start to {max}")
+    @Size(max = 64, message = "Size of first name must start to {max}")
     String firstName,
 
     @NotBlank(message = "Last name must be set!")
-    @Size(max = 100, message = "Size of first name must start to {max}")
+    @Size(max = 64, message = "Size of last name must start to {max}")
     String lastName,
 
     String middleName,
 
-    @NotNull(message = "birth date must be set!")
+    @NotNull(message = "Birth date must be set!")
     LocalDate birthDate
 
 ) { }

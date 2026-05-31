@@ -1,6 +1,7 @@
 package com.github.seecret1.userservice.dto.request;
 
 import com.github.seecret1.userservice.entity.RoleType;
+import com.github.seecret1.userservice.entity.UserStatus;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -13,6 +14,9 @@ public record CreateUserRequest(
     @NotBlank(message = "Username must be set!")
     @Size(min = 8, message = "Size of username must start from {min}")
     String username,
+
+    @NotNull(message = "User status must be set!")
+    UserStatus status,
 
     @NotBlank(message = "Email must be set!")
     @Email(message = "Invalid email address")
@@ -32,10 +36,10 @@ public record CreateUserRequest(
 
     String middleName,
 
-    @NotNull(message = "birth date must be set!")
+    @NotNull(message = "Birth date must be set!")
     LocalDate birthDate,
 
-    @NotNull(message = "role must be set!")
+    @NotNull(message = "Role must be set!")
     RoleType role
 
 ) { }

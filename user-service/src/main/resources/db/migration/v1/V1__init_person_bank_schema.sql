@@ -26,6 +26,7 @@ CREATE TABLE bank.addresses
 CREATE TABLE bank.users
 (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    status VARCHAR(15) NOT NULL,
     deleted boolean NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc'),
     updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc'),

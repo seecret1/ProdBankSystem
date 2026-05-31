@@ -1,6 +1,6 @@
 package com.github.seecret1.userservice.mapper;
 
-import com.github.seecret1.userservice.dto.request.IndividualWriteDto;
+import com.github.seecret1.userservice.dto.request.IndividualRequest;
 import com.github.seecret1.userservice.dto.response.AddressDto;
 import com.github.seecret1.userservice.entity.Address;
 import com.github.seecret1.userservice.entity.Country;
@@ -30,7 +30,7 @@ public abstract class AddressMapper {
     @Mapping(target = "zipCode", source = "address.zipCode")
     @Mapping(target = "address", source = "address.address")
     @Mapping(target = "country", source = "address.countryCode", qualifiedByName = "toCountry")
-    public abstract Address to(IndividualWriteDto dto);
+    public abstract Address to(IndividualRequest dto);
 
     @Named("fromAddress")
     @Mapping(target = "city", source = "city")
@@ -48,7 +48,7 @@ public abstract class AddressMapper {
     public abstract Address update(
             @MappingTarget
             Address address,
-            IndividualWriteDto dto
+            IndividualRequest dto
     );
 
     @Named("toCountry")
@@ -57,7 +57,7 @@ public abstract class AddressMapper {
                 .orElseThrow(() -> new PersonException("Unknow country code: [%s]", countryCode));
     }
 
-    public Address update(User user, IndividualWriteDto dto) {
+    public Address update(User user, IndividualRequest dto) {
         return update(user.getAddress(), dto);
     }
 }

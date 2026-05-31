@@ -2,9 +2,9 @@ package com.github.seecret1.userservice.service.impl;
 
 import com.github.seecret1.common.dto.PageResponse;
 import com.github.seecret1.common.model.PageModel;
-import com.github.seecret1.userservice.dto.request.IndividualWriteDto;
+import com.github.seecret1.userservice.dto.request.IndividualRequest;
 import com.github.seecret1.userservice.dto.response.IndividualDto;
-import com.github.seecret1.userservice.dto.response.IndividualWriteResponseDto;
+import com.github.seecret1.userservice.dto.response.IndividualResponse;
 import com.github.seecret1.userservice.exception.PersonException;
 import com.github.seecret1.userservice.mapper.IndividualMapper;
 import com.github.seecret1.userservice.repository.IndividualRepository;
@@ -27,7 +27,7 @@ public class IndividualServiceImpl implements IndividualService {
     private final IndividualMapper individualMapper;
 
     @Override
-    public IndividualWriteResponseDto register(IndividualWriteDto request) {
+    public IndividualResponse register(IndividualRequest request) {
         var individual = individualMapper.toEntity(request);
         individualRepository.save(individual);
         log.info("IN - register: individual: [{}] successfully registered", individual.getUser().getEmail());
@@ -35,7 +35,7 @@ public class IndividualServiceImpl implements IndividualService {
     }
 
     @Override
-    public PageResponse<IndividualWriteResponseDto> findByEmails(Set<String> emails, PageModel pageModel) {
+    public PageResponse<IndividualResponse> findByEmails(Set<String> emails, PageModel pageModel) {
         Pageable pageable = pageModel.toPageRequest();
         var page = individualRepository.findAllByEmails(emails, pageable);
         return new PageResponse<>(
@@ -54,7 +54,7 @@ public class IndividualServiceImpl implements IndividualService {
     }
 
     @Override
-    public IndividualWriteResponseDto update(String id, IndividualWriteDto request) {
+    public IndividualResponse update(String id, IndividualRequest request) {
         var individual = individualRepository.findById(id)
                 .orElseThrow(() -> new PersonException("Individual not found by id=[%s]", id));
         individualMapper.update(individual, request);

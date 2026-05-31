@@ -1,6 +1,6 @@
 package com.github.seecret1.userservice.mapper;
 
-import com.github.seecret1.userservice.dto.request.IndividualWriteDto;
+import com.github.seecret1.userservice.dto.request.IndividualRequest;
 import com.github.seecret1.userservice.entity.Individual;
 import com.github.seecret1.userservice.entity.User;
 import com.github.seecret1.userservice.utils.DateTimeUtil;
@@ -28,7 +28,7 @@ public abstract class UserMapper {
         @Mapping(target = "createdAt", expression = "java(dateTimeUtil.now())")
         @Mapping(target = "updatedAt", expression = "java(dateTimeUtil.now())")
         @Mapping(target = "address", source = ".", qualifiedByName = "toAddress")
-        public abstract User to(IndividualWriteDto dto);
+        public abstract User to(IndividualRequest dto);
 
         @BeanMapping(ignoreByDefault = true)
         @Mapping(target = "updatedAt", expression = "java(dateTimeUtil.now())")
@@ -38,10 +38,10 @@ public abstract class UserMapper {
         public abstract User update(
                 @MappingTarget
                 User user,
-                IndividualWriteDto dto
+                IndividualRequest dto
         );
 
-        public User update(Individual individual, IndividualWriteDto dto) {
+        public User update(Individual individual, IndividualRequest dto) {
                 return update(individual.getUser(), dto);
         }
 }

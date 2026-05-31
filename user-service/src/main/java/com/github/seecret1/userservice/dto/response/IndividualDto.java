@@ -6,6 +6,8 @@ public record IndividualDto(
 
     String lastName,
 
+    String middleName,
+
     String email,
 
     String passportNumber,

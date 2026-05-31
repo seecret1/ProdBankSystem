@@ -23,6 +23,11 @@ public class User extends BaseEntity {
     @Column(name = "username", nullable = false, unique = true, length = 100)
     private String username;
 
+    @Size(max = 15)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 15)
+    private UserStatus status;
+
     @Size(max = 255)
     @Column(name = "email", nullable = false, unique = true)
     private String email;

@@ -5,6 +5,7 @@ import com.github.seecret1.userservice.dto.request.SignUpRequest;
 import com.github.seecret1.userservice.dto.response.UserResponse;
 import com.github.seecret1.userservice.entity.RoleType;
 import com.github.seecret1.userservice.entity.User;
+import com.github.seecret1.userservice.entity.UserStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +20,7 @@ public final class UserManualMapper {
         return new UserResponse(
                 user.getId(),
                 user.getUsername(),
+                user.getStatus(),
                 user.getEmail(),
                 user.getFirstName(),
                 user.getLastName(),
@@ -36,6 +38,7 @@ public final class UserManualMapper {
     public CreateUserRequest toCreateUserRequest(SignUpRequest request) {
         return new CreateUserRequest(
                 request.username(),
+                UserStatus.PENDING_PROFILE,
                 request.email(),
                 request.password(),
                 request.firstName(),
