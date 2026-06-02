@@ -8,9 +8,9 @@ spring:
       port: 6379
 
   datasource:
-    url: jdbc:postgresql://localhost:5433/user_db
-    username: ${USER_DB_USERNAME}
-    password: ${USER_DB_PASSWORD}
+    url: ${USER_DB_LOCAL_URL:jdbc:postgresql://localhost:5433/user_db}
+    username: ${USER_DB_USERNAME:postgres}
+    password: ${USER_DB_PASSWORD:postgres}
 
   jpa:
     generate-ddl: false
@@ -27,12 +27,12 @@ spring:
 
 user-service:
   jwt:
-    secret: ${SECRET_KEY}
+    secret: ${SECRET_KEY:MyVeryLongAndSecureSecretKeyForJWTTokenSigningThatIsAtLeast64CharactersLongToMeetHS512Requirements123456789}
     tokenExpiration: 10m
     refreshTokenExpiration: 60m
 
 encryption:
-  secret: ${ENCRYPTION_SECRET}
+  secret: ${ENCRYPTION_SECRET:your-strong-secret-key-here-change-in-production}
 
 springdoc:
   api-docs:
@@ -72,8 +72,7 @@ management:
 otel:
   exporter:
     otlp:
-      endpoint:
-        ${OTLP_EXPORTER_ENDPOINT:http://localhost:4318}
+      endpoint: ${OTLP_EXPORTER_ENDPOINT:http://localhost:4318}
       protocol: http/protobuf
   logs:
     exporter: none
