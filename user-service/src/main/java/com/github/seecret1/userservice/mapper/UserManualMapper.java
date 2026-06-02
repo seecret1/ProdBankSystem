@@ -3,9 +3,9 @@ package com.github.seecret1.userservice.mapper;
 import com.github.seecret1.userservice.dto.request.CreateUserRequest;
 import com.github.seecret1.userservice.dto.request.SignUpRequest;
 import com.github.seecret1.userservice.dto.response.UserResponse;
-import com.github.seecret1.userservice.entity.RoleType;
+import com.github.seecret1.userservice.entity.enums.RoleType;
 import com.github.seecret1.userservice.entity.User;
-import com.github.seecret1.userservice.entity.UserStatus;
+import com.github.seecret1.userservice.entity.enums.UserStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

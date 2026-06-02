@@ -3,7 +3,7 @@ val versions = mapOf(
 	"commonVersion" to "1.0.0-SNAPSHOT",
 	"springdocOpenapiStarterWebmvcUiVersion" to "2.5.0",
 	"logbackClassicVersion" to "1.5.18",
-	"hibernateEnversVersion" to "6.4.4.Final",
+	"hibernateVersion" to "7.2.0.Final",
 	"jsonwebtokenVersion" to "0.12.6"
 )
 
@@ -53,7 +53,9 @@ dependencies {
 
 	implementation("org.postgresql:postgresql")
 	implementation("org.flywaydb:flyway-database-postgresql")
-	implementation("org.hibernate.orm:hibernate-envers:${versions["hibernateEnversVersion"]}")
+	implementation("org.springframework.boot:spring-boot-starter-flyway")
+	implementation("org.hibernate.orm:hibernate-core:${versions["hibernateVersion"]}")
+	implementation("org.hibernate.orm:hibernate-envers:${versions["hibernateVersion"]}")
 
 	implementation("io.jsonwebtoken:jjwt-api:${versions["jsonwebtokenVersion"]}")
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:${versions["jsonwebtokenVersion"]}")

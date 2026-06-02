@@ -47,7 +47,8 @@ public class IndividualController {
             @Valid @RequestBody IndividualRequest request,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
-        return ResponseEntity.status(HttpStatus.CREATED)
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
                 .body(individualService.recordPersonalData(
                         AuthUtil.getCurrentUserId(userDetails),
                         request

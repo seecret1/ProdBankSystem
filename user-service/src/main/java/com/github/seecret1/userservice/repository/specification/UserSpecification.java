@@ -1,6 +1,6 @@
 package com.github.seecret1.userservice.repository.specification;
 
-import com.github.seecret1.userservice.entity.RoleType;
+import com.github.seecret1.userservice.entity.enums.RoleType;
 import com.github.seecret1.userservice.entity.User;
 import com.github.seecret1.userservice.model.UserFilterModel;
 import org.springframework.data.jpa.domain.Specification;

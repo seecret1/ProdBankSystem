@@ -1,7 +1,7 @@
 package com.github.seecret1.userservice.dto.response;
 
-import com.github.seecret1.userservice.entity.RoleType;
-import com.github.seecret1.userservice.entity.UserStatus;
+import com.github.seecret1.userservice.entity.enums.RoleType;
+import com.github.seecret1.userservice.entity.enums.UserStatus;
 
 import java.time.Instant;
 import java.time.LocalDate;

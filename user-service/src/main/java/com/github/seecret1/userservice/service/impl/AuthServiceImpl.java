@@ -45,6 +45,7 @@ public class AuthServiceImpl implements AuthService {
     public JwtAuthenticationDto signIn(SignInByEmailRequest request) {
         log.info("Sign in user by email: {}", request.email());
         var user = internalUserService.findUserEntityByCriterial(request.email());
+        AuthUtil.checkValidUser(user);
         log.debug("Success sign in user by email. User: {}", user);
         return authenticate(user, request.password());
     }
@@ -54,6 +55,7 @@ public class AuthServiceImpl implements AuthService {
     public JwtAuthenticationDto signIn(SignInByUsernameRequest request) {
         log.info("Sign in user by username: {}", request.username());
         var user = internalUserService.findUserEntityByCriterial(request.username());
+        AuthUtil.checkValidUser(user);
         log.debug("Success sign in user by username. User: {}", user);
         return authenticate(user, request.password());
     }
@@ -108,6 +110,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String email = jwtService.getEmailFromToken(refreshToken);
+        var user = internalUserService.findUserEntityByCriterial(email);
+        AuthUtil.checkValidUser(user);
         log.info("User requested refresh token by email: {}", email);
 
         return jwtService.refreshBaseToken(email, refreshToken);

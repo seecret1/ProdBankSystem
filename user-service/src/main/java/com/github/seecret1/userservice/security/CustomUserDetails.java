@@ -1,6 +1,7 @@
 package com.github.seecret1.userservice.security;
 
 import com.github.seecret1.userservice.entity.User;
+import com.github.seecret1.userservice.entity.enums.UserStatus;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -34,7 +35,7 @@ public record CustomUserDetails(User user) implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return user.getStatus() != UserStatus.BLOCKED;
     }
 
     @Override
@@ -44,6 +45,6 @@ public record CustomUserDetails(User user) implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return !user.getDeleted();
+        return !user.getDeleted() && user.getStatus() == UserStatus.ACTIVE;
     }
 }

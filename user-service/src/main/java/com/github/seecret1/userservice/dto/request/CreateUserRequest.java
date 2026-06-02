@@ -1,7 +1,7 @@
 package com.github.seecret1.userservice.dto.request;
 
-import com.github.seecret1.userservice.entity.RoleType;
-import com.github.seecret1.userservice.entity.UserStatus;
+import com.github.seecret1.userservice.entity.enums.RoleType;
+import com.github.seecret1.userservice.entity.enums.UserStatus;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

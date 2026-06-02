@@ -1,10 +1,10 @@
-CREATE TABLE bank_history.revinfo
+CREATE TABLE person_bank_history.revinfo
 (
     rev BIGSERIAL PRIMARY KEY,
     revtmstmp BIGINT
 );
 
-CREATE TABLE bank_history.countries_history
+CREATE TABLE person_bank_history.countries_history
 (
     id INTEGER NOT NULL,
     revision BIGINT NOT NULL,
@@ -18,14 +18,14 @@ CREATE TABLE bank_history.countries_history
     code VARCHAR(3) NOT NULL,
 
     CONSTRAINT pk_counties_history PRIMARY KEY (id, revision),
-    CONSTRAINT fk_countries_history_rev FOREIGN KEY (revision) REFERENCES bank_history.revinfo (rev)
+    CONSTRAINT fk_countries_history_rev FOREIGN KEY (revision) REFERENCES person_bank_history.revinfo (rev)
 );
 
-CREATE INDEX IF NOT EXISTS idx_countries_history_revision ON bank_history.countries_history (revision);
+CREATE INDEX IF NOT EXISTS idx_countries_history_revision ON person_bank_history.countries_history (revision);
 
-CREATE TABLE bank_history.addresses_history
+CREATE TABLE person_bank_history.addresses_history
 (
-    id UUID NOT NULL,
+    id VARCHAR NOT NULL,
     revision BIGINT NOT NULL,
     revision_type SMALLINT NOT NULL,
     deleted boolean NOT NULL DEFAULT FALSE,
@@ -39,15 +39,15 @@ CREATE TABLE bank_history.addresses_history
     city VARCHAR(128) NOT NULL,
 
     CONSTRAINT pk_addresses_history PRIMARY KEY (id, revision),
-    CONSTRAINT fk_addresses_history_rev FOREIGN KEY (revision) REFERENCES bank_history.revinfo (rev)
+    CONSTRAINT fk_addresses_history_rev FOREIGN KEY (revision) REFERENCES person_bank_history.revinfo (rev)
 );
 
-CREATE INDEX IF NOT EXISTS idx_addresses_history_revision ON bank_history.addresses_history (revision);
+CREATE INDEX IF NOT EXISTS idx_addresses_history_revision ON person_bank_history.addresses_history (revision);
 
 
-CREATE TABLE bank_history.users_history
+CREATE TABLE person_bank_history.users_history
 (
-    id UUID NOT NULL,
+    id VARCHAR NOT NULL,
     revision BIGINT NOT NULL,
     revision_type SMALLINT NOT NULL,
     status VARCHAR(15) NOT NULL,
@@ -62,19 +62,19 @@ CREATE TABLE bank_history.users_history
     first_name VARCHAR(64) NOT NULL,
     last_name VARCHAR(64) NOT NULL,
     middle_name VARCHAR(64),
-    birth_date VARCHAR(64) NOT NULL,
+    birth_date DATE NOT NULL,
     role VARCHAR(15) NOT NULL,
     address_id UUID NOT NULL,
 
     CONSTRAINT pk_users_history PRIMARY KEY (id, revision),
-    CONSTRAINT fk_users_history_rev FOREIGN KEY (revision) REFERENCES bank_history.revinfo (rev)
+    CONSTRAINT fk_users_history_rev FOREIGN KEY (revision) REFERENCES person_bank_history.revinfo (rev)
 );
 
-CREATE INDEX IF NOT EXISTS idx_users_history_revision ON bank_history.users_history (revision);
+CREATE INDEX IF NOT EXISTS idx_users_history_revision ON person_bank_history.users_history (revision);
 
-CREATE TABLE bank_history.individuals_history
+CREATE TABLE person_bank_history.individuals_history
 (
-    id UUID NOT NULL,
+    id VARCHAR NOT NULL,
     revision BIGINT NOT NULL,
     revision_type SMALLINT NOT NULL,
     deleted boolean NOT NULL DEFAULT FALSE,
@@ -87,7 +87,7 @@ CREATE TABLE bank_history.individuals_history
     user_id UUID NOT NULL,
 
     CONSTRAINT pk_individuals_history PRIMARY KEY (id, revision),
-    CONSTRAINT fk_individuals_history_rev FOREIGN KEY (revision) REFERENCES bank_history.revinfo (rev)
+    CONSTRAINT fk_individuals_history_rev FOREIGN KEY (revision) REFERENCES person_bank_history.revinfo (rev)
 );
 
-CREATE INDEX IF NOT EXISTS idx_individuals_history_revision ON bank_history.individuals_history (revision);
+CREATE INDEX IF NOT EXISTS idx_individuals_history_revision ON person_bank_history.individuals_history (revision);

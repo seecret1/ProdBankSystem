@@ -17,6 +17,13 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: validate
+    properties:
+      org.hibernate.envers.audit_table_suffix: _history
+      org.hibernate.envers.audit_table_prefix:
+      org.hibernate.envers.default_schema: person_bank_history
+
+  flyway:
+    enabled: true
 
 user-service:
   jwt:

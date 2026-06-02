@@ -1,15 +1,20 @@
 package com.github.seecret1.userservice.entity;
 
 import com.github.seecret1.common.entity.BaseEntity;
+import com.github.seecret1.userservice.entity.enums.RoleType;
+import com.github.seecret1.userservice.entity.enums.UserStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -60,9 +65,6 @@ public class User extends BaseEntity {
     @OneToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
     @JoinColumn(name = "address_id", nullable = false)
     private Address address;
-
-    @OneToOne(mappedBy = "user")
-    private Individual individual;
 
     public void softDelete(String deletedBy) {
         setDeleted(true);

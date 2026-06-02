@@ -1,4 +1,4 @@
-package com.github.seecret1.userservice.entity;
+package com.github.seecret1.userservice.entity.enums;
 
 public enum UserStatus {
 

@@ -1,7 +1,7 @@
 package com.github.seecret1.userservice.model;
 
 import com.github.seecret1.common.model.PageModel;
-import com.github.seecret1.userservice.entity.RoleType;
+import com.github.seecret1.userservice.entity.enums.RoleType;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

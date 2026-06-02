@@ -193,6 +193,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public User findUserEntityByCriterial(String criterial) {
         log.info("Find user entity by criterial: {}", criterial);
         User user = userRepository.findByCriterial(criterial)
