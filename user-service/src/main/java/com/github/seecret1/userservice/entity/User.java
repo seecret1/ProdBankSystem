@@ -9,12 +9,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -28,7 +25,6 @@ public class User extends BaseEntity {
     @Column(name = "username", nullable = false, unique = true, length = 100)
     private String username;
 
-    @Size(max = 15)
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 15)
     private UserStatus status;
@@ -53,11 +49,9 @@ public class User extends BaseEntity {
     @Column(name = "middle_name", nullable = false, length = 64)
     private String middleName;
 
-    @Size(max = 64)
     @Column(name = "birth_date", length = 64)
     private LocalDate birthDate;
 
-    @Size(max = 15)
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 15)
     private RoleType role;

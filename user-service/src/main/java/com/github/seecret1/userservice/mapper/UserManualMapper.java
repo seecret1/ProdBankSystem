@@ -69,6 +69,7 @@ public final class UserManualMapper {
         user.setBirthDate(request.birthDate());
         user.setStatus(request.status());
         user.setRole(request.role());
+        user.setDeleted(false);
         return user;
     }
 }
