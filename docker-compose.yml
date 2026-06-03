@@ -314,6 +314,7 @@ services:
 
   zookeeper:
     image: confluentinc/cp-zookeeper:6.2.0
+    container_name: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_PORT}
       ZOOKEEPER_TICK_TIME: 2000
@@ -326,6 +327,7 @@ services:
 
   kafka1:
     image: confluentinc/cp-kafka:6.2.0
+    container_name: kafka1
     depends_on:
       - zookeeper
     ports:
@@ -351,6 +353,7 @@ services:
 
   kafka2:
     image: confluentinc/cp-kafka:6.2.0
+    container_name: kafka2
     depends_on:
       - zookeeper
     ports:
@@ -376,6 +379,7 @@ services:
 
   kafka3:
     image: confluentinc/cp-kafka:6.2.0
+    container_name: kafka3
     depends_on:
       - zookeeper
     ports:
@@ -401,6 +405,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:3.10.7-management
+    container_name: rabbitmq
     ports:
       - "${RABBITMQ_PORT}:${RABBITMQ_PORT}"
       - "${RABBITMQ_WEB_PORT}:${RABBITMQ_WEB_PORT}"
@@ -418,6 +423,7 @@ services:
 
   redis:
     image: redis:8.2.1
+    container_name: bank_redis_db
     restart: on-failure
     ports:
       - "${REDIS_PORT}:${REDIS_PORT}"
