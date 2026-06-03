@@ -29,6 +29,21 @@ public class IndividualController {
 
     private final IndividualService individualService;
 
+    @GetMapping("/{criterial}")
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Get individual by criterial")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Individual found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Individual not found")
+    })
+    public ResponseEntity<IndividualDto> findByCriterial(
+            @PathVariable String criterial
+    ) {
+        return ResponseEntity.ok(individualService.findByCriterial(criterial));
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('ROLE_USER')")
     @SecurityRequirement(name = "bearerAuth")
@@ -36,7 +51,7 @@ public class IndividualController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Individual successfully registered"),
             @ApiResponse(responseCode = "400", description = "Validation error"),
-            @ApiResponse(responseCode = "409", description = "User or individual already exists")
+            @ApiResponse(responseCode = "409", description = "User, individual or address already exists")
     })
     public ResponseEntity<IndividualResponse> recordPersonalData(
             @Valid @RequestBody IndividualRequest request,
@@ -50,30 +65,15 @@ public class IndividualController {
                 ));
     }
 
-    @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
-    @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Get individual by id")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Individual found"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "404", description = "Individual not found")
-    })
-    public ResponseEntity<IndividualDto> findById(
-            @PathVariable String id
-    ) {
-        return ResponseEntity.ok(individualService.findById(id));
-    }
-
-    @PutMapping("/{id}")
+    @PutMapping("/{criterial}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Update individual profile")
     public ResponseEntity<IndividualResponse> update(
-            @PathVariable String id,
+            @PathVariable String criterial,
             @Valid @RequestBody IndividualRequest request
     ) {
-        return ResponseEntity.ok(individualService.update(id, request));
+        return ResponseEntity.ok(individualService.update(criterial, request));
     }
 
     @PutMapping
@@ -90,21 +90,21 @@ public class IndividualController {
         ));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{criterial}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Soft delete individual")
-    public ResponseEntity<Void> softDelete(@PathVariable String id) {
-        individualService.softDelete(id);
+    public ResponseEntity<Void> softDelete(@PathVariable String criterial) {
+        individualService.softDelete(criterial);
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/compensateDelete/{id}")
+    @DeleteMapping("/compensateDelete/{criterial}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Soft delete individual")
-    public ResponseEntity<Void> hardDelete(@PathVariable String id) {
-        individualService.hardDelete(id);
+    public ResponseEntity<Void> hardDelete(@PathVariable String criterial) {
+        individualService.hardDelete(criterial);
         return ResponseEntity.noContent().build();
     }
 }

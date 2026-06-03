@@ -6,15 +6,15 @@ import com.github.seecret1.userservice.dto.response.IndividualResponse;
 
 public interface IndividualService {
 
+    IndividualDto findByCriterial(String criterial);
+
     IndividualResponse recordPersonalData(String userId, IndividualRequest request);
 
-    IndividualDto findById(String id);
+    IndividualResponse update(String criterial, IndividualRequest request);
 
-    IndividualResponse update(String id, IndividualRequest request);
+    IndividualResponse updateYour(String userId, IndividualRequest request);
 
-    IndividualResponse updateYour(String id, IndividualRequest request);
+    void softDelete(String criterial);
 
-    void softDelete(String id);
-
-    void hardDelete(String id);
+    void hardDelete(String criterial);
 }

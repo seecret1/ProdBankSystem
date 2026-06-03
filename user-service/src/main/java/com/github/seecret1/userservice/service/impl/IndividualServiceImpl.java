@@ -34,6 +34,17 @@ public class IndividualServiceImpl implements IndividualService {
     private final InternalUserService internalUserService;
 
     @Override
+    @Transactional(readOnly = true)
+    public IndividualDto findByCriterial(String criterial) {
+        var individual = individualRepository.findByCriterial(criterial)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Individual not found by criterial: " + criterial
+                ));
+        log.info("IN - findByCriterial: individual with criterial: [{}] successfully found", criterial);
+        return individualMapper.toDto(individual);
+    }
+
+    @Override
     @Transactional
     public IndividualResponse recordPersonalData(String userId, IndividualRequest request) {
         User user = internalUserService.findUserEntityById(userId);
@@ -55,27 +66,19 @@ public class IndividualServiceImpl implements IndividualService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public IndividualDto findById(String id) {
-        var individual = findIndividual(id);
-        log.info("IN - findById: individual with id = [{}] successfully found", id);
-        return individualMapper.toDto(individual);
-    }
-
-    @Override
     @Transactional
-    public IndividualResponse update(String id, IndividualRequest request) {
-        var individual = findIndividual(id);
+    public IndividualResponse update(String criterial, IndividualRequest request) {
+        var individual = findIndividual(criterial);
         AuthUtil.checkUserPersonalData(individual.getUser());
         return updateIndividual(individual, request);
     }
 
     @Override
     @Transactional
-    public IndividualResponse updateYour(String id, IndividualRequest request) {
-        var user = userRepository.findById(id)
+    public IndividualResponse updateYour(String userId, IndividualRequest request) {
+        var user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "User not found by id: " + id
+                        "User not found by id: " + userId
                 ));
         AuthUtil.checkUserPersonalData(user);
         var individual = user.getIndividual();
@@ -84,22 +87,24 @@ public class IndividualServiceImpl implements IndividualService {
 
     @Override
     @Transactional
-    public void softDelete(String id) {
-        log.info("IN - softDelete: individual with id=[{}]", id);
-        individualRepository.softDelete(id);
+    public void softDelete(String criterial) {
+        log.info("IN - softDelete: individual with criterial=[{}]", criterial);
+        individualRepository.softDelete(criterial);
     }
 
     @Override
     @Transactional
-    public void hardDelete(String id) {
-        var individual = findIndividual(id);
-        log.info("IN - hardDelete: individual with id=[{}]", id);
+    public void hardDelete(String criterial) {
+        var individual = findIndividual(criterial);
+        log.info("IN - hardDelete: individual with criterial=[{}]", criterial);
         individualRepository.delete(individual);
     }
 
-    private Individual findIndividual(String id) {
-        return individualRepository.findById(id)
-                .orElseThrow(() -> new PersonException("Individual not found by id=[%s]", id));
+    private Individual findIndividual(String criterial) {
+        return individualRepository.findByCriterial(criterial)
+                .orElseThrow(() -> new PersonException(
+                        "Individual not found by criterial=[%s]", criterial
+                ));
     }
 
     private IndividualResponse updateIndividual(Individual individual, IndividualRequest request) {

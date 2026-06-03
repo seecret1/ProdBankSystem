@@ -24,8 +24,6 @@ public interface UserRepository extends JpaRepository<User, String>, JpaSpecific
     @Query("SELECT u FROM User u WHERE u.deleted = false")
     Page<User> findAllActiveUsers(Pageable pageable);
 
-    Optional<User> findByUsername(String username);
-
     Optional<User> findByEmail(String email);
 
     boolean existsByUsernameOrEmail(String username, String email);
