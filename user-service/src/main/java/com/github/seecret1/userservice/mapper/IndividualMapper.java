@@ -37,20 +37,21 @@ public abstract class IndividualMapper {
     @Mapping(target = "createdAt", expression = "java(dateTimeUtil.now())")
     @Mapping(target = "updatedAt", expression = "java(dateTimeUtil.now())")
     @Mapping(target = "user", ignore = true)
+    @Mapping(target = "address", source = "address", qualifiedByName = "toAddress")
     public abstract Individual toEntity(IndividualRequest dto);
 
     @Mapping(target = "firstName", source = "user.firstName")
     @Mapping(target = "lastName", source = "user.lastName")
     @Mapping(target = "middleName", source = "user.middleName")
     @Mapping(target = "email", source = "user.email")
-    @Mapping(target = "address", source = "user.address", qualifiedByName = "fromAddress")
+    @Mapping(target = "address", source = "address", qualifiedByName = "fromAddress")
     public abstract IndividualDto toDto(Individual individual);
 
     @Mapping(target = "firstName", source = "user.firstName")
     @Mapping(target = "lastName", source = "user.lastName")
     @Mapping(target = "middleName", source = "user.middleName")
     @Mapping(target = "email", source = "user.email")
-    @Mapping(target = "address", source = "user.address", qualifiedByName = "fromAddress")
+    @Mapping(target = "address", source = "address", qualifiedByName = "fromAddress")
     public abstract IndividualResponse toResponseDto(Individual individual);
 
     public List<IndividualDto> toDto(List<Individual> individuals) {
@@ -75,6 +76,7 @@ public abstract class IndividualMapper {
     @Mapping(target = "passportNumber", source = "passportNumber")
     @Mapping(target = "phoneNumber", source = "phoneNumber")
     @Mapping(target = "user", ignore = true)
+    @Mapping(target = "address", source = "address", qualifiedByName = "toAddress")
     public abstract void update(
             @MappingTarget
             Individual individual,

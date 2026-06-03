@@ -56,9 +56,8 @@ public class User extends BaseEntity {
     @Column(name = "role", nullable = false, length = 15)
     private RoleType role;
 
-    @OneToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
-    @JoinColumn(name = "address_id", nullable = false)
-    private Address address;
+    @OneToOne(mappedBy = "user")
+    private Individual individual;
 
     public void softDelete(String deletedBy) {
         setDeleted(true);

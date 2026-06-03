@@ -135,6 +135,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
                 ));
 
         existingUser.setUsername(request.username());
+        existingUser.setStatus(request.status());
         existingUser.setEmail(request.email());
         existingUser.setPassword(passwordEncoder.encode(request.password()));
         existingUser.setFirstName(request.firstName());

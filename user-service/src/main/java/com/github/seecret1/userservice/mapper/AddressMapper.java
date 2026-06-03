@@ -1,11 +1,9 @@
 package com.github.seecret1.userservice.mapper;
 
 import com.github.seecret1.userservice.dto.AddressWriteDto;
-import com.github.seecret1.userservice.dto.request.IndividualRequest;
 import com.github.seecret1.userservice.dto.response.AddressDto;
 import com.github.seecret1.userservice.entity.Address;
 import com.github.seecret1.userservice.entity.Country;
-import com.github.seecret1.userservice.entity.User;
 import com.github.seecret1.userservice.exception.PersonException;
 import com.github.seecret1.userservice.repository.CountryRepository;
 import com.github.seecret1.userservice.utils.DateTimeUtil;
@@ -60,12 +58,5 @@ public abstract class AddressMapper {
     public Country toCountry(String countryCode) {
         return countryRepository.findByCode(countryCode)
                 .orElseThrow(() -> new PersonException("Unknow country code: [%s]", countryCode));
-    }
-
-    public Address update(User user, IndividualRequest dto) {
-        if (dto.address() == null) {
-            return user.getAddress();
-        }
-        return updateAddress(user.getAddress(), dto.address());
     }
 }

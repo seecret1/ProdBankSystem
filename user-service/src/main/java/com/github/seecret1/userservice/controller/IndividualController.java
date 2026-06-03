@@ -1,7 +1,5 @@
 package com.github.seecret1.userservice.controller;
 
-import com.github.seecret1.common.dto.PageResponse;
-import com.github.seecret1.common.model.PageModel;
 import com.github.seecret1.userservice.dto.request.IndividualRequest;
 import com.github.seecret1.userservice.dto.response.IndividualDto;
 import com.github.seecret1.userservice.dto.response.IndividualResponse;
@@ -12,7 +10,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
 import com.github.seecret1.userservice.utils.AuthUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,8 +19,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Set;
 
 @Validated
 @RestController
@@ -70,19 +65,8 @@ public class IndividualController {
         return ResponseEntity.ok(individualService.findById(id));
     }
 
-    @GetMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Find individuals by emails", description = "Admin lookup by email set")
-    public ResponseEntity<PageResponse<IndividualResponse>> findByEmails(
-            @RequestParam(required = false) Set<@Email String> emails,
-            @Valid PageModel pageModel
-    ) {
-        return ResponseEntity.ok(individualService.findByEmails(emails, pageModel));
-    }
-
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Update individual profile")
     public ResponseEntity<IndividualResponse> update(
@@ -90,6 +74,20 @@ public class IndividualController {
             @Valid @RequestBody IndividualRequest request
     ) {
         return ResponseEntity.ok(individualService.update(id, request));
+    }
+
+    @PutMapping
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Update your personal data profile")
+    public ResponseEntity<IndividualResponse> updateYour(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody IndividualRequest request
+    ) {
+        return ResponseEntity.ok(individualService.updateYour(
+                AuthUtil.getCurrentUserId(userDetails),
+                request
+        ));
     }
 
     @DeleteMapping("/{id}")

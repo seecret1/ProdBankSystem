@@ -39,8 +39,7 @@ CREATE TABLE person_bank.users
     last_name VARCHAR(64) NOT NULL,
     middle_name VARCHAR(64),
     birth_date DATE NOT NULL,
-    role VARCHAR(15) NOT NULL,
-    address_id VARCHAR NOT NULL REFERENCES person_bank.addresses (id)
+    role VARCHAR(15) NOT NULL
 );
 
 CREATE TABLE person_bank.individuals
@@ -53,7 +52,8 @@ CREATE TABLE person_bank.individuals
     deleted_by VARCHAR(255),
     passport_number VARCHAR(64) NOT NULL,
     phone_number VARCHAR(64) NOT NULL,
-    user_id VARCHAR NOT NULL REFERENCES person_bank.users (id)
+    user_id VARCHAR NOT NULL REFERENCES person_bank.users (id),
+    address_id VARCHAR NOT NULL REFERENCES person_bank.addresses (id)
 );
 
 CREATE TABLE person_bank.refresh_tokens

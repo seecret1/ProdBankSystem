@@ -1,7 +1,5 @@
 package com.github.seecret1.userservice.service.impl;
 
-import com.github.seecret1.common.dto.PageResponse;
-import com.github.seecret1.common.model.PageModel;
 import com.github.seecret1.userservice.dto.request.IndividualRequest;
 import com.github.seecret1.userservice.dto.response.IndividualDto;
 import com.github.seecret1.userservice.dto.response.IndividualResponse;
@@ -9,35 +7,31 @@ import com.github.seecret1.userservice.entity.Individual;
 import com.github.seecret1.userservice.entity.User;
 import com.github.seecret1.userservice.entity.enums.UserStatus;
 import com.github.seecret1.userservice.exception.PersonException;
-import com.github.seecret1.userservice.mapper.AddressMapper;
+import com.github.seecret1.userservice.exception.PersonExistsException;
 import com.github.seecret1.userservice.mapper.IndividualMapper;
-import com.github.seecret1.userservice.mapper.UserMapper;
 import com.github.seecret1.userservice.repository.IndividualRepository;
+import com.github.seecret1.userservice.repository.UserRepository;
 import com.github.seecret1.userservice.service.IndividualService;
 import com.github.seecret1.userservice.service.InternalUserService;
 import com.github.seecret1.userservice.utils.AuthUtil;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Set;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class IndividualServiceImpl implements IndividualService {
 
+    private final UserRepository userRepository;
+
     private final IndividualRepository individualRepository;
 
     private final IndividualMapper individualMapper;
 
     private final InternalUserService internalUserService;
-
-    private final UserMapper userMapper;
-
-    private final AddressMapper addressMapper;
 
     @Override
     @Transactional
@@ -52,25 +46,12 @@ public class IndividualServiceImpl implements IndividualService {
 
         Individual individual = individualMapper.toEntity(request);
         individual.setUser(user);
-        applyAddress(user, request);
         user.setStatus(UserStatus.ACTIVE);
 
         individualRepository.save(individual);
 
         log.info("IN - recordPersonalData: individual for user [{}] created", user.getEmail());
         return individualMapper.toResponseDto(individual);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public PageResponse<IndividualResponse> findByEmails(Set<String> emails, PageModel pageModel) {
-        Pageable pageable = pageModel.toPageRequest();
-        var page = individualRepository.findAllByEmails(emails, pageable);
-        return new PageResponse<>(
-                page.getTotalElements(),
-                page.getTotalPages(),
-                individualMapper.toResponseDto(page.getContent())
-        );
     }
 
     @Override
@@ -86,11 +67,19 @@ public class IndividualServiceImpl implements IndividualService {
     public IndividualResponse update(String id, IndividualRequest request) {
         var individual = findIndividual(id);
         AuthUtil.checkUserPersonalData(individual.getUser());
+        return updateIndividual(individual, request);
+    }
 
-        individualMapper.update(individual, request);
-        userMapper.update(individual.getUser(), request);
-        individualRepository.save(individual);
-        return individualMapper.toResponseDto(individual);
+    @Override
+    @Transactional
+    public IndividualResponse updateYour(String id, IndividualRequest request) {
+        var user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "User not found by id: " + id
+                ));
+        AuthUtil.checkUserPersonalData(user);
+        var individual = user.getIndividual();
+        return updateIndividual(individual, request);
     }
 
     @Override
@@ -113,11 +102,31 @@ public class IndividualServiceImpl implements IndividualService {
                 .orElseThrow(() -> new PersonException("Individual not found by id=[%s]", id));
     }
 
-    private void applyAddress(User user, IndividualRequest request) {
-        if (user.getAddress() == null) {
-            user.setAddress(addressMapper.toAddress(request.address()));
-        } else {
-            addressMapper.update(user, request);
+    private IndividualResponse updateIndividual(Individual individual, IndividualRequest request) {
+        String newPassport = request.passportNumber();
+        String newPhone = request.phoneNumber();
+        String currentPassport = individual.getPassportNumber();
+        String currentPhone = individual.getPhoneNumber();
+
+        if (!newPassport.equals(currentPassport)) {
+            if (individualRepository.existsIndividualByPassportNumber(newPassport)) {
+                throw new PersonExistsException(
+                        "Passport number already exists for another user"
+                );
+            }
+            individual.setPassportNumber(newPassport);
         }
+        if (!newPhone.equals(currentPhone)) {
+            if (individualRepository.existsIndividualByPhoneNumber(newPhone)) {
+                throw new PersonExistsException(
+                        "Phone number already exists for another user"
+                );
+            }
+            individual.setPhoneNumber(newPhone);
+        }
+
+        individualMapper.update(individual, request);
+        individualRepository.save(individual);
+        return individualMapper.toResponseDto(individual);
     }
 }

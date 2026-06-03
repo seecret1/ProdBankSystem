@@ -64,7 +64,6 @@ CREATE TABLE person_bank_history.users_history
     middle_name VARCHAR(64),
     birth_date DATE NOT NULL,
     role VARCHAR(15) NOT NULL,
-    address_id UUID NOT NULL,
 
     CONSTRAINT pk_users_history PRIMARY KEY (id, revision),
     CONSTRAINT fk_users_history_rev FOREIGN KEY (revision) REFERENCES person_bank_history.revinfo (rev)
@@ -84,7 +83,8 @@ CREATE TABLE person_bank_history.individuals_history
     deleted_by VARCHAR(255),
     passport_number VARCHAR(64) NOT NULL,
     phone_number VARCHAR(64) NOT NULL,
-    user_id UUID NOT NULL,
+    user_id VARCHAR NOT NULL,
+    address_id VARCHAR NOT NULL,
 
     CONSTRAINT pk_individuals_history PRIMARY KEY (id, revision),
     CONSTRAINT fk_individuals_history_rev FOREIGN KEY (revision) REFERENCES person_bank_history.revinfo (rev)

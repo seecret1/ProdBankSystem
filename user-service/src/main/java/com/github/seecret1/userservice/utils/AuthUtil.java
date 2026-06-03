@@ -36,11 +36,14 @@ public class AuthUtil {
 
     public void checkUserPersonalData(User user) {
         if (user.getStatus() != UserStatus.ACTIVE) {
-            throw new PersonException("Your personal data is empty");
+            throw new PersonException("Personal data is empty");
         }
     }
 
     public void userRecordPersonalData(User user) {
+        if (user.getDeleted()) {
+            throw new PersonException("Your profile is deleted");
+        }
         if (user.getStatus() != UserStatus.PENDING_PROFILE) {
             throw new PersonException(
                     "User id=%s cannot complete profile, status=%s",
