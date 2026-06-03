@@ -9,7 +9,7 @@ import com.github.seecret1.userservice.entity.User;
 import com.github.seecret1.userservice.exception.AuthException;
 import com.github.seecret1.userservice.exception.RegisterUserException;
 import com.github.seecret1.userservice.exception.UserNotFoundException;
-import com.github.seecret1.userservice.mapper.UserManualMapper;
+import com.github.seecret1.userservice.mapper.UserMapper;
 import com.github.seecret1.userservice.model.UserFilterModel;
 import com.github.seecret1.userservice.repository.UserRepository;
 import com.github.seecret1.userservice.repository.specification.UserSpecification;
@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
 
     private final UserRepository userRepository;
 
-    private final UserManualMapper userManualMapper;
+    private final UserMapper userMapper;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -50,7 +50,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
         return new PageResponse<>(
                 page.getTotalElements(),
                 page.getTotalPages(),
-                userManualMapper.toListResponse(page.getContent())
+                userMapper.toListResponse(page.getContent())
         );
     }
 
@@ -67,7 +67,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
         return new PageResponse<>(
                 page.getTotalElements(),
                 page.getTotalPages(),
-                userManualMapper.toListResponse(page.getContent())
+                userMapper.toListResponse(page.getContent())
         );
     }
 
@@ -84,7 +84,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
         return new PageResponse<>(
                 page.getTotalElements(),
                 page.getTotalPages(),
-                userManualMapper.toListResponse(page.getContent())
+                userMapper.toListResponse(page.getContent())
         );
     }
 
@@ -92,12 +92,9 @@ public class UserServiceImpl implements UserService, InternalUserService {
     @Transactional(readOnly = true)
     public UserResponse findByCriterial(String criterial) {
         log.info("Find user by criterial: {}", criterial);
-        User user = userRepository.findByCriterial(criterial)
-                .orElseThrow(() -> new UserNotFoundException(
-                        "User not found by criterial: " + criterial
-                ));
+        var user = findUserEntityByCriterial(criterial);
         log.debug("Found user by criterial. User: {}", user);
-        return userManualMapper.toResponse(user);
+        return userMapper.toResponse(user);
     }
 
     @Override
@@ -116,12 +113,12 @@ public class UserServiceImpl implements UserService, InternalUserService {
                     )
             );
         }
-        User user = userManualMapper.toEntity(request);
+        User user = userMapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
 
         log.debug("Success create user: {}", user);
-        return userManualMapper.toResponse(user);
+        return userMapper.toResponse(user);
     }
 
     @Override
@@ -129,10 +126,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
     public UserResponse updateFull(String criterial, CreateUserRequest request) {
         log.info("Full update user by criterial: {}", criterial);
 
-        User existingUser = userRepository.findByCriterial(criterial)
-                .orElseThrow(() -> new UserNotFoundException(
-                        "User not found with criterial: " + criterial
-                ));
+        User existingUser = findUserEntityByCriterial(criterial);
 
         existingUser.setUsername(request.username());
         existingUser.setStatus(request.status());
@@ -147,7 +141,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
         User savedUser = userRepository.save(existingUser);
 
         log.debug("Success full update user: {}", savedUser);
-        return userManualMapper.toResponse(savedUser);
+        return userMapper.toResponse(savedUser);
     }
 
     @Override
@@ -155,10 +149,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
     public UserResponse updateYour(String userId, UpdateUserRequest request) {
         log.info("Update user by id: {}", userId);
 
-        var userUpdate = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(
-                        "User not found with id: " + userId
-                ));
+        var userUpdate = findUserEntityById(userId);
         try {
             if (request.username() != null) {
                 userUpdate.setUsername(request.username());
@@ -172,7 +163,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
 
             userRepository.save(userUpdate);
             log.debug("Success update user: {}", userUpdate);
-            return userManualMapper.toResponse(userUpdate);
+            return userMapper.toResponse(userUpdate);
 
         } catch (DataIntegrityViolationException ex) {
             throw new AuthException(ex.getMessage());
@@ -183,10 +174,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void delete(String deletedBy, String criterial) {
         log.info("Delete user by criterial: {}", criterial);
-        var user = userRepository.findByCriterial(criterial)
-                .orElseThrow(() -> new UserNotFoundException(
-                        "User not found by criterial: " + criterial
-                ));
+        var user = findUserEntityByCriterial(criterial);
         log.debug("Success delete user: {}", user);
 
         user.softDelete(deletedBy);
@@ -197,7 +185,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
     @Transactional(readOnly = true)
     public User findUserEntityByCriterial(String criterial) {
         log.info("Find user entity by criterial: {}", criterial);
-        User user = userRepository.findByCriterial(criterial)
+        var user = userRepository.findByCriterial(criterial)
                 .orElseThrow(() -> new UserNotFoundException(
                         "User not found by criterial: " + criterial
                 ));
@@ -209,6 +197,8 @@ public class UserServiceImpl implements UserService, InternalUserService {
     @Transactional(readOnly = true)
     public User findUserEntityById(String id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+                .orElseThrow(() -> new UserNotFoundException(
+                        "User not found with id: " + id
+                ));
     }
 }

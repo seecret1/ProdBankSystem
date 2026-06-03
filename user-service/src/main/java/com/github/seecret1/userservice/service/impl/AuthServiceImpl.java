@@ -7,7 +7,7 @@ import com.github.seecret1.userservice.dto.request.SignUpRequest;
 import com.github.seecret1.userservice.dto.response.JwtAuthenticationDto;
 import com.github.seecret1.userservice.entity.User;
 import com.github.seecret1.userservice.exception.AuthException;
-import com.github.seecret1.userservice.mapper.UserManualMapper;
+import com.github.seecret1.userservice.mapper.UserMapper;
 import com.github.seecret1.userservice.repository.RefreshTokenRepository;
 import com.github.seecret1.userservice.security.CustomUserDetails;
 import com.github.seecret1.userservice.security.jwt.JwtService;
@@ -30,7 +30,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserService userService;
 
-    private final UserManualMapper userManualMapper;
+    private final UserMapper userMapper;
 
     private final InternalUserService internalUserService;
 
@@ -67,7 +67,7 @@ public class AuthServiceImpl implements AuthService {
         log.info("Sign up user. User email: {}; username: {}",
                 email, request.username());
 
-        userService.create(userManualMapper.toCreateUserRequest(request));
+        userService.create(userMapper.toCreateUserRequest(request));
         log.debug("User successful sign up: {}", email);
 
         return jwtService.generateAuthToken(email);
