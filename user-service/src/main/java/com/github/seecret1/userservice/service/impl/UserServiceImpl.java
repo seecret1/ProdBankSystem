@@ -240,4 +240,12 @@ public class UserServiceImpl implements UserService, InternalUserService {
                         "User not found with id: " + id
                 ));
     }
+
+    @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void saveUser(User user) {
+        log.info("Save user: {}", user);
+        userRepository.save(user);
+        log.debug("Success save user: {}", user);
+    }
 }

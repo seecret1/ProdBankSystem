@@ -6,7 +6,6 @@ import com.github.seecret1.userservice.exception.AuthException;
 import com.github.seecret1.userservice.exception.PersonException;
 import com.github.seecret1.userservice.security.CustomUserDetails;
 import lombok.experimental.UtilityClass;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @UtilityClass
@@ -17,21 +16,6 @@ public class AuthUtil {
             return details.getId();
         }
         throw new SecurityException("UserDetails is not instance of CustomUserDetails");
-    }
-
-    public CustomUserDetails getAuthenticatedUser() {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new SecurityException("User is not authenticated");
-        }
-
-        var principal = authentication.getPrincipal();
-
-        if (principal instanceof CustomUserDetails details) {
-            return details;
-        }
-        throw new SecurityException("Principal in security context is not instance of CustomUserDetails");
     }
 
     public void checkUserPersonalData(User user) {

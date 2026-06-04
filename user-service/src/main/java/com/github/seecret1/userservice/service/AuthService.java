@@ -1,9 +1,6 @@
 package com.github.seecret1.userservice.service;
 
-import com.github.seecret1.userservice.dto.request.RefreshTokenRequest;
-import com.github.seecret1.userservice.dto.request.SignInByEmailRequest;
-import com.github.seecret1.userservice.dto.request.SignInByUsernameRequest;
-import com.github.seecret1.userservice.dto.request.SignUpRequest;
+import com.github.seecret1.userservice.dto.request.*;
 import com.github.seecret1.userservice.dto.response.JwtAuthenticationDto;
 
 public interface AuthService {
@@ -14,7 +11,9 @@ public interface AuthService {
 
     JwtAuthenticationDto signUp(SignUpRequest request);
 
-    void signOut(RefreshTokenRequest request);
+    void signOut(String userId, RefreshTokenRequest request);
+
+    JwtAuthenticationDto changePassword(String userId, ChangePasswordRequest request);
 
     JwtAuthenticationDto refreshToken(RefreshTokenRequest request);
 }

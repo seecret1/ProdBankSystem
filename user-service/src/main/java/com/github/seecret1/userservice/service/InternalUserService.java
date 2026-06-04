@@ -7,4 +7,6 @@ public interface InternalUserService {
     User findUserEntityByCriterial(String criterial);
 
     User findUserEntityById(String id);
+
+    void saveUser(User user);
 }

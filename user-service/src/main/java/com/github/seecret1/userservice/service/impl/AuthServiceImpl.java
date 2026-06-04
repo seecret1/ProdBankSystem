@@ -1,15 +1,13 @@
 package com.github.seecret1.userservice.service.impl;
 
-import com.github.seecret1.userservice.dto.request.RefreshTokenRequest;
-import com.github.seecret1.userservice.dto.request.SignInByEmailRequest;
-import com.github.seecret1.userservice.dto.request.SignInByUsernameRequest;
-import com.github.seecret1.userservice.dto.request.SignUpRequest;
+import com.github.seecret1.userservice.dto.request.*;
 import com.github.seecret1.userservice.dto.response.JwtAuthenticationDto;
 import com.github.seecret1.userservice.entity.User;
 import com.github.seecret1.userservice.exception.AuthException;
+import com.github.seecret1.userservice.exception.CheckPasswordException;
+import com.github.seecret1.userservice.exception.PasswordUpdateException;
 import com.github.seecret1.userservice.mapper.UserMapper;
 import com.github.seecret1.userservice.repository.RefreshTokenRepository;
-import com.github.seecret1.userservice.security.CustomUserDetails;
 import com.github.seecret1.userservice.security.jwt.JwtService;
 import com.github.seecret1.userservice.service.AuthService;
 import com.github.seecret1.userservice.service.InternalUserService;
@@ -67,6 +65,8 @@ public class AuthServiceImpl implements AuthService {
         log.info("Sign up user. User email: {}; username: {}",
                 email, request.username());
 
+        checkPassword(request.password(), request.confirmPassword());
+
         userService.create(userMapper.toCreateUserRequest(request));
         log.debug("User successful sign up: {}", email);
 
@@ -75,7 +75,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void signOut(RefreshTokenRequest request) {
+    public void signOut(String userId, RefreshTokenRequest request) {
         String refreshToken = request.refreshToken();
 
         var refreshTokenEntity = refreshTokenRepository.findByToken(refreshToken)
@@ -84,20 +84,31 @@ public class AuthServiceImpl implements AuthService {
                 ));
 
         if (refreshTokenEntity.isRevoked()) {
-            throw new AuthException("User sign out using this token");
+            throw new AuthException("This token is revoked");
         }
 
-        CustomUserDetails userDetails = AuthUtil.getAuthenticatedUser();
-        log.info("Sign out user: {}", userDetails.getUsername());
-
-        if (!refreshTokenEntity.getUser().getId().equals(userDetails.getId())) {
-            throw new AuthException("Refresh token does not belong to current user");
-        }
-
-        refreshTokenRepository.revokeByToken(refreshToken);
+        refreshTokenRepository.revokeAllByUserId(userId);
         SecurityContextHolder.clearContext();
 
-        log.debug("Successful user sign out. User: {}", userDetails);
+        log.debug("Successful user sign out. User id: {}", userId);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public JwtAuthenticationDto changePassword(String userId, ChangePasswordRequest request) {
+
+        log.info("Change password user: {}", userId);
+        var user = internalUserService.findUserEntityById(userId);
+
+        checkPassword(user, request);
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+
+        log.debug("Revoke tokens and save user");
+        refreshTokenRepository.revokeAllByUserId(userId);
+        internalUserService.saveUser(user);
+
+        log.debug("Successfully change user password");
+        return jwtService.generateAuthToken(user.getEmail());
     }
 
     @Override
@@ -123,5 +134,25 @@ public class AuthServiceImpl implements AuthService {
         }
         log.info("User successfully authenticated: {}, created new session", user.getEmail());
         return jwtService.generateAuthToken(user.getEmail());
+    }
+
+    private void checkPassword(String password, String confirmPassword) {
+        if (!password.equals(confirmPassword)) {
+            throw new CheckPasswordException("Password does not match");
+        }
+    }
+
+    private void checkPassword(User user,ChangePasswordRequest request) {
+        log.debug("Check current password user and current password request");
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+            throw new PasswordUpdateException("The password was entered incorrectly");
+        }
+        log.debug("Check password new password and confirm password request");
+        checkPassword(request.newPassword(), request.confirmPassword());
+
+        log.debug("Check password new password request and current user password");
+        if (passwordEncoder.matches(request.newPassword(), user.getPassword())) {
+            throw new PasswordUpdateException("New password must be different from current password");
+        }
     }
 }

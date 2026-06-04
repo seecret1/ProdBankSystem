@@ -1,11 +1,9 @@
 package com.github.seecret1.userservice.controller;
 
-import com.github.seecret1.userservice.dto.request.RefreshTokenRequest;
-import com.github.seecret1.userservice.dto.request.SignInByEmailRequest;
-import com.github.seecret1.userservice.dto.request.SignInByUsernameRequest;
-import com.github.seecret1.userservice.dto.request.SignUpRequest;
+import com.github.seecret1.userservice.dto.request.*;
 import com.github.seecret1.userservice.dto.response.JwtAuthenticationDto;
 import com.github.seecret1.userservice.service.AuthService;
+import com.github.seecret1.userservice.utils.AuthUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,6 +15,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -84,10 +84,32 @@ public class AuthController {
             @ApiResponse(responseCode = "404", description = "Refresh token not found")
     })
     public ResponseEntity<Void> signOut(
-            @Valid @RequestBody RefreshTokenRequest request
+            @Valid @RequestBody RefreshTokenRequest request,
+            @AuthenticationPrincipal UserDetails userDetails
     ) {
-        authService.signOut(request);
+        authService.signOut(
+                AuthUtil.getCurrentUserId(userDetails),
+                request
+        );
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/change-password")
+    @Operation(summary = "Sign out", description = "Logout user and invalidate refresh token")
+    @SecurityRequirement(name = "bearerAuth")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Successfully logged out"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Refresh token not found")
+    })
+    public ResponseEntity<JwtAuthenticationDto> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        return ResponseEntity.ok(authService.changePassword(
+                AuthUtil.getCurrentUserId(userDetails),
+                request
+        ));
     }
 
     @PostMapping("/refresh")
