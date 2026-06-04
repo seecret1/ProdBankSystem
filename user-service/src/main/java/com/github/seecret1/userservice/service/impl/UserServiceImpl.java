@@ -168,11 +168,11 @@ public class UserServiceImpl implements UserService, InternalUserService {
     }
 
     @Override
-    @CachePut(value = "${app.cache.cache-names.userByCriterial}", key = "#userId")
     @CacheEvict(
             value = {
                     "${app.cache.cache-names.userAll}",
-                    "${app.cache.cache-names.userFilter}"
+                    "${app.cache.cache-names.userFilter}",
+                    "${app.cache.cache-names.userByCriterial}"
             },
             allEntries = true
     )
@@ -187,9 +187,6 @@ public class UserServiceImpl implements UserService, InternalUserService {
             }
             if (request.email() != null) {
                 userUpdate.setEmail(request.email());
-            }
-            if (request.password() != null) {
-                userUpdate.setPassword(passwordEncoder.encode(request.password()));
             }
 
             userRepository.save(userUpdate);

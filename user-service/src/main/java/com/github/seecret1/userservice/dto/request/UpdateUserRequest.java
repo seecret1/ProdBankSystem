@@ -9,9 +9,6 @@ public record UpdateUserRequest(
     String username,
 
     @Email(message = "Invalid email address")
-    String email,
-
-    @Size(min = 8, message = "Size of password must start from {min}")
-    String password
+    String email
 
 ) { }

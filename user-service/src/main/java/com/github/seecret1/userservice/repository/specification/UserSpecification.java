@@ -11,7 +11,8 @@ import java.time.LocalDate;
 public interface UserSpecification {
 
     static Specification<User> withFilter(UserFilterModel filterModel) {
-        Specification<User> spec = Specification.where(isEquals("firstName", filterModel.getFirstName())
+        Specification<User> spec = Specification.where(isEquals("status", filterModel.getStatus()))
+                        .and(isEquals("firstName", filterModel.getFirstName())
                         .and(isEquals("lastName", filterModel.getLastName()))
                         .and(isEquals("middleName", filterModel.getMiddleName()))
                         .and(isEquals("birthDate", filterModel.getBirthDate()))

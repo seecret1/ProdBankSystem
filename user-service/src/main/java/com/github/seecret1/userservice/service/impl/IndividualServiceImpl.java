@@ -111,8 +111,13 @@ public class IndividualServiceImpl implements IndividualService {
     }
 
     @Override
-    @CachePut(value = "${app.cache.cache-names.individualByCriterial}", key = "#userId")
-    @CacheEvict(value = "${app.cache.cache-names.individualAll}", allEntries = true)
+    @CacheEvict(
+            value = {
+                    "${app.cache.cache-names.individualAll}",
+                    "${app.cache.cache-names.individualByCriterial}"
+            },
+            allEntries = true
+    )
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public IndividualResponse updateYour(String userId, IndividualRequest request) {
         var user = userRepository.findById(userId)

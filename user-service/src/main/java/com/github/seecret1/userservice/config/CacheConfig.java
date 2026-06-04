@@ -8,6 +8,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
+import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -23,15 +26,35 @@ public class CacheConfig {
             ApplicationCacheProperties applicationCacheProperties,
             RedisConnectionFactory connectionFactory
     ) {
-        var defaultConfig = RedisCacheConfiguration.defaultCacheConfig();
+        RedisSerializer<Object> jsonSerializer = RedisSerializer.json();
+
+        RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofMinutes(30))
+                .disableCachingNullValues()
+                .serializeKeysWith(
+                        RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer())
+                )
+                .serializeValuesWith(
+                        RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer)
+                );
+
         Map<String, RedisCacheConfiguration> cacheConfigs = new HashMap<>();
 
         applicationCacheProperties.getCacheNames().forEach(cacheName -> {
-            var config = RedisCacheConfiguration.defaultCacheConfig();
-            var ttl = applicationCacheProperties.getCaches()
+            Duration ttl = applicationCacheProperties.getCaches()
                     .getOrDefault(cacheName, new ApplicationCacheProperties.CacheProperties())
                     .getExpiry();
-            if (ttl != null && ttl != Duration.ZERO) {
+
+            RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
+                    .disableCachingNullValues()
+                    .serializeKeysWith(
+                            RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer())
+                    )
+                    .serializeValuesWith(
+                            RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer)
+                    );
+
+            if (ttl != null && !ttl.isZero()) {
                 config = config.entryTtl(ttl);
             }
 
@@ -44,4 +67,3 @@ public class CacheConfig {
                 .build();
     }
 }
-

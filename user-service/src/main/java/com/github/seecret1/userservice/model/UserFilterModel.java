@@ -2,6 +2,7 @@ package com.github.seecret1.userservice.model;
 
 import com.github.seecret1.common.model.PageModel;
 import com.github.seecret1.userservice.entity.enums.RoleType;
+import com.github.seecret1.userservice.entity.enums.UserStatus;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,6 +20,8 @@ public class UserFilterModel {
     @NotNull(message = "Page must be set!")
     @Builder.Default
     private PageModel page = new PageModel(0, 10);
+
+    private UserStatus status;
 
     private String firstName;
 
