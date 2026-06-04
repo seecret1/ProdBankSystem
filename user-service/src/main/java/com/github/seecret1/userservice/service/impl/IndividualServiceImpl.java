@@ -8,7 +8,7 @@ import com.github.seecret1.userservice.entity.Individual;
 import com.github.seecret1.userservice.entity.User;
 import com.github.seecret1.userservice.entity.enums.UserStatus;
 import com.github.seecret1.userservice.exception.PersonException;
-import com.github.seecret1.userservice.exception.PersonExistsException;
+import com.github.seecret1.userservice.exception.IndividualDataExistsException;
 import com.github.seecret1.userservice.mapper.IndividualMapper;
 import com.github.seecret1.userservice.repository.IndividualRepository;
 import com.github.seecret1.userservice.repository.UserRepository;
@@ -164,7 +164,7 @@ public class IndividualServiceImpl implements IndividualService {
 
         if (!newPassport.equals(currentPassport)) {
             if (individualRepository.existsIndividualByPassportNumber(newPassport)) {
-                throw new PersonExistsException(
+                throw new IndividualDataExistsException(
                         "Passport number already exists for another user"
                 );
             }
@@ -172,7 +172,7 @@ public class IndividualServiceImpl implements IndividualService {
         }
         if (!newPhone.equals(currentPhone)) {
             if (individualRepository.existsIndividualByPhoneNumber(newPhone)) {
-                throw new PersonExistsException(
+                throw new IndividualDataExistsException(
                         "Phone number already exists for another user"
                 );
             }
