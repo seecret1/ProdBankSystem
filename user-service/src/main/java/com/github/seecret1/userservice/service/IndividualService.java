@@ -1,12 +1,15 @@
 package com.github.seecret1.userservice.service;
 
+import com.github.seecret1.common.dto.PageResponse;
+import com.github.seecret1.common.model.PageModel;
 import com.github.seecret1.userservice.dto.request.IndividualRequest;
-import com.github.seecret1.userservice.dto.response.IndividualDto;
 import com.github.seecret1.userservice.dto.response.IndividualResponse;
 
 public interface IndividualService {
 
-    IndividualDto findByCriterial(String criterial);
+    PageResponse<IndividualResponse> findAll(PageModel pageModel);
+
+    IndividualResponse findByCriterial(String criterial);
 
     IndividualResponse recordPersonalData(String userId, IndividualRequest request);
 

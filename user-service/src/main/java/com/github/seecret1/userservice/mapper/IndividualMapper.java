@@ -1,7 +1,6 @@
 package com.github.seecret1.userservice.mapper;
 
 import com.github.seecret1.userservice.dto.request.IndividualRequest;
-import com.github.seecret1.userservice.dto.response.IndividualDto;
 import com.github.seecret1.userservice.dto.response.IndividualResponse;
 import com.github.seecret1.userservice.entity.Individual;
 import com.github.seecret1.userservice.utils.DateTimeUtil;
@@ -45,22 +44,7 @@ public abstract class IndividualMapper {
     @Mapping(target = "middleName", source = "user.middleName")
     @Mapping(target = "email", source = "user.email")
     @Mapping(target = "address", source = "address", qualifiedByName = "fromAddress")
-    public abstract IndividualDto toDto(Individual individual);
-
-    @Mapping(target = "firstName", source = "user.firstName")
-    @Mapping(target = "lastName", source = "user.lastName")
-    @Mapping(target = "middleName", source = "user.middleName")
-    @Mapping(target = "email", source = "user.email")
-    @Mapping(target = "address", source = "address", qualifiedByName = "fromAddress")
     public abstract IndividualResponse toResponseDto(Individual individual);
-
-    public List<IndividualDto> toDto(List<Individual> individuals) {
-        return isEmpty(individuals)
-                ? Collections.emptyList()
-                : individuals.stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
-    }
 
     public List<IndividualResponse> toResponseDto(List<Individual> individuals) {
         return isEmpty(individuals)
@@ -69,7 +53,6 @@ public abstract class IndividualMapper {
                 .map(this::toResponseDto)
                 .collect(Collectors.toList());
     }
-
 
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "updatedAt", expression = "java(dateTimeUtil.now())")

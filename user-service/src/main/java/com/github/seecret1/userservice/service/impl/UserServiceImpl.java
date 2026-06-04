@@ -17,6 +17,9 @@ import com.github.seecret1.userservice.service.InternalUserService;
 import com.github.seecret1.userservice.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,6 +41,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
+    @Cacheable(value = "${app.cache.cache-names.userAll}", key = "#pageModel.toString()")
     @Transactional(readOnly = true)
     public PageResponse<UserResponse> findAllUsers(PageModel pageModel) {
         log.info("Find all users");
@@ -55,6 +59,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
     }
 
     @Override
+    @Cacheable(value = "${app.cache.cache-names.userAll}", key = "#pageModel.toString()")
     @Transactional(readOnly = true)
     public PageResponse<UserResponse> findAllActiveUsers(PageModel pageModel) {
         log.info("Find all active users");
@@ -72,6 +77,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
     }
 
     @Override
+    @Cacheable(value = "${app.cache.cache-names.userFilter}", key = "#filter.toString()")
     @Transactional(readOnly = true)
     public PageResponse<UserResponse> findByFilter(UserFilterModel filter) {
         log.info("Find users by filter: {}", filter);
@@ -89,6 +95,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
     }
 
     @Override
+    @Cacheable(value = "${app.cache.cache-names.userByCriterial}", key = "#criterial")
     @Transactional(readOnly = true)
     public UserResponse findByCriterial(String criterial) {
         log.info("Find user by criterial: {}", criterial);
@@ -98,6 +105,14 @@ public class UserServiceImpl implements UserService, InternalUserService {
     }
 
     @Override
+    @CacheEvict(
+            value = {
+                    "${app.cache.cache-names.userAll}",
+                    "${app.cache.cache-names.userByCriterial}",
+                    "${app.cache.cache-names.userFilter}"
+            },
+            allEntries = true
+    )
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public UserResponse create(CreateUserRequest request) {
         log.info("Call method create");
@@ -122,6 +137,14 @@ public class UserServiceImpl implements UserService, InternalUserService {
     }
 
     @Override
+    @CachePut(value = "${app.cache.cache-names.userByCriterial}", key = "#criterial")
+    @CacheEvict(
+            value = {
+                    "${app.cache.cache-names.userAll}",
+                    "${app.cache.cache-names.userFilter}"
+            },
+            allEntries = true
+    )
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public UserResponse updateFull(String criterial, CreateUserRequest request) {
         log.info("Full update user by criterial: {}", criterial);
@@ -145,6 +168,14 @@ public class UserServiceImpl implements UserService, InternalUserService {
     }
 
     @Override
+    @CachePut(value = "${app.cache.cache-names.userByCriterial}", key = "#userId")
+    @CacheEvict(
+            value = {
+                    "${app.cache.cache-names.userAll}",
+                    "${app.cache.cache-names.userFilter}"
+            },
+            allEntries = true
+    )
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public UserResponse updateYour(String userId, UpdateUserRequest request) {
         log.info("Update user by id: {}", userId);
@@ -171,6 +202,14 @@ public class UserServiceImpl implements UserService, InternalUserService {
     }
 
     @Override
+    @CacheEvict(
+            value = {
+                    "${app.cache.cache-names.userAll}",
+                    "${app.cache.cache-names.userByCriterial}",
+                    "${app.cache.cache-names.userFilter}"
+            },
+            allEntries = true
+    )
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void delete(String deletedBy, String criterial) {
         log.info("Delete user by criterial: {}", criterial);

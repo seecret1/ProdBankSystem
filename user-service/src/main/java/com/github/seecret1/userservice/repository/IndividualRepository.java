@@ -2,6 +2,8 @@ package com.github.seecret1.userservice.repository;
 
 import com.github.seecret1.userservice.entity.Individual;
 import com.github.seecret1.userservice.repository.specification.IndividualSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -13,6 +15,9 @@ import java.util.Optional;
 public interface IndividualRepository extends JpaRepository<Individual, String>, JpaSpecificationExecutor<Individual> {
 
     boolean existsByUserId(String userId);
+
+    @Override
+    Page<Individual> findAll(Pageable pageable);
 
     @Query("""
         SELECT EXISTS (

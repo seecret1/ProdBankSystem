@@ -2,11 +2,6 @@ server:
   port: 8091
 
 spring:
-  data:
-    redis:
-      host: localhost
-      port: 6379
-
   datasource:
     url: ${USER_DB_LOCAL_URL:jdbc:postgresql://localhost:5433/user_db}
     username: ${USER_DB_USERNAME:postgres}
@@ -24,6 +19,20 @@ spring:
 
   flyway:
     enabled: true
+
+  data:
+    redis:
+      host: ${HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:admin}
+      database: ${REDIS_DATABASE:0}
+      timeout: ${REDIS_TIMEOUT:2000ms}
+      lettuce:
+        pool:
+          max-active: ${REDIS_POOL_MAX_ACTIVE:8}
+          max-idle: ${REDIS_POOL_MAX_IDLE:8}
+          min-idle: ${REDIS_POOL_MIN_IDLE:0}
+          max-wait: ${REDIS_POOL_MAX_WAIT:-1ms}
 
 user-service:
   jwt:
@@ -78,3 +87,27 @@ otel:
     exporter: none
   metrics:
     exporter: none
+
+app:
+  cache:
+    type: redis
+    redis:
+      time-to-live: ${CACHE_DEFAULT_TTL:600000}
+      cache-null-values: false
+    cache-names:
+      - userAll
+      - userByCriterial
+      - userFilter
+      - individualAll
+      - individualByCriterial
+    caches:
+      userAll:
+        expiry: 30m
+      userByCriterial:
+        expiry: 10m
+      userFilter:
+        expiry: 10m
+      individualAll:
+        expiry: 30m
+      individualByCriterial:
+        expiry: 10m

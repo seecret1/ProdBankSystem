@@ -8,12 +8,14 @@ import lombok.Setter;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
+import java.io.Serializable;
+
 @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
 @Getter
 @Setter
 @Entity
 @Table(name = "individuals", schema = "person_bank")
-public class Individual extends BaseEntity {
+public class Individual extends BaseEntity implements Serializable {
 
     @Size(max = 64)
     @Column(name = "passport_number", length = 64)

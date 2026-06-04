@@ -1,7 +1,8 @@
 package com.github.seecret1.userservice.controller;
 
+import com.github.seecret1.common.dto.PageResponse;
+import com.github.seecret1.common.model.PageModel;
 import com.github.seecret1.userservice.dto.request.IndividualRequest;
-import com.github.seecret1.userservice.dto.response.IndividualDto;
 import com.github.seecret1.userservice.dto.response.IndividualResponse;
 import com.github.seecret1.userservice.service.IndividualService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,8 +30,23 @@ public class IndividualController {
 
     private final IndividualService individualService;
 
+    @GetMapping
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Get all individuals")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Individual found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden")
+    })
+    public ResponseEntity<PageResponse<IndividualResponse>> findAll(
+            @Valid PageModel pageModel
+    ) {
+        return ResponseEntity.ok(individualService.findAll(pageModel));
+    }
+
     @GetMapping("/{criterial}")
-    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Get individual by criterial")
     @ApiResponses(value = {
@@ -38,7 +54,7 @@ public class IndividualController {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "Individual not found")
     })
-    public ResponseEntity<IndividualDto> findByCriterial(
+    public ResponseEntity<IndividualResponse> findByCriterial(
             @PathVariable String criterial
     ) {
         return ResponseEntity.ok(individualService.findByCriterial(criterial));

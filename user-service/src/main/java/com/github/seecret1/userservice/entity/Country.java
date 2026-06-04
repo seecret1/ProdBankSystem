@@ -1,7 +1,6 @@
 package com.github.seecret1.userservice.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,15 +8,15 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
+import java.io.Serializable;
 import java.time.Instant;
 
 @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-@NotNull
 @Setter
 @Getter
 @Entity
 @Table(name = "countries", schema = "person_bank")
-public class Country {
+public class Country implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
