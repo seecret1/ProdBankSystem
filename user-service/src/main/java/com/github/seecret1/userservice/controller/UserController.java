@@ -34,7 +34,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')")
     @Operation(summary = "Get all users", description = "Retrieve paginated list of all users (Admin only)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success get all users"),
@@ -48,7 +48,7 @@ public class UserController {
     }
 
     @GetMapping("/active")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')")
     @Operation(summary = "Get all active users", description = "Retrieve paginated list of all active users (Admin only)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success get all active users"),
@@ -62,7 +62,7 @@ public class UserController {
     }
 
     @GetMapping("/filter")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')")
     @Operation(summary = "Get users by filter", description = "Retrieve paginated list of all users by filter (Admin only)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success get users by filter"),
@@ -76,7 +76,7 @@ public class UserController {
     }
 
     @GetMapping("/{criterial}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')")
     @Operation(summary = "Get user by criterial", description = "Find user by ID, username or email (Admin only)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success get user by ID, username or email"),
@@ -120,7 +120,7 @@ public class UserController {
     }
 
     @PatchMapping
-    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MANAGER')")
     @Operation(summary = "Update own profile", description = "Update current user's profile")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success update user`s profile"),

@@ -31,7 +31,7 @@ public class IndividualController {
     private final IndividualService individualService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Get all individuals")
     @ApiResponses(value = {
@@ -46,7 +46,7 @@ public class IndividualController {
     }
 
     @GetMapping("/{criterial}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Get individual by criterial")
     @ApiResponses(value = {
@@ -93,7 +93,7 @@ public class IndividualController {
     }
 
     @PutMapping
-    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MANAGER')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Update your personal data profile")
     public ResponseEntity<IndividualResponse> updateYour(
