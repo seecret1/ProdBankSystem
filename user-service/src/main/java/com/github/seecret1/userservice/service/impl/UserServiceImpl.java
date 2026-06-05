@@ -18,7 +18,6 @@ import com.github.seecret1.userservice.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
@@ -137,11 +136,11 @@ public class UserServiceImpl implements UserService, InternalUserService {
     }
 
     @Override
-    @CachePut(value = "${app.cache.cache-names.userByCriterial}", key = "#criterial")
     @CacheEvict(
             value = {
                     "${app.cache.cache-names.userAll}",
-                    "${app.cache.cache-names.userFilter}"
+                    "${app.cache.cache-names.userFilter}",
+                    "${app.cache.cache-names.userByCriterial}"
             },
             allEntries = true
     )

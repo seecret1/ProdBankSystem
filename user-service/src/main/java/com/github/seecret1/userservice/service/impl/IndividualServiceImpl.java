@@ -19,7 +19,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -101,8 +100,13 @@ public class IndividualServiceImpl implements IndividualService {
     }
 
     @Override
-    @CachePut(value = "${app.cache.cache-names.individualByCriterial}", key = "#criterial")
-    @CacheEvict(value = "${app.cache.cache-names.individualAll}", allEntries = true)
+    @CacheEvict(
+            value = {
+                    "${app.cache.cache-names.individualAll}",
+                    "${app.cache.cache-names.individualByCriterial}"
+            },
+            allEntries = true
+    )
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public IndividualResponse update(String criterial, IndividualRequest request) {
         var individual = findIndividual(criterial);
