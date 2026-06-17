@@ -1,9 +1,8 @@
-package com.github.seecret1.userservice.controller;
+package com.github.seecret1.userservice.controller.privates;
 
 import com.github.seecret1.common.dto.PageResponse;
 import com.github.seecret1.common.model.PageModel;
 import com.github.seecret1.userservice.dto.request.CreateUserRequest;
-import com.github.seecret1.userservice.dto.request.UpdateUserRequest;
 import com.github.seecret1.userservice.dto.response.UserResponse;
 import com.github.seecret1.userservice.model.UserFilterModel;
 import com.github.seecret1.userservice.service.UserService;
@@ -29,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/users")
 @Tag(name = "User Management", description = "API for managing users")
 @SecurityRequirement(name = "bearerAuth")
-public class UserController {
+public class UserPrivateController {
 
     private final UserService userService;
 
@@ -117,24 +116,6 @@ public class UserController {
             @Valid @RequestBody CreateUserRequest request
     ) {
         return ResponseEntity.ok(userService.updateFull(criterial, request));
-    }
-
-    @PatchMapping
-    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MANAGER')")
-    @Operation(summary = "Update own profile", description = "Update current user's profile")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Success update user`s profile"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "403", description = "Forbidden")
-    })
-    public ResponseEntity<UserResponse> updateYour(
-            @Valid @RequestBody UpdateUserRequest request,
-            @AuthenticationPrincipal UserDetails userDetails
-    ) {
-        return ResponseEntity.ok(userService.updateYour(
-                AuthUtil.getCurrentUserId(userDetails),
-                request
-        ));
     }
 
     @DeleteMapping("/{criterial}")

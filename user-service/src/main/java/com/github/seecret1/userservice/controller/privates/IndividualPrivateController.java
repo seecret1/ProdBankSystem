@@ -1,4 +1,4 @@
-package com.github.seecret1.userservice.controller;
+package com.github.seecret1.userservice.controller.privates;
 
 import com.github.seecret1.common.dto.PageResponse;
 import com.github.seecret1.common.model.PageModel;
@@ -11,13 +11,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import com.github.seecret1.userservice.utils.AuthUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/individuals")
 @Tag(name = "Individual Management", description = "API for bank retail clients (individuals)")
-public class IndividualController {
+public class IndividualPrivateController {
 
     private final IndividualService individualService;
 
@@ -60,27 +56,6 @@ public class IndividualController {
         return ResponseEntity.ok(individualService.findByCriterial(criterial));
     }
 
-    @PostMapping
-    @PreAuthorize("hasRole('ROLE_USER')")
-    @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Complete client profile", description = "Link personal data to the authenticated user account")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Individual successfully registered"),
-            @ApiResponse(responseCode = "400", description = "Validation error"),
-            @ApiResponse(responseCode = "409", description = "User, individual or address already exists")
-    })
-    public ResponseEntity<IndividualResponse> recordPersonalData(
-            @Valid @RequestBody IndividualRequest request,
-            @AuthenticationPrincipal UserDetails userDetails
-    ) {
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(individualService.recordPersonalData(
-                        AuthUtil.getCurrentUserId(userDetails),
-                        request
-                ));
-    }
-
     @PutMapping("/{criterial}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
@@ -90,20 +65,6 @@ public class IndividualController {
             @Valid @RequestBody IndividualRequest request
     ) {
         return ResponseEntity.ok(individualService.update(criterial, request));
-    }
-
-    @PutMapping
-    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MANAGER')")
-    @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Update your personal data profile")
-    public ResponseEntity<IndividualResponse> updateYour(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @Valid @RequestBody IndividualRequest request
-    ) {
-        return ResponseEntity.ok(individualService.updateYour(
-                AuthUtil.getCurrentUserId(userDetails),
-                request
-        ));
     }
 
     @DeleteMapping("/{criterial}")
