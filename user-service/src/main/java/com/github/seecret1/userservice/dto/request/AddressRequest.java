@@ -1,8 +1,8 @@
-package com.github.seecret1.userservice.dto;
+package com.github.seecret1.userservice.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record AddressWriteDto(
+public record AddressRequest(
 
         @NotBlank
         String address,

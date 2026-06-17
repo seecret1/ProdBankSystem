@@ -1,7 +1,7 @@
 package com.github.seecret1.userservice.mapper;
 
-import com.github.seecret1.userservice.dto.AddressWriteDto;
-import com.github.seecret1.userservice.dto.response.AddressDto;
+import com.github.seecret1.userservice.dto.request.AddressRequest;
+import com.github.seecret1.userservice.dto.response.AddressResponse;
 import com.github.seecret1.userservice.entity.Address;
 import com.github.seecret1.userservice.entity.Country;
 import com.github.seecret1.userservice.exception.PersonException;
@@ -33,7 +33,7 @@ public abstract class AddressMapper {
     @Mapping(target = "createdAt", expression = "java(dateTimeUtil.now())")
     @Mapping(target = "updatedAt", expression = "java(dateTimeUtil.now())")
     @Mapping(target = "country", source = "countryCode", qualifiedByName = "toCountry")
-    public abstract Address toAddress(AddressWriteDto dto);
+    public abstract Address toAddress(AddressRequest dto);
 
     @Named("fromAddress")
     @Mapping(target = "deleted", source = "deleted")
@@ -41,7 +41,7 @@ public abstract class AddressMapper {
     @Mapping(target = "updatedAt", source = "updatedAt")
     @Mapping(target = "deletedAt", source = "deletedAt")
     @Mapping(target = "deletedBy", source = "deletedBy")
-    public abstract AddressDto fromAddress(Address address);
+    public abstract AddressResponse fromAddress(Address address);
 
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "updatedAt", expression = "java(dateTimeUtil.now())")
@@ -51,7 +51,7 @@ public abstract class AddressMapper {
     @Mapping(target = "country", source = "countryCode", qualifiedByName = "toCountry")
     public abstract Address updateAddress(
             @MappingTarget Address address,
-            AddressWriteDto dto
+            AddressRequest dto
     );
 
     @Named("toCountry")

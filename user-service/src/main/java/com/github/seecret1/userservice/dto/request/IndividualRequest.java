@@ -1,6 +1,5 @@
 package com.github.seecret1.userservice.dto.request;
 
-import com.github.seecret1.userservice.dto.AddressWriteDto;
 import jakarta.validation.constraints.*;
 
 public record IndividualRequest(
@@ -21,6 +20,6 @@ public record IndividualRequest(
         String phoneNumber,
 
         @NotNull(message = "Address must be set!")
-        AddressWriteDto address
+        AddressRequest address
 
 ) { }

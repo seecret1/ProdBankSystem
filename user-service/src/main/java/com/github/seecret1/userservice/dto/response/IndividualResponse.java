@@ -16,7 +16,7 @@ public record IndividualResponse(
 
         String phoneNumber,
 
-        AddressDto address
+        AddressResponse address
 
 ) {
 }

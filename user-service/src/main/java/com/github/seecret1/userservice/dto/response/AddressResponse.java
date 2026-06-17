@@ -2,7 +2,7 @@ package com.github.seecret1.userservice.dto.response;
 
 import java.time.Instant;
 
-public record AddressDto(
+public record AddressResponse(
 
         Boolean deleted,
 
