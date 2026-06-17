@@ -1,3 +1,4 @@
+package service;
 
 import com.github.seecret1.common.dto.PageResponse;
 import com.github.seecret1.common.model.PageModel;
@@ -91,16 +92,13 @@ class UserServiceTest {
 
     @Test
     void findAllUsers_ShouldReturnPageResponse() {
-        // Arrange
         PageModel pageModel = new PageModel(0, 10);
         Page<User> page = new PageImpl<>(List.of(user));
         when(userRepository.findAll(any(Pageable.class))).thenReturn(page);
         when(userMapper.toListResponse(anyList())).thenReturn(List.of(userResponse));
 
-        // Act
         PageResponse<UserResponse> result = userService.findAllUsers(pageModel);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getData()).hasSize(1);
         assertThat(result.getTotalElements()).isEqualTo(1);
@@ -109,16 +107,13 @@ class UserServiceTest {
 
     @Test
     void findAllActiveUsers_ShouldReturnPageResponse() {
-        // Arrange
         PageModel pageModel = new PageModel(0, 10);
         Page<User> page = new PageImpl<>(List.of(user));
         when(userRepository.findAllActiveUsers(any(Pageable.class))).thenReturn(page);
         when(userMapper.toListResponse(anyList())).thenReturn(List.of(userResponse));
 
-        // Act
         PageResponse<UserResponse> result = userService.findAllActiveUsers(pageModel);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getData()).hasSize(1);
         verify(userRepository).findAllActiveUsers(any(Pageable.class));
@@ -126,7 +121,6 @@ class UserServiceTest {
 
     @Test
     void findByFilter_ShouldReturnPageResponse() {
-        // Arrange
         UserFilterModel filter = UserFilterModel.builder()
                 .status(UserStatus.PENDING_PROFILE)
                 .firstName("Test")
@@ -135,10 +129,8 @@ class UserServiceTest {
         when(userRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
         when(userMapper.toListResponse(anyList())).thenReturn(List.of(userResponse));
 
-        // Act
         PageResponse<UserResponse> result = userService.findByFilter(filter);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getData()).hasSize(1);
         verify(userRepository).findAll(any(Specification.class), any(Pageable.class));
@@ -146,14 +138,11 @@ class UserServiceTest {
 
     @Test
     void findByCriterial_ShouldReturnUserResponse_WhenUserExists() {
-        // Arrange
         when(userRepository.findByCriterial(anyString())).thenReturn(Optional.of(user));
         when(userMapper.toResponse(user)).thenReturn(userResponse);
 
-        // Act
         UserResponse result = userService.findByCriterial("testuser");
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.username()).isEqualTo("testuser");
         verify(userRepository).findByCriterial("testuser");
@@ -161,10 +150,8 @@ class UserServiceTest {
 
     @Test
     void findByCriterial_ShouldThrowUserNotFoundException_WhenUserNotFound() {
-        // Arrange
         when(userRepository.findByCriterial(anyString())).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThatThrownBy(() -> userService.findByCriterial("nonexistent"))
                 .isInstanceOf(UserNotFoundException.class)
                 .hasMessageContaining("User not found by criterial");
@@ -172,17 +159,14 @@ class UserServiceTest {
 
     @Test
     void create_ShouldReturnUserResponse_WhenUserDoesNotExist() {
-        // Arrange
         when(userRepository.existsByUsernameOrEmail(anyString(), anyString())).thenReturn(false);
         when(userMapper.toEntity(createRequest)).thenReturn(user);
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
         when(userRepository.save(any(User.class))).thenReturn(user);
         when(userMapper.toResponse(user)).thenReturn(userResponse);
 
-        // Act
         UserResponse result = userService.create(createRequest);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.username()).isEqualTo("testuser");
         verify(userRepository).existsByUsernameOrEmail("testuser", "test@example.com");
@@ -191,10 +175,7 @@ class UserServiceTest {
 
     @Test
     void create_ShouldThrowRegisterUserException_WhenUserExists() {
-        // Arrange
         when(userRepository.existsByUsernameOrEmail(anyString(), anyString())).thenReturn(true);
-
-        // Act & Assert
         assertThatThrownBy(() -> userService.create(createRequest))
                 .isInstanceOf(RegisterUserException.class)
                 .hasMessageContaining("User by username testuser or email test@example.com exists");
@@ -202,31 +183,25 @@ class UserServiceTest {
 
     @Test
     void updateFull_ShouldReturnUpdatedUserResponse() {
-        // Arrange
         when(userRepository.findByCriterial(anyString())).thenReturn(Optional.of(user));
         when(passwordEncoder.encode(anyString())).thenReturn("newEncodedPassword");
         when(userRepository.save(any(User.class))).thenReturn(user);
         when(userMapper.toResponse(user)).thenReturn(userResponse);
 
-        // Act
         UserResponse result = userService.updateFull("testuser", createRequest);
 
-        // Assert
         assertThat(result).isNotNull();
         verify(userRepository).save(any(User.class));
     }
 
     @Test
     void updateYour_ShouldReturnUpdatedUserResponse_WhenUserExists() {
-        // Arrange
         when(userRepository.findById(anyString())).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenReturn(user);
         when(userMapper.toResponse(user)).thenReturn(userResponse);
 
-        // Act
         UserResponse result = userService.updateYour("1", updateRequest);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.username()).isEqualTo("testuser");
         verify(userRepository).save(any(User.class));
@@ -234,14 +209,11 @@ class UserServiceTest {
 
     @Test
     void delete_ShouldSoftDeleteUser() {
-        // Arrange
         when(userRepository.findByCriterial(anyString())).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenReturn(user);
 
-        // Act
         userService.delete("admin", "testuser");
 
-        // Assert
         assertThat(user.getDeleted()).isTrue();
         assertThat(user.getDeletedBy()).isEqualTo("admin");
         verify(userRepository).save(user);
@@ -249,46 +221,34 @@ class UserServiceTest {
 
     @Test
     void findUserEntityByCriterial_ShouldReturnUser_WhenExists() {
-        // Arrange
         when(userRepository.findByCriterial(anyString())).thenReturn(Optional.of(user));
 
-        // Act
         User result = userService.findUserEntityByCriterial("testuser");
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getUsername()).isEqualTo("testuser");
     }
 
     @Test
     void findUserEntityByCriterial_ShouldThrowUserNotFoundException_WhenNotExists() {
-        // Arrange
         when(userRepository.findByCriterial(anyString())).thenReturn(Optional.empty());
-
-        // Act & Assert
         assertThatThrownBy(() -> userService.findUserEntityByCriterial("nonexistent"))
                 .isInstanceOf(UserNotFoundException.class);
     }
 
     @Test
     void findUserEntityById_ShouldReturnUser_WhenExists() {
-        // Arrange
         when(userRepository.findById(anyString())).thenReturn(Optional.of(user));
 
-        // Act
         User result = userService.findUserEntityById("1");
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo("1");
     }
 
     @Test
     void findUserEntityById_ShouldThrowUserNotFoundException_WhenNotExists() {
-        // Arrange
         when(userRepository.findById(anyString())).thenReturn(Optional.empty());
-
-        // Act & Assert
         assertThatThrownBy(() -> userService.findUserEntityById("999"))
                 .isInstanceOf(UserNotFoundException.class);
     }

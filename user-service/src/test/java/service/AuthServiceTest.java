@@ -1,3 +1,5 @@
+package service;
+
 import com.github.seecret1.userservice.dto.request.*;
 import com.github.seecret1.userservice.dto.response.JwtAuthenticationDto;
 import com.github.seecret1.userservice.dto.response.UserResponse;
@@ -113,15 +115,12 @@ class AuthServiceTest {
 
     @Test
     void signInByEmail_ShouldReturnJwtAuthenticationDto_WhenValidCredentials() {
-        // Arrange
         when(internalUserService.findUserEntityByCriterial(anyString())).thenReturn(user);
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
         when(jwtService.generateAuthToken(anyString())).thenReturn(jwtAuthDto);
 
-        // Act
         JwtAuthenticationDto result = authService.signIn(signInEmailRequest);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.token()).isEqualTo("jwt-token");
         assertThat(result.refreshToken()).isEqualTo("refresh-token");
@@ -130,11 +129,9 @@ class AuthServiceTest {
 
     @Test
     void signInByEmail_ShouldThrowAuthException_WhenInvalidPassword() {
-        // Arrange
         when(internalUserService.findUserEntityByCriterial(anyString())).thenReturn(user);
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(false);
 
-        // Act & Assert
         assertThatThrownBy(() -> authService.signIn(signInEmailRequest))
                 .isInstanceOf(AuthException.class)
                 .hasMessageContaining("Invalid credentials");
@@ -142,15 +139,12 @@ class AuthServiceTest {
 
     @Test
     void signInByUsername_ShouldReturnJwtAuthenticationDto_WhenValidCredentials() {
-        // Arrange
         when(internalUserService.findUserEntityByCriterial(anyString())).thenReturn(user);
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
         when(jwtService.generateAuthToken(anyString())).thenReturn(jwtAuthDto);
 
-        // Act
         JwtAuthenticationDto result = authService.signIn(signInUsernameRequest);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.token()).isEqualTo("jwt-token");
         verify(jwtService).generateAuthToken("test@example.com");
@@ -158,7 +152,6 @@ class AuthServiceTest {
 
     @Test
     void signUp_ShouldReturnJwtAuthenticationDto_WhenValidRequest() {
-        // Arrange
         UserResponse userResponse = new UserResponse(
                 "1", "testuser", UserStatus.PENDING_PROFILE,
                 "test@example.com", "Test", "User", "M",
@@ -169,10 +162,8 @@ class AuthServiceTest {
         when(userService.create(any(CreateUserRequest.class))).thenReturn(userResponse);
         when(jwtService.generateAuthToken(anyString())).thenReturn(jwtAuthDto);
 
-        // Act
         JwtAuthenticationDto result = authService.signUp(signUpRequest);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.token()).isEqualTo("jwt-token");
         verify(userService).create(any(CreateUserRequest.class));
@@ -181,7 +172,6 @@ class AuthServiceTest {
 
     @Test
     void signUp_ShouldThrowCheckPasswordException_WhenPasswordsDoNotMatch() {
-        // Arrange
         SignUpRequest invalidRequest = new SignUpRequest(
                 "testuser", "test@example.com",
                 "password123", "differentPassword",
@@ -189,7 +179,6 @@ class AuthServiceTest {
                 LocalDate.of(1990, 1, 1)
         );
 
-        // Act & Assert
         assertThatThrownBy(() -> authService.signUp(invalidRequest))
                 .isInstanceOf(CheckPasswordException.class)
                 .hasMessageContaining("Password does not match");
@@ -197,7 +186,6 @@ class AuthServiceTest {
 
     @Test
     void signOut_ShouldRevokeTokens_WhenValidRefreshToken() {
-        // Arrange
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setToken("refresh-token");
         refreshToken.setRevoked(false);
@@ -207,19 +195,15 @@ class AuthServiceTest {
         when(refreshTokenRepository.findByToken(anyString())).thenReturn(Optional.of(refreshToken));
         doNothing().when(refreshTokenRepository).revokeAllByUserId(anyString());
 
-        // Act
         authService.signOut("1", refreshTokenRequest);
 
-        // Assert
         verify(refreshTokenRepository).revokeAllByUserId("1");
     }
 
     @Test
     void signOut_ShouldThrowAuthException_WhenTokenNotFound() {
-        // Arrange
         when(refreshTokenRepository.findByToken(anyString())).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThatThrownBy(() -> authService.signOut("1", refreshTokenRequest))
                 .isInstanceOf(AuthException.class)
                 .hasMessageContaining("Refresh token not found");
@@ -227,7 +211,6 @@ class AuthServiceTest {
 
     @Test
     void signOut_ShouldThrowAuthException_WhenTokenRevoked() {
-        // Arrange
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setToken("refresh-token");
         refreshToken.setRevoked(true);
@@ -235,7 +218,6 @@ class AuthServiceTest {
 
         when(refreshTokenRepository.findByToken(anyString())).thenReturn(Optional.of(refreshToken));
 
-        // Act & Assert
         assertThatThrownBy(() -> authService.signOut("1", refreshTokenRequest))
                 .isInstanceOf(AuthException.class)
                 .hasMessageContaining("This token is revoked");
@@ -243,7 +225,6 @@ class AuthServiceTest {
 
     @Test
     void changePassword_ShouldReturnJwtAuthenticationDto_WhenValidRequest() {
-        // Arrange
         when(internalUserService.findUserEntityById(anyString())).thenReturn(user);
         when(passwordEncoder.matches("oldPassword", user.getPassword())).thenReturn(true);
         when(passwordEncoder.matches("newPassword123", user.getPassword())).thenReturn(false);
@@ -252,10 +233,8 @@ class AuthServiceTest {
         doNothing().when(internalUserService).saveUser(any(User.class));
         when(jwtService.generateAuthToken(anyString())).thenReturn(jwtAuthDto);
 
-        // Act
         JwtAuthenticationDto result = authService.changePassword("1", changePasswordRequest);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.token()).isEqualTo("jwt-token");
         verify(refreshTokenRepository).revokeAllByUserId("1");
@@ -264,11 +243,9 @@ class AuthServiceTest {
 
     @Test
     void changePassword_ShouldThrowPasswordUpdateException_WhenCurrentPasswordIncorrect() {
-        // Arrange
         when(internalUserService.findUserEntityById(anyString())).thenReturn(user);
         when(passwordEncoder.matches("oldPassword", user.getPassword())).thenReturn(false);
 
-        // Act & Assert
         assertThatThrownBy(() -> authService.changePassword("1", changePasswordRequest))
                 .isInstanceOf(PasswordUpdateException.class)
                 .hasMessageContaining("The password was entered incorrectly");
@@ -276,12 +253,10 @@ class AuthServiceTest {
 
     @Test
     void changePassword_ShouldThrowPasswordUpdateException_WhenNewPasswordSameAsCurrent() {
-        // Arrange
         when(internalUserService.findUserEntityById(anyString())).thenReturn(user);
         when(passwordEncoder.matches("oldPassword", user.getPassword())).thenReturn(true);
         when(passwordEncoder.matches("newPassword123", user.getPassword())).thenReturn(true);
 
-        // Act & Assert
         assertThatThrownBy(() -> authService.changePassword("1", changePasswordRequest))
                 .isInstanceOf(PasswordUpdateException.class)
                 .hasMessageContaining("New password must be different from current password");
@@ -289,16 +264,13 @@ class AuthServiceTest {
 
     @Test
     void refreshToken_ShouldReturnJwtAuthenticationDto_WhenValidToken() {
-        // Arrange
         when(jwtService.validateRefreshToken(anyString())).thenReturn(true);
         when(jwtService.getEmailFromToken(anyString())).thenReturn("test@example.com");
         when(internalUserService.findUserEntityByCriterial(anyString())).thenReturn(user);
         when(jwtService.refreshBaseToken(anyString(), anyString())).thenReturn(jwtAuthDto);
 
-        // Act
         JwtAuthenticationDto result = authService.refreshToken(refreshTokenRequest);
 
-        // Assert
         assertThat(result).isNotNull();
         assertThat(result.token()).isEqualTo("jwt-token");
         verify(jwtService).refreshBaseToken("test@example.com", "refresh-token");
@@ -306,10 +278,8 @@ class AuthServiceTest {
 
     @Test
     void refreshToken_ShouldThrowAuthException_WhenInvalidRefreshToken() {
-        // Arrange
         when(jwtService.validateRefreshToken(anyString())).thenReturn(false);
 
-        // Act & Assert
         assertThatThrownBy(() -> authService.refreshToken(refreshTokenRequest))
                 .isInstanceOf(AuthException.class)
                 .hasMessageContaining("Invalid or expired refresh token");
@@ -317,13 +287,11 @@ class AuthServiceTest {
 
     @Test
     void refreshToken_ShouldThrowAuthException_WhenUserBlocked() {
-        // Arrange
         user.setStatus(UserStatus.BLOCKED);
         when(jwtService.validateRefreshToken(anyString())).thenReturn(true);
         when(jwtService.getEmailFromToken(anyString())).thenReturn("test@example.com");
         when(internalUserService.findUserEntityByCriterial(anyString())).thenReturn(user);
 
-        // Act & Assert
         assertThatThrownBy(() -> authService.refreshToken(refreshTokenRequest))
                 .isInstanceOf(AuthException.class)
                 .hasMessageContaining("is blocked");
