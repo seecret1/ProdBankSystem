@@ -2,6 +2,7 @@ package com.github.seecret1.cardservice.controller;
 
 import com.github.seecret1.cardservice.dto.response.CardResponse;
 import com.github.seecret1.cardservice.dto.response.CardSummaryResponse;
+import com.github.seecret1.cardservice.security.UserPrincipal;
 import com.github.seecret1.cardservice.service.CardService;
 import com.github.seecret1.common.dto.PageResponse;
 import com.github.seecret1.common.model.PageModel;
@@ -32,7 +33,7 @@ public class PublicCardController {
     private final CardService cardService;
 
     @GetMapping("/{criterial}")
-    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MANAGER')")
     @Operation(summary = "Get card by criterial", description = "Get card by ID or number")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success get card by ID or number"),
@@ -46,7 +47,7 @@ public class PublicCardController {
     }
 
     @GetMapping("/your")
-    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MANAGER')")
     @Operation(summary = "Get all your cards", description = "Get all cards belonging to current user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success get cards to current user"),
@@ -54,9 +55,10 @@ public class PublicCardController {
             @ApiResponse(responseCode = "403", description = "Forbidden")
     })
     public ResponseEntity<PageResponse<CardResponse>> findYourCards(
-            @AuthenticationPrincipal(expression = "id") String userId,
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid PageModel pageModel
     ) {
+        String userId = userPrincipal.getUserId();
         return ResponseEntity.ok(cardService.findYourCards(
                 userId,
                 pageModel

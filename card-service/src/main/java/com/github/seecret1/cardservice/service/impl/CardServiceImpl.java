@@ -98,7 +98,9 @@ public class CardServiceImpl implements CardService {
         var page = cardRepository.findAllByUserId(userId, pageable);
 
         if (page.isEmpty()) {
-            throw new EntityNotFoundException("User not found by criterial: " + userId);
+            throw new EntityNotFoundException(
+                    "User not found by criterial: " + userId + " or not cards from this users"
+            );
         }
         log.debug("Found {} cards for user {}, total pages: {}",
                 page.getContent().size(), userId, page.getTotalPages());

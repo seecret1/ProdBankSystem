@@ -14,9 +14,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -50,10 +48,9 @@ public class JwtTokenProvider {
 
         if (rolesObj == null) {
             log.warn("No roles found in token");
-            return "ROLE_USER"; // Дефолтная роль
+            return "ROLE_USER";
         }
 
-        // Если roles - это List - берем первый элемент
         if (rolesObj instanceof List) {
             List<?> rolesList = (List<?>) rolesObj;
             if (!rolesList.isEmpty() && rolesList.get(0) != null) {
@@ -63,7 +60,6 @@ public class JwtTokenProvider {
             }
         }
 
-        // Если roles - это String
         if (rolesObj instanceof String) {
             String roleStr = (String) rolesObj;
             log.info("Role from String: {}", roleStr);
@@ -135,23 +131,18 @@ public class JwtTokenProvider {
     public UserDetails getUserDetailsFromToken(String token) {
         String userId = getUserIdFromToken(token);
         String email = getEmailFromToken(token);
-        String role = getRoleFromToken(token); // <-- Используем getRoleFromToken
+        String role = getRoleFromToken(token);
 
-        log.info("Creating UserDetails from token. UserId: {}, Email: {}, Role: {}",
-                userId, email, role);
-
-        // Создаем authorities из одной роли
         Collection<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority(role));
 
-        log.info("Created authorities: {}", authorities.stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList()));
-
-        return new org.springframework.security.core.userdetails.User(
+        return new UserPrincipal(
                 email != null ? email : userId,
                 "",
-                authorities
+                authorities,
+                userId,
+                email,
+                role
         );
     }
 }

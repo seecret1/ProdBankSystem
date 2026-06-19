@@ -31,7 +31,7 @@ public class PrivateCardController {
     private final CardService cardService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')")
     @Operation(summary = "Get all cards", description = "Retrieve paginated list of all cards")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success get all cards"),
@@ -45,7 +45,7 @@ public class PrivateCardController {
     }
 
     @GetMapping("/filter")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')")
     @Operation(summary = "Get cards by filter", description = "Retrieve paginated list of cards by filter")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success get cards by filter"),
