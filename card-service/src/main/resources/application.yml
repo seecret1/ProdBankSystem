@@ -6,7 +6,7 @@ spring:
     name: card-service
 
   datasource:
-    url: ${CARD_DB_LOCAL_URL:jdbc:postgresql://{HOST:localhost}:{CARD_DB_PORT:5434}/{CARD_DB_NAME:card_db}}
+    url: ${CARD_DB_LOCAL_URL:jdbc:postgresql://${HOST:localhost}:${CARD_DB_PORT:5434}/${CARD_DB_NAME:card_db}}
     username: ${CARD_DB_USERNAME:postgres}
     password: ${CARD_DB_PASSWORD:postgres}
 
@@ -34,6 +34,9 @@ spring:
           max-idle: ${REDIS_POOL_MAX_IDLE:8}
           min-idle: ${REDIS_POOL_MIN_IDLE:0}
 
+user-service:
+  jwt:
+    secret: ${SECRET_KEY:MyVeryLongAndSecureSecretKeyForJWTTokenSigningThatIsAtLeast64CharactersLongToMeetHS512Requirements123456789}
 
 springdoc:
   api-docs:
@@ -83,3 +86,7 @@ otel:
 app:
   cache:
     cache-names:
+
+services:
+  user:
+    url: http://localhost:8091

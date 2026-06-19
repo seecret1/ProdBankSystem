@@ -4,7 +4,8 @@ val versions = mapOf(
 	"springdocOpenapiStarterWebmvcUiVersion" to "2.5.0",
 	"logbackClassicVersion" to "1.5.18",
 	"hibernateVersion" to "7.2.0.Final",
-	"jsonwebtokenVersion" to "0.12.6"
+	"jsonwebtokenVersion" to "0.12.6",
+	"feignMicrometerVersion" to "13.6"
 )
 
 plugins {
@@ -24,6 +25,14 @@ java {
 
 repositories {
 	mavenCentral()
+	mavenLocal()
+}
+
+dependencyManagement {
+	imports {
+		mavenBom("org.springframework.cloud:spring-cloud-dependencies:2025.1.0")
+		mavenBom("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.15.0")
+	}
 }
 
 dependencies {
@@ -34,11 +43,17 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
+	implementation("org.apache.commons:commons-pool2")
+
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${versions["springdocOpenapiStarterWebmvcUiVersion"]}")
+
+	implementation("io.github.openfeign:feign-micrometer:${versions["feignMicrometerVersion"]}")
+	implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
 
 	implementation("ch.qos.logback:logback-classic:${versions["logbackClassicVersion"]}")
 
@@ -49,6 +64,12 @@ dependencies {
 
 	compileOnly("org.mapstruct:mapstruct:${versions["mapstructVersion"]}")
 	annotationProcessor("org.mapstruct:mapstruct-processor:${versions["mapstructVersion"]}")
+
+	implementation("io.jsonwebtoken:jjwt-api:${versions["jsonwebtokenVersion"]}")
+	runtimeOnly("io.jsonwebtoken:jjwt-impl:${versions["jsonwebtokenVersion"]}")
+	runtimeOnly("io.jsonwebtoken:jjwt-jackson:${versions["jsonwebtokenVersion"]}")
+	implementation("com.fasterxml.jackson.core:jackson-databind")
+	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
 	implementation("org.postgresql:postgresql")
 	implementation("org.flywaydb:flyway-database-postgresql")

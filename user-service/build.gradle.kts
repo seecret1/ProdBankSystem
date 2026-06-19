@@ -1,10 +1,12 @@
 val versions = mapOf(
 	"mapstructVersion" to "1.5.5.Final",
 	"commonVersion" to "1.0.0-SNAPSHOT",
+	"springCloudStarterOpenfeign" to "4.1.1",
 	"springdocOpenapiStarterWebmvcUiVersion" to "2.5.0",
 	"logbackClassicVersion" to "1.5.18",
 	"hibernateVersion" to "7.2.0.Final",
-	"jsonwebtokenVersion" to "0.12.6"
+	"jsonwebtokenVersion" to "0.12.6",
+	"feignMicrometerVersion" to "13.6"
 )
 
 plugins {
@@ -28,6 +30,13 @@ repositories {
 	mavenLocal()
 }
 
+dependencyManagement {
+	imports {
+		mavenBom("org.springframework.cloud:spring-cloud-dependencies:2025.0.0")
+		mavenBom("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.15.0")
+	}
+}
+
 dependencies {
 	implementation("com.github.seecret1:common:${versions["commonVersion"]}@jar")
 
@@ -41,6 +50,9 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${versions["springdocOpenapiStarterWebmvcUiVersion"]}")
+	implementation("org.springframework.cloud:spring-cloud-starter-openfeign:${versions["springCloudStarterOpenfeign"]}")
+
+	implementation("io.github.openfeign:feign-micrometer:${versions["feignMicrometerVersion"]}")
 
 	implementation("ch.qos.logback:logback-classic:${versions["logbackClassicVersion"]}")
 
