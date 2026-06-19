@@ -104,3 +104,6 @@ app:
         expiry: 30m
       individualByCriterial:
         expiry: 10m
+
+services:
+  api-key: ${INTERNAL_API_KEY:your-internal-api-key}

@@ -17,6 +17,8 @@ public interface UserService {
 
     UserResponse findByCriterial(String criterial);
 
+    UserResponse findByCriterial(String criterial, String apiKey);
+
     UserResponse create(CreateUserRequest request);
 
     UserResponse updateFull(String criterial, CreateUserRequest request);

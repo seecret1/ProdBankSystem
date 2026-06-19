@@ -17,6 +17,7 @@ import com.github.seecret1.userservice.service.InternalUserService;
 import com.github.seecret1.userservice.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -38,6 +39,9 @@ public class UserServiceImpl implements UserService, InternalUserService {
     private final UserMapper userMapper;
 
     private final PasswordEncoder passwordEncoder;
+
+    @Value("${services.api-key}")
+    private String internalApiKey;
 
     @Override
     @Cacheable(value = "${app.cache.cache-names.userAll}", key = "#pageModel.toString()")
@@ -101,6 +105,18 @@ public class UserServiceImpl implements UserService, InternalUserService {
         var user = findUserEntityByCriterial(criterial);
         log.debug("Found user by criterial. User: {}", user);
         return userMapper.toResponse(user);
+    }
+
+    @Override
+    @Cacheable(value = "${app.cache.cache-names.userByCriterial}", key = "#criterial")
+    @Transactional(readOnly = true)
+    public UserResponse findByCriterial(String criterial, String apiKey) {
+
+        log.info("Check api key with internal api key");
+        if (!internalApiKey.equals(apiKey)) {
+            throw new SecurityException("Invalid internal API key");
+        }
+        return findByCriterial(criterial);
     }
 
     @Override

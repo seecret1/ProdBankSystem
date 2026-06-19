@@ -32,7 +32,7 @@ repositories {
 
 dependencyManagement {
 	imports {
-		mavenBom("org.springframework.cloud:spring-cloud-dependencies:2025.0.0")
+		mavenBom("org.springframework.cloud:spring-cloud-dependencies:2025.1.0")
 		mavenBom("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.15.0")
 	}
 }

@@ -26,7 +26,17 @@ import org.springframework.web.bind.annotation.*;
 @SecurityRequirement(name = "bearerAuth")
 public class UserPublicController {
 
+    private static final String X_INTERNAL_API_KEY = "X-Internal-Api-Key";
+
     private final UserService userService;
+
+    @GetMapping("/services/{criterial}")
+    public UserResponse findUserByCriterial(
+            @PathVariable String criterial,
+            @RequestHeader(value = X_INTERNAL_API_KEY, required = false) String apiKey
+    ) {
+        return userService.findByCriterial(criterial, apiKey);
+    }
 
     @PatchMapping
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MANAGER')")

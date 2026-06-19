@@ -20,6 +20,9 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -58,7 +61,6 @@ public class JwtService {
 
     @Transactional
     public JwtAuthenticationDto refreshBaseToken(String email, String oldRefreshToken) {
-
         log.info("Generating refresh token for user: {}", email);
         RefreshToken storedToken = refreshTokenRepository.findByToken(oldRefreshToken)
                 .orElseThrow(() -> new AuthException("Invalid refresh token"));
@@ -85,6 +87,26 @@ public class JwtService {
                 .getPayload();
 
         return claims.getSubject();
+    }
+
+    public String getUserIdFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(getSignInKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return claims.get("userId", String.class);
+    }
+
+    public List<String> getRolesFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(getSignInKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return claims.get("roles", List.class);
     }
 
     public boolean validateJwtToken(String token) {
@@ -128,7 +150,7 @@ public class JwtService {
     }
 
     private JwtAuthenticationDto createNewTokenPair(User user) {
-        String jwtToken = generateJwtToken(user.getEmail());
+        String jwtToken = generateJwtToken(user);
         String refreshToken = generateRefreshToken(user.getEmail());
 
         RefreshToken refreshTokenEntity = new RefreshToken();
@@ -143,26 +165,44 @@ public class JwtService {
         return jwtDto;
     }
 
-    private String generateJwtToken(String email) {
-        Date date = Date.from(
+    /**
+     * Генерация JWT токена с полной информацией о пользователе
+     */
+    private String generateJwtToken(User user) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", user.getId());                          // userId (UUID)
+        claims.put("email", user.getEmail());                        // email
+        claims.put("roles", List.of(user.getRole().name())); // роли
+        claims.put("username", user.getUsername());                 // username (опционально)
+
+        Date expirationDate = Date.from(
                 LocalDateTime.now().plusMinutes(tokenExpiration.toMinutes())
                         .atZone(ZoneId.systemDefault()).toInstant()
         );
+
         return Jwts.builder()
-                .subject(email)
-                .expiration(date)
+                .claims(claims)
+                .subject(user.getId())  // <-- ВАЖНО: subject = userId, а не email!
+                .issuedAt(new Date())
+                .expiration(expirationDate)
                 .signWith(getSignInKey())
                 .compact();
     }
 
+    /**
+     * Генерация Refresh токена
+     */
     private String generateRefreshToken(String email) {
-        Date date = Date.from(
+        Date expirationDate = Date.from(
                 LocalDateTime.now().plusMinutes(refreshTokenExpiration.toMinutes())
                         .atZone(ZoneId.systemDefault()).toInstant()
         );
+
+        // Для refresh токена используем email как subject
         return Jwts.builder()
                 .subject(email)
-                .expiration(date)
+                .issuedAt(new Date())
+                .expiration(expirationDate)
                 .signWith(getSignInKey())
                 .compact();
     }

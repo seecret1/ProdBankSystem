@@ -118,6 +118,8 @@ public class CardServiceImpl implements CardService {
 
         var user = userServiceClient.findUserByCriterial(criterial);
 
+        if (user == null) throw new EntityNotFoundException("User not found by criterial " + criterial);
+
         if (request.dateExpiry().isBefore(LocalDate.now())) {
             throw new InvalidParameterException(
                     "Date expiry is before now!"

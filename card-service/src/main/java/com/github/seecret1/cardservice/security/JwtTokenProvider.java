@@ -12,6 +12,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,57 +25,81 @@ public class JwtTokenProvider {
     @Value("${user-service.jwt.secret}")
     private String jwtSecret;
 
-    /**
-     * Извлечение SecretKey из строки
-     */
     private SecretKey getSecretKey() {
         byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    /**
-     * Получение userId из токена
-     */
     public String getUserIdFromToken(String token) {
         Claims claims = extractAllClaims(token);
-        return claims.getSubject();
+        return claims.get("userId", String.class);
     }
 
-    /**
-     * Получение email из токена
-     */
     public String getEmailFromToken(String token) {
         Claims claims = extractAllClaims(token);
         return claims.get("email", String.class);
     }
 
-    /**
-     * Получение ролей из токена
-     */
+    @SuppressWarnings("unchecked")
+    public String getRoleFromToken(String token) {
+        Claims claims = extractAllClaims(token);
+        Object rolesObj = claims.get("roles");
+
+        log.info("Raw roles from token: {}", rolesObj);
+        log.info("Roles class: {}", rolesObj != null ? rolesObj.getClass().getName() : "null");
+
+        if (rolesObj == null) {
+            log.warn("No roles found in token");
+            return "ROLE_USER"; // Дефолтная роль
+        }
+
+        // Если roles - это List - берем первый элемент
+        if (rolesObj instanceof List) {
+            List<?> rolesList = (List<?>) rolesObj;
+            if (!rolesList.isEmpty() && rolesList.get(0) != null) {
+                String role = rolesList.get(0).toString();
+                log.info("Role from List: {}", role);
+                return role;
+            }
+        }
+
+        // Если roles - это String
+        if (rolesObj instanceof String) {
+            String roleStr = (String) rolesObj;
+            log.info("Role from String: {}", roleStr);
+            return roleStr;
+        }
+
+        log.warn("Unexpected roles type: {}", rolesObj.getClass().getName());
+        return "ROLE_USER";
+    }
+
     public List<String> getRolesFromToken(String token) {
         Claims claims = extractAllClaims(token);
-        return claims.get("roles", List.class);
+        Object rolesObj = claims.get("roles");
+
+        if (rolesObj == null) {
+            return new ArrayList<>();
+        }
+
+        if (rolesObj instanceof List) {
+            List<?> rolesList = (List<?>) rolesObj;
+            List<String> roles = new ArrayList<>();
+            for (Object role : rolesList) {
+                if (role != null) {
+                    roles.add(role.toString());
+                }
+            }
+            return roles;
+        }
+
+        if (rolesObj instanceof String) {
+            return List.of((String) rolesObj);
+        }
+
+        return new ArrayList<>();
     }
 
-    /**
-     * Проверка, что пользователь имеет роль ADMIN
-     */
-    public boolean isAdmin(String token) {
-        List<String> roles = getRolesFromToken(token);
-        return roles != null && roles.contains("ROLE_ADMIN");
-    }
-
-    /**
-     * Проверка, что пользователь имеет роль USER
-     */
-    public boolean isUser(String token) {
-        List<String> roles = getRolesFromToken(token);
-        return roles != null && roles.contains("ROLE_USER");
-    }
-
-    /**
-     * Проверка валидности токена
-     */
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
@@ -87,48 +113,44 @@ public class JwtTokenProvider {
         }
     }
 
-    /**
-     * Извлечение всех claims из токена
-     */
     private Claims extractAllClaims(String token) {
-        return Jwts.parser()
+        Claims claims = Jwts.parser()
                 .verifyWith(getSecretKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+
+        log.info("=== JWT DEBUG ===");
+        log.info("Token: {}", token);
+        log.info("All claims: {}", claims);
+        log.info("Subject: {}", claims.getSubject());
+        log.info("Email: {}", claims.get("email"));
+        log.info("UserId: {}", claims.get("userId"));
+        log.info("Roles: {}", claims.get("roles"));
+        log.info("=================");
+
+        return claims;
     }
 
-    /**
-     * Получение срока истечения токена
-     */
-    public Date getExpirationDateFromToken(String token) {
-        Claims claims = extractAllClaims(token);
-        return claims.getExpiration();
-    }
-
-    /**
-     * Проверка, что токен не истек
-     */
-    private boolean isTokenExpired(String token) {
-        Date expiration = getExpirationDateFromToken(token);
-        return expiration.before(new Date());
-    }
-
-    /**
-     * Создание UserDetails из токена (для Spring Security)
-     */
     public UserDetails getUserDetailsFromToken(String token) {
         String userId = getUserIdFromToken(token);
         String email = getEmailFromToken(token);
-        List<String> roles = getRolesFromToken(token);
+        String role = getRoleFromToken(token); // <-- Используем getRoleFromToken
 
-        List<GrantedAuthority> authorities = roles.stream()
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+        log.info("Creating UserDetails from token. UserId: {}, Email: {}, Role: {}",
+                userId, email, role);
+
+        // Создаем authorities из одной роли
+        Collection<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority(role));
+
+        log.info("Created authorities: {}", authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList()));
 
         return new org.springframework.security.core.userdetails.User(
-                email,
-                "", // Пароль не нужен, т.к. аутентификация через JWT
+                email != null ? email : userId,
+                "",
                 authorities
         );
     }

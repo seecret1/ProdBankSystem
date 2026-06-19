@@ -16,7 +16,7 @@ public class AuthUtils {
 
     private String getTokenFromContext() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return (String) auth.getCredentials();
+        return auth.getCredentials().toString();
     }
 
     public void checkCardAccess(Card card) {
