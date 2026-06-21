@@ -116,15 +116,6 @@ public class JwtTokenProvider {
                 .parseSignedClaims(token)
                 .getPayload();
 
-        log.info("=== JWT DEBUG ===");
-        log.info("Token: {}", token);
-        log.info("All claims: {}", claims);
-        log.info("Subject: {}", claims.getSubject());
-        log.info("Email: {}", claims.get("email"));
-        log.info("UserId: {}", claims.get("userId"));
-        log.info("Roles: {}", claims.get("roles"));
-        log.info("=================");
-
         return claims;
     }
 

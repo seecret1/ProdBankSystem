@@ -10,7 +10,9 @@ import java.util.Collection;
 public class UserPrincipal extends User {
 
     private final String userId;
+
     private final String email;
+
     private final String role;
 
     public UserPrincipal(
