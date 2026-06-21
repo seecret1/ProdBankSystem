@@ -90,26 +90,6 @@ public class JwtService {
         return claims.getSubject();
     }
 
-    public String getUserIdFromToken(String token) {
-        Claims claims = Jwts.parser()
-                .verifyWith(getSignInKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-
-        return claims.get("userId", String.class);
-    }
-
-    public List<String> getRolesFromToken(String token) {
-        Claims claims = Jwts.parser()
-                .verifyWith(getSignInKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-
-        return claims.get("roles", List.class);
-    }
-
     public boolean validateJwtToken(String token) {
         try {
             Jwts.parser()
