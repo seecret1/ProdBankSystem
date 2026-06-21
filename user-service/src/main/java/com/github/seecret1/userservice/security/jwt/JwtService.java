@@ -39,6 +39,7 @@ public class JwtService {
     private Duration refreshTokenExpiration;
 
     private final RefreshTokenRepository refreshTokenRepository;
+
     private final UserRepository userRepository;
 
     @Transactional
@@ -170,10 +171,10 @@ public class JwtService {
      */
     private String generateJwtToken(User user) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", user.getId());                          // userId (UUID)
-        claims.put("email", user.getEmail());                        // email
-        claims.put("roles", List.of(user.getRole().name())); // роли
-        claims.put("username", user.getUsername());                 // username (опционально)
+        claims.put("userId", user.getId());
+        claims.put("email", user.getEmail());
+        claims.put("roles", List.of(user.getRole().name()));
+        claims.put("username", user.getUsername());
 
         Date expirationDate = Date.from(
                 LocalDateTime.now().plusMinutes(tokenExpiration.toMinutes())
@@ -182,7 +183,7 @@ public class JwtService {
 
         return Jwts.builder()
                 .claims(claims)
-                .subject(user.getId())  // <-- ВАЖНО: subject = userId, а не email!
+                .subject(user.getId())
                 .issuedAt(new Date())
                 .expiration(expirationDate)
                 .signWith(getSignInKey())
@@ -198,7 +199,6 @@ public class JwtService {
                         .atZone(ZoneId.systemDefault()).toInstant()
         );
 
-        // Для refresh токена используем email как subject
         return Jwts.builder()
                 .subject(email)
                 .issuedAt(new Date())
