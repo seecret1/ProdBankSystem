@@ -15,4 +15,7 @@ public class UserServiceClientProperties {
 
     @Value("${user-service.client.api-key}")
     private String apiKey;
+
+    @Value("${user-service.client.x-internal-key:X-Internal-Api-Key}")
+    private String headerKey;
 }
