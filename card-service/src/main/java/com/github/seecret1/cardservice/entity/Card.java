@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 
 @Getter
@@ -37,4 +38,10 @@ public class Card extends BaseEntity {
 
     @Column(name = "user_id", nullable = false)
     private String userId;
+
+    public void softDelete(String author) {
+        setDeleted(true);
+        setDeletedAt(Instant.now());
+        setDeletedBy(author);
+    }
 }

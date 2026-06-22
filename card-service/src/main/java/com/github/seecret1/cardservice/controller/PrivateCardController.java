@@ -1,9 +1,11 @@
 package com.github.seecret1.cardservice.controller;
 
 import com.github.seecret1.cardservice.dto.request.CardRequest;
+import com.github.seecret1.cardservice.dto.request.ExtendCardRequest;
 import com.github.seecret1.cardservice.dto.request.UpdateStatusCardRequest;
 import com.github.seecret1.cardservice.dto.response.CardResponse;
 import com.github.seecret1.cardservice.model.CardFilterModel;
+import com.github.seecret1.cardservice.security.UserPrincipal;
 import com.github.seecret1.cardservice.service.CardService;
 import com.github.seecret1.common.dto.PageResponse;
 import com.github.seecret1.common.model.PageModel;
@@ -17,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -73,7 +76,7 @@ public class PrivateCardController {
                 .body(cardService.create(cardRequest));
     }
 
-    @PutMapping
+    @PatchMapping("/update-status")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "Update status", description = "Update card status")
     @ApiResponses(value = {
@@ -87,18 +90,49 @@ public class PrivateCardController {
         return ResponseEntity.ok(cardService.updateStatus(request));
     }
 
-    @DeleteMapping("/{cardCriterial}")
+    @PatchMapping("/extend")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @Operation(summary = "Delete card", description = "Delete card by criterial")
+    @Operation(summary = "Extend card", description = "Extend the validity period of the card")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success extend card"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden")
+    })
+    public ResponseEntity<CardResponse> extendCard(
+            @Valid @RequestBody ExtendCardRequest request
+    ) {
+        return ResponseEntity.ok(cardService.extendCard(request));
+    }
+
+    @DeleteMapping("/soft-delete/{cardCriterial}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @Operation(summary = "Soft delete card", description = "Soft delete card by criterial")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Success delete card"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "403", description = "Forbidden")
     })
-    public ResponseEntity<Void> deleteCards(
+    public ResponseEntity<Void> softDelete(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable String cardCriterial
     ) {
-        cardService.delete(cardCriterial);
+        String userId = userPrincipal.getUserId();
+        cardService.softDelete(userId, cardCriterial);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/hard-delete/{cardCriterial}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @Operation(summary = "Hard delete card", description = "Hard delete card by criterial")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Success delete card"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden")
+    })
+    public ResponseEntity<Void> hardDelete(
+            @PathVariable String cardCriterial
+    ) {
+        cardService.hardDelete(cardCriterial);
         return ResponseEntity.noContent().build();
     }
 }

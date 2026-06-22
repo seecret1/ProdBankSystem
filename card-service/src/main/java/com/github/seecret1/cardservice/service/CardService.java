@@ -1,14 +1,12 @@
 package com.github.seecret1.cardservice.service;
 
 import com.github.seecret1.cardservice.dto.request.CardRequest;
+import com.github.seecret1.cardservice.dto.request.ExtendCardRequest;
 import com.github.seecret1.cardservice.dto.request.UpdateStatusCardRequest;
 import com.github.seecret1.cardservice.dto.response.CardResponse;
-import com.github.seecret1.cardservice.dto.response.CardSummaryResponse;
 import com.github.seecret1.cardservice.model.CardFilterModel;
 import com.github.seecret1.common.dto.PageResponse;
 import com.github.seecret1.common.model.PageModel;
-
-import java.util.List;
 
 public interface CardService {
 
@@ -24,5 +22,9 @@ public interface CardService {
 
     CardResponse updateStatus(UpdateStatusCardRequest request);
 
-    void delete(String criterial);
+    CardResponse extendCard(ExtendCardRequest request);
+
+    void softDelete(String userId, String criterial);
+
+    void hardDelete(String criterial);
 }

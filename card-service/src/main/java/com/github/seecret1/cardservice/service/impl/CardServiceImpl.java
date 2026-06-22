@@ -2,6 +2,7 @@ package com.github.seecret1.cardservice.service.impl;
 
 import com.github.seecret1.cardservice.client.UserServiceClient;
 import com.github.seecret1.cardservice.dto.request.CardRequest;
+import com.github.seecret1.cardservice.dto.request.ExtendCardRequest;
 import com.github.seecret1.cardservice.dto.request.UpdateStatusCardRequest;
 import com.github.seecret1.cardservice.dto.response.CardResponse;
 import com.github.seecret1.cardservice.entity.Card;
@@ -24,6 +25,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -154,16 +156,12 @@ public class CardServiceImpl implements CardService {
                         "Card not found by number: " + number
                 ));
 
-        CardStatus status = request.status();
-        if (status == CardStatus.ACTIVE &&
-                card.getDateExpiry().isBefore(LocalDate.now())) {
-            throw new CardStatusException("The card status cannot be active");
-        }
-        if (status == CardStatus.EXPIRED &&
-                card.getDateExpiry().isAfter(LocalDate.now())) {
-            throw new CardStatusException("The card status cannot be expired");
-        }
+        var status = request.status();
+        boolean check = checkCardStatus(card, status);
+
+        if (check) return cardMapper.toDtoResponse(card);
         card.setStatus(status);
+
         log.debug("Update card status: {}", card);
         cardRepository.save(card);
         log.info("Update card successful");
@@ -172,11 +170,47 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void delete(String criterial) {
-        log.info("Delete card by criterial: {}", criterial);
+    public CardResponse extendCard(ExtendCardRequest request) {
+        String number = request.number();
+        log.info("Extend the validity period of the card: {}", number);
+
+        String hash = CardHashUtils.hash(number);
+        var card = cardRepository.findByNumberHash(hash)
+                .orElseThrow(() -> new CardNotFoundException(
+                        "Card not found by number: " + number
+                ));
+
+        if (card.getDateExpiry().isBefore(request.dateExpiry())) {
+            card.setDateExpiry(request.dateExpiry());
+            card.setStatus(CardStatus.EXPIRED);
+        }
+        log.debug("Extend card status: {}", card.getStatus());
+        cardRepository.save(card);
+        log.info("Extend card successful");
+        return cardMapper.toDtoResponse(card);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void softDelete(String userId, String criterial) {
+        log.info("Soft delete card by criterial: {}", criterial);
+
+        var card = findCardByCriterial(criterial);
+        var user = userServiceClient.findUserByCriterial(userId);
+        log.debug("Find user {} from the server", user.username());
+
+        card.softDelete(user.username());
+        cardRepository.save(card);
+        log.info("Soft delete card successful");
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void hardDelete(String criterial) {
+        log.info("Hard delete card by criterial: {}", criterial);
         var card = findCardByCriterial(criterial);
         cardRepository.delete(card);
-        log.info("Delete card successful");
+        log.info("Hard delete card successful");
     }
 
     private Card findCardByCriterial(String criterial) {
@@ -198,5 +232,19 @@ public class CardServiceImpl implements CardService {
         }
 
         throw new CardNotFoundException("Card not found by criterial: " + criterial);
+    }
+
+    private boolean checkCardStatus(Card card, CardStatus status) {
+        if (card.getStatus() == status) return false;
+
+        if (status == CardStatus.ACTIVE &&
+                card.getDateExpiry().isBefore(LocalDate.now())) {
+            throw new CardStatusException("The card status cannot be active");
+        }
+        if (status == CardStatus.EXPIRED &&
+                card.getDateExpiry().isAfter(LocalDate.now())) {
+            throw new CardStatusException("The card status cannot be expired");
+        }
+        return true;
     }
 }

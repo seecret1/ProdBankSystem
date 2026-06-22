@@ -70,32 +70,6 @@ public class JwtTokenProvider {
         return "ROLE_USER";
     }
 
-    public List<String> getRolesFromToken(String token) {
-        Claims claims = extractAllClaims(token);
-        Object rolesObj = claims.get("roles");
-
-        if (rolesObj == null) {
-            return new ArrayList<>();
-        }
-
-        if (rolesObj instanceof List) {
-            List<?> rolesList = (List<?>) rolesObj;
-            List<String> roles = new ArrayList<>();
-            for (Object role : rolesList) {
-                if (role != null) {
-                    roles.add(role.toString());
-                }
-            }
-            return roles;
-        }
-
-        if (rolesObj instanceof String) {
-            return List.of((String) rolesObj);
-        }
-
-        return new ArrayList<>();
-    }
-
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
