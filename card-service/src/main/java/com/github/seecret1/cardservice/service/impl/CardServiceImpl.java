@@ -25,7 +25,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -239,11 +238,11 @@ public class CardServiceImpl implements CardService {
 
         if (status == CardStatus.ACTIVE &&
                 card.getDateExpiry().isBefore(LocalDate.now())) {
-            throw new CardStatusException("The card status cannot be active");
+            throw new CardStatusUpdateException("The card status cannot be active");
         }
         if (status == CardStatus.EXPIRED &&
                 card.getDateExpiry().isAfter(LocalDate.now())) {
-            throw new CardStatusException("The card status cannot be expired");
+            throw new CardStatusUpdateException("The card status cannot be expired");
         }
         return true;
     }
