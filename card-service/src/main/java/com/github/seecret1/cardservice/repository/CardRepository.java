@@ -8,6 +8,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Repository
@@ -18,6 +20,16 @@ public interface CardRepository extends JpaRepository<Card, String>, JpaSpecific
 
     @Override
     Page<Card> findAll(Pageable pageable);
+
+    @Query("""
+    SELECT c FROM Card c WHERE c.dateExpiry <= :dateExpiration AND c.deleted = false
+    """)
+    Page<Card> findExpiryCards(LocalDate dateExpiration, Pageable pageable);
+
+    @Query("""
+    SELECT c FROM Card c WHERE c.deleted = true AND c.deletedAt <= :deleteDate
+    """)
+    Page<Card> findDeletedCards(Instant deleteDate, Pageable pageable);
 
     Page<Card> findAllByUserId(String userId, Pageable pageable);
 

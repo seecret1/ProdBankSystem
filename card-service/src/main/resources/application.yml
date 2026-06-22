@@ -90,3 +90,9 @@ otel:
 app:
   cache:
     cache-names:
+  scheduler:
+    expiry:
+      retention-years: 3
+    deleted:
+      retention-years: 4
+    pageSize: 100
