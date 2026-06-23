@@ -1,11 +1,8 @@
 import org.gradle.api.publish.maven.MavenPublication
 
 val versions = mapOf(
-	"jakartaValidationVersion" to "3.0.2",
-	"fasterxmlJacksonVersion" to "2.17.2",
 	"lombokVersion" to "1.18.34",
-	"hibernateEnversVersion" to "6.4.4.Final",
-	"openApiVersion" to "2.5.0"
+	"jsonwebtokenVersion" to "0.12.6"
 )
 
 plugins {
@@ -38,22 +35,14 @@ dependencyManagement {
 configurations.all { resolutionStrategy.cacheChangingModulesFor(0, "seconds") }
 
 dependencies {
-	api("io.micrometer:micrometer-registry-prometheus")
-	api("io.github.openfeign:feign-micrometer:13.6")
-	api("io.opentelemetry:opentelemetry-exporter-otlp")
-	api("io.micrometer:micrometer-observation")
-	api("io.micrometer:micrometer-tracing")
-	api("io.micrometer:micrometer-tracing-bridge-otel")
-	api("ch.qos.logback:logback-classic:1.5.18")
-
-	api("jakarta.validation:jakarta.validation-api:${versions["jakartaValidationVersion"]}")
-	api("com.fasterxml.jackson.core:jackson-annotations:${versions["fasterxmlJacksonVersion"]}")
+	api("io.jsonwebtoken:jjwt-api:${versions["jsonwebtokenVersion"]}")
+	api("io.jsonwebtoken:jjwt-impl:${versions["jsonwebtokenVersion"]}")
+	api("io.jsonwebtoken:jjwt-jackson:${versions["jsonwebtokenVersion"]}")
 	api("com.fasterxml.jackson.core:jackson-databind")
-	api("org.springdoc:springdoc-openapi-starter-webmvc-ui:${versions["openApiVersion"]}")
+	api("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
-	api("org.springframework.boot:spring-boot-starter-data-redis")
-	implementation("org.springframework.boot:spring-boot-starter-web")
-	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	api("org.springframework.boot:spring-boot-starter-security")
+	api("jakarta.servlet:jakarta.servlet-api")
 
 	compileOnly("org.projectlombok:lombok:${versions["lombokVersion"]}")
 	annotationProcessor("org.projectlombok:lombok:${versions["lombokVersion"]}")
@@ -124,7 +113,7 @@ publishing {
 
 			pom {
 				name.set(project.name)
-				description.set("Common library for Bank Card Management System")
+				description.set("JWT-Common library for Bank Card Management System")
 				url.set("https://github.com/seecret1/ProdBankSystem")
 
 				licenses {
