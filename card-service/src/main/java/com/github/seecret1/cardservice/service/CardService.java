@@ -20,6 +20,8 @@ public interface CardService {
 
     PageResponse<CardResponse> findYourCards(String userId, PageModel pageModel);
 
+    CardResponse activateCard(String criterial);
+
     CardResponse create(CardRequest request);
 
     CardResponse updateStatus(UpdateStatusCardRequest request);

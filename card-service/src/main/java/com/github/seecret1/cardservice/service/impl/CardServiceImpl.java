@@ -144,6 +144,25 @@ public class CardServiceImpl implements CardService, InternalCardService {
 
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
+    public CardResponse activateCard(String criterial) {
+        log.info("Activate card by criterial: {}", criterial);
+
+        var card = findCardByCriterial(criterial);
+        authUtils.checkCardAccess(card);
+
+        if (card.getStatus() == CardStatus.PENDING) {
+            card.setStatus(CardStatus.ACTIVE);
+            log.info("Successfully activate card: {}", criterial);
+            return cardMapper.toYourDtoResponse(card);
+        }
+        if (card.getStatus() == CardStatus.ACTIVE) {
+            throw new CardAlreadyActivated("Card already activated");
+        }
+        else throw new CardException("Card cannot be activated");
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     @CacheEvict(
             value = {
                 "${app.cache.cache-names.cardAll}",
@@ -155,7 +174,7 @@ public class CardServiceImpl implements CardService, InternalCardService {
             allEntries = true
     )
     public CardResponse create(CardRequest request) {
-        String criterial = request.userEmail();
+        String criterial = request.userCriterial();
         log.info("Creating a user card, criterial: {}", criterial);
 
         var user = userServiceClient.findUserByCriterial(criterial);

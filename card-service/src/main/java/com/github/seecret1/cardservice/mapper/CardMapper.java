@@ -63,7 +63,7 @@ public final class CardMapper {
         card.setDateActivation(request.dateActivation());
         card.setDateExpiry(request.dateExpiry());
         card.setBalance(request.balance());
-        card.setStatus(CardStatus.ACTIVE);
+        card.setStatus(CardStatus.PENDING);
         card.setDeleted(false);
         card.setUserId(userId);
         return card;

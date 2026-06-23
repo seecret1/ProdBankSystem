@@ -60,6 +60,22 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.GONE, ex.getMessage());
     }
 
+    @ExceptionHandler(CardAlreadyActivated.class)
+    public ResponseEntity<ErrorResponse> handleCardAlreadyActivated(
+            CardAlreadyActivated ex
+    ) {
+        log.error("GlobalRestControllerAdvice -> CardAlreadyActivated: {}", ex.getMessage());
+        return buildResponse(HttpStatus.UNPROCESSABLE_CONTENT, ex.getMessage());
+    }
+
+    @ExceptionHandler(CardException.class)
+    public ResponseEntity<ErrorResponse> handleCardException(
+            CardException ex
+    ) {
+        log.error("GlobalRestControllerAdvice -> CardException: {}", ex.getMessage());
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorResponse> handleConstraintViolationException(
             ConstraintViolationException ex
