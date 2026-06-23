@@ -1,7 +1,7 @@
 package com.github.seecret1.cardservice.utils;
 
 import com.github.seecret1.cardservice.entity.Card;
-import com.github.seecret1.cardservice.security.JwtTokenProvider;
+import com.github.seecret1.jwt_common.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;

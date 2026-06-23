@@ -1,7 +1,7 @@
 package com.github.seecret1.cardservice.config;
 
-import com.github.seecret1.cardservice.security.JwtAuthenticationFilter;
-import com.github.seecret1.cardservice.security.JwtTokenProvider;
+import com.github.seecret1.jwt_common.security.JwtAuthenticationFilter;
+import com.github.seecret1.jwt_common.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

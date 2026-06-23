@@ -4,7 +4,6 @@ val versions = mapOf(
 	"springdocOpenapiStarterWebmvcUiVersion" to "2.5.0",
 	"logbackClassicVersion" to "1.5.18",
 	"hibernateVersion" to "7.2.0.Final",
-	"jsonwebtokenVersion" to "0.12.6",
 	"feignMicrometerVersion" to "13.6"
 )
 
@@ -37,6 +36,7 @@ dependencyManagement {
 
 dependencies {
 	implementation("com.github.seecret1:common:${versions["commonVersion"]}@jar")
+	implementation("com.github.seecret1:jwt-common:${versions["commonVersion"]}")
 
 	implementation("io.micrometer:micrometer-registry-prometheus")
 
@@ -44,12 +44,10 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
-	implementation("org.springframework.boot:spring-boot-starter-data-redis")
 	implementation("org.apache.commons:commons-pool2")
 
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
-	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${versions["springdocOpenapiStarterWebmvcUiVersion"]}")
 
 	implementation("io.github.openfeign:feign-micrometer:${versions["feignMicrometerVersion"]}")
@@ -61,12 +59,6 @@ dependencies {
 	annotationProcessor("org.projectlombok:lombok")
 	testCompileOnly("org.projectlombok:lombok")
 	testAnnotationProcessor("org.projectlombok:lombok")
-
-	implementation("io.jsonwebtoken:jjwt-api:${versions["jsonwebtokenVersion"]}")
-	runtimeOnly("io.jsonwebtoken:jjwt-impl:${versions["jsonwebtokenVersion"]}")
-	runtimeOnly("io.jsonwebtoken:jjwt-jackson:${versions["jsonwebtokenVersion"]}")
-	implementation("com.fasterxml.jackson.core:jackson-databind")
-	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
 	implementation("org.postgresql:postgresql")
 	implementation("org.flywaydb:flyway-database-postgresql")

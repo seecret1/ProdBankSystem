@@ -1,10 +1,10 @@
 package com.github.seecret1.cardservice.controller;
 
 import com.github.seecret1.cardservice.dto.response.CardResponse;
-import com.github.seecret1.cardservice.security.UserPrincipal;
 import com.github.seecret1.cardservice.service.CardService;
 import com.github.seecret1.common.dto.PageResponse;
 import com.github.seecret1.common.model.PageModel;
+import com.github.seecret1.jwt_common.security.UserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -38,7 +38,6 @@ public class PublicCardController {
             @ApiResponse(responseCode = "403", description = "Forbidden")
     })
     public ResponseEntity<CardResponse> findByCriterial(
-            @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable String criterial
     ) {
         return ResponseEntity.ok(cardService.findByCriterial(criterial));
