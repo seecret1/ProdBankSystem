@@ -64,9 +64,9 @@ public class PublicCardController {
 
     @PostMapping("/activate/{criterial}")
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MANAGER')")
-    @Operation(summary = "Get all your cards", description = "Get all cards belonging to current user")
+    @Operation(summary = "Activate new card", description = "Activate card has current status in PENDING")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Success get cards to current user"),
+            @ApiResponse(responseCode = "200", description = "Success activate cards to current user"),
             @ApiResponse(responseCode = "400", description = "Bad Request"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "403", description = "Forbidden"),
