@@ -12,6 +12,8 @@ public interface CardService {
 
     PageResponse<CardResponse> findAll(PageModel pageModel);
 
+    PageResponse<CardResponse> findOnlyNotDeleted(PageModel pageModel);
+
     PageResponse<CardResponse> findByFilter(CardFilterModel filter);
 
     CardResponse findByCriterial(String criterial);

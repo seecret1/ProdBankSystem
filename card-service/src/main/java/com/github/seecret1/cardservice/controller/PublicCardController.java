@@ -1,7 +1,6 @@
 package com.github.seecret1.cardservice.controller;
 
 import com.github.seecret1.cardservice.dto.response.CardResponse;
-import com.github.seecret1.cardservice.dto.response.CardSummaryResponse;
 import com.github.seecret1.cardservice.security.UserPrincipal;
 import com.github.seecret1.cardservice.service.CardService;
 import com.github.seecret1.common.dto.PageResponse;
@@ -16,11 +15,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @Validated
 @RestController
@@ -41,6 +38,7 @@ public class PublicCardController {
             @ApiResponse(responseCode = "403", description = "Forbidden")
     })
     public ResponseEntity<CardResponse> findByCriterial(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable String criterial
     ) {
         return ResponseEntity.ok(cardService.findByCriterial(criterial));

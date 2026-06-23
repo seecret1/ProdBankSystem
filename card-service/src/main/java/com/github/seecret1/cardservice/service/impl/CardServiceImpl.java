@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -66,9 +67,27 @@ public class CardServiceImpl implements CardService, InternalCardService {
 
     @Override
     @Transactional(readOnly = true)
+    public PageResponse<CardResponse> findOnlyNotDeleted(PageModel pageModel) {
+        log.info("Find all not deleted page cards");
+
+        Pageable pageable = pageModel.toPageRequest();
+        var pageResult = cardRepository.findNotDeletedCards(pageable);
+
+        log.debug("Find not deleted cards list. page: {}, page size: {}, page elements: {}",
+                pageResult.getTotalPages(), pageResult.getTotalElements(), pageResult.getContent());
+
+        return new PageResponse<>(
+                pageResult.getTotalElements(),
+                pageResult.getTotalPages(),
+                cardMapper.toDtoResponseList(pageResult.getContent())
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public PageResponse<CardResponse> findByFilter(CardFilterModel filter) {
         log.info("Find card by filter: {}", filter);
-        var page = cardRepository.findAll(
+        var page = cardRepository.findNotDeletedCards(
                 CardSpecification.withFilter(filter),
                 filter.getPage().toPageRequest()
         );
@@ -182,10 +201,8 @@ public class CardServiceImpl implements CardService, InternalCardService {
                         "Card not found by number: " + number
                 ));
 
-        if (card.getDateExpiry().isBefore(request.dateExpiry())) {
-            card.setDateExpiry(request.dateExpiry());
-            card.setStatus(CardStatus.EXPIRED);
-        }
+        checkCardValid(card, request);
+
         log.debug("Extend card status: {}", card.getStatus());
         cardRepository.save(card);
         log.info("Extend card successful");
@@ -198,6 +215,10 @@ public class CardServiceImpl implements CardService, InternalCardService {
         log.info("Soft delete card by criterial: {}", criterial);
 
         var card = findCardByCriterial(criterial);
+        if (card.getDeleted() == true) {
+            throw new CardDeletedException("Card already deleted by criterial " + criterial);
+        }
+
         var user = userServiceClient.findUserByCriterial(userId);
         log.debug("Find user {} from the server", user.username());
 
@@ -268,6 +289,29 @@ public class CardServiceImpl implements CardService, InternalCardService {
                 card.getDateExpiry().isAfter(LocalDate.now())) {
             throw new CardStatusUpdateException("The card status cannot be expired");
         }
+        if (status == CardStatus.EXTENDED) {
+            throw new CardStatusUpdateException("Please use another method: extendCard");
+        }
+
         return true;
+    }
+
+    private void checkCardValid(Card card, ExtendCardRequest request) {
+
+        if (!card.getDateExpiry().isBefore(request.dateExpiry()))
+            throw new CardStatusUpdateException("The card status cannot be EXTENDED");
+
+        if (card.getStatus() == CardStatus.BLOCKED) {
+            throw new CardStatusUpdateException("The card status BLOCKED");
+        }
+        if (card.getBalance().compareTo(BigDecimal.ZERO) < 0)
+            throw new ExtendedException("Card status cannot be EXTENDED");
+
+        if (card.getStatus() == CardStatus.EXPIRED ||
+                card.getStatus() == CardStatus.ACTIVE ||
+                card.getStatus() == CardStatus.EXTENDED) {
+            card.setDateExpiry(request.dateExpiry());
+            card.setStatus(CardStatus.EXTENDED);
+        }
     }
 }

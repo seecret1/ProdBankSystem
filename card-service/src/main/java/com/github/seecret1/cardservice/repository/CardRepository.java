@@ -16,10 +16,23 @@ import java.util.Optional;
 public interface CardRepository extends JpaRepository<Card, String>, JpaSpecificationExecutor<Card> {
 
     @Override
-    Page<Card> findAll(Specification<Card> spec, Pageable pageable);
+    Page<Card> findAll(Pageable pageable);
 
     @Override
-    Page<Card> findAll(Pageable pageable);
+    @Query("""
+    SELECT c FROM Card c WHERE c.id = :id AND c.deleted = false
+    """)
+    Optional<Card> findById(String id);
+
+    @Query("""
+    SELECT c FROM Card c WHERE c.deleted = false
+    """)
+    Page<Card> findNotDeletedCards(Pageable pageable);
+
+    @Query("""
+    SELECT c FROM Card c WHERE c.deleted = false
+    """)
+    Page<Card> findNotDeletedCards(Specification<Card> spec, Pageable pageable);
 
     @Query("""
     SELECT c FROM Card c WHERE c.dateExpiry <= :dateExpiration AND c.deleted = false
@@ -38,8 +51,14 @@ public interface CardRepository extends JpaRepository<Card, String>, JpaSpecific
     """)
     Page<Card> findDeletedCards(Instant deleteDate, Pageable pageable);
 
+    @Query("""
+    SELECT c FROM Card c WHERE c.deleted = false AND c.userId = :userId
+    """)
     Page<Card> findAllByUserId(String userId, Pageable pageable);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+    SELECT c FROM Card c WHERE c.deleted = false AND c.numberHash = :numberHash
+    """)
     Optional<Card> findByNumberHash(String numberHash);
 }

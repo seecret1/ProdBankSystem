@@ -33,8 +33,8 @@ public class PrivateCardController {
 
     private final CardService cardService;
 
-    @GetMapping
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')")
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "Get all cards", description = "Retrieve paginated list of all cards")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success get all cards"),
@@ -45,6 +45,20 @@ public class PrivateCardController {
             @Valid PageModel pageModel
     ) {
         return ResponseEntity.ok(cardService.findAll(pageModel));
+    }
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')")
+    @Operation(summary = "Get only not deleted cards", description = "Retrieve paginated list of only not deleted cards")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success get all cards"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden")
+    })
+    public ResponseEntity<PageResponse<CardResponse>> findOnlyNotDeleted(
+            @Valid PageModel pageModel
+    ) {
+        return ResponseEntity.ok(cardService.findOnlyNotDeleted(pageModel));
     }
 
     @GetMapping("/filter")
@@ -96,6 +110,7 @@ public class PrivateCardController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success extend card"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "402", description = "Payment Required"),
             @ApiResponse(responseCode = "403", description = "Forbidden")
     })
     public ResponseEntity<CardResponse> extendCard(
@@ -104,13 +119,14 @@ public class PrivateCardController {
         return ResponseEntity.ok(cardService.extendCard(request));
     }
 
-    @DeleteMapping("/soft-delete/{cardCriterial}")
+    @DeleteMapping("/{cardCriterial}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "Soft delete card", description = "Soft delete card by criterial")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Success delete card"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "403", description = "Forbidden")
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "410", description = "Gone")
     })
     public ResponseEntity<Void> softDelete(
             @AuthenticationPrincipal UserPrincipal userPrincipal,

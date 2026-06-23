@@ -1,8 +1,6 @@
 package com.github.seecret1.cardservice.exception.handler;
 
-import com.github.seecret1.cardservice.exception.CardExistsException;
-import com.github.seecret1.cardservice.exception.CardNotFoundException;
-import com.github.seecret1.cardservice.exception.CardStatusUpdateException;
+import com.github.seecret1.cardservice.exception.*;
 import com.github.seecret1.common.dto.ErrorResponse;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +42,22 @@ public class GlobalExceptionHandler {
     ) {
         log.error("GlobalRestControllerAdvice -> CardStatusException: {}", ex.getMessage());
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(ExtendedException.class)
+    public ResponseEntity<ErrorResponse> handleExtendedException(
+            ExtendedException ex
+    ) {
+        log.error("GlobalRestControllerAdvice -> ExtendedException: {}", ex.getMessage());
+        return buildResponse(HttpStatus.PAYMENT_REQUIRED, ex.getMessage());
+    }
+
+    @ExceptionHandler(CardDeletedException.class)
+    public ResponseEntity<ErrorResponse> handleCardDeletedException(
+            CardDeletedException ex
+    ) {
+        log.error("GlobalRestControllerAdvice -> CardDeletedException: {}", ex.getMessage());
+        return buildResponse(HttpStatus.GONE, ex.getMessage());
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
