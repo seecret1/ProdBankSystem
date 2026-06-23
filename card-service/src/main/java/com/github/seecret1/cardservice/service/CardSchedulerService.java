@@ -2,7 +2,9 @@ package com.github.seecret1.cardservice.service;
 
 public interface CardSchedulerService {
 
-    void removeExpiryCardFromDb();
+    void removeExpiryCards();
 
-    void removeDeletedCardFromDb();
+    void removeDeletedCards();
+
+    void updateStatusExpiryCards();
 }

@@ -216,19 +216,24 @@ public class CardServiceImpl implements CardService, InternalCardService {
     }
 
     @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public Page<Card> findExpiryCards(LocalDate expirationDate, Pageable pageable) {
         log.info("Find expiry cards before period: {}", expirationDate);
-        var page = cardRepository.findExpiryCards(expirationDate, pageable);
-        log.debug("Find expiry cards list size: {}", page.getTotalElements());
-        return page;
+        return cardRepository.findExpiryCards(expirationDate, pageable);
     }
 
     @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public Page<Card> findDeletedCards(Instant deletedAt, Pageable pageable) {
         log.info("Find deleted cards before period: {}", deletedAt);
-        var page = cardRepository.findDeletedCards(deletedAt, pageable);
-        log.debug("Find deleted cards list size: {}", page.getTotalElements());
-        return page;
+        return cardRepository.findDeletedCards(deletedAt, pageable);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public Page<Card> findExpiryActiveCards(LocalDate expirationDate, Pageable pageable) {
+        log.info("Find updated status cards before period: {}", expirationDate);
+        return cardRepository.findExpiryActiveCards(expirationDate, pageable);
     }
 
     private Card findCardByCriterial(String criterial) {

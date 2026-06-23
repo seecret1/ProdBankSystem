@@ -12,4 +12,6 @@ public interface InternalCardService {
     Page<Card> findExpiryCards(LocalDate expirationDate, Pageable pageable);
 
     Page<Card> findDeletedCards(Instant deletedAt, Pageable pageable);
+
+    Page<Card> findExpiryActiveCards(LocalDate expirationDate, Pageable pageable);
 }

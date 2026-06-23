@@ -1,6 +1,8 @@
 package com.github.seecret1.cardservice.service.impl;
 
+import com.github.seecret1.cardservice.dto.request.UpdateStatusCardRequest;
 import com.github.seecret1.cardservice.entity.Card;
+import com.github.seecret1.cardservice.entity.enums.CardStatus;
 import com.github.seecret1.cardservice.service.CardSchedulerService;
 import com.github.seecret1.cardservice.service.CardService;
 import com.github.seecret1.cardservice.service.InternalCardService;
@@ -40,7 +42,7 @@ public class CardSchedulerServiceImpl implements CardSchedulerService {
 
     @Override
     @Transactional
-    public void removeExpiryCardFromDb() {
+    public void removeExpiryCards() {
         LocalDate expirationDate = LocalDate.now().minusYears(maximumYearExpiry);
         log.debug("Removing cards with expiry date before: {}", expirationDate);
 
@@ -74,7 +76,7 @@ public class CardSchedulerServiceImpl implements CardSchedulerService {
 
     @Override
     @Transactional
-    public void removeDeletedCardFromDb() {
+    public void removeDeletedCards() {
         ZonedDateTime deletedBefore = ZonedDateTime.now(ZoneId.systemDefault())
                 .minusYears(maximumYearDeleted);
         Instant deletedAtDate = deletedBefore.toInstant();
@@ -106,6 +108,55 @@ public class CardSchedulerServiceImpl implements CardSchedulerService {
         } catch (Exception e) {
             log.error("Error during scheduled cleanup: {}", e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void updateStatusExpiryCards() {
+        LocalDate currentDate = LocalDate.now();
+        log.debug("Update status cards with expiry current date: {}", currentDate);
+
+        int pageNumber = 0;
+        int totalUpdated = 0;
+
+        try {
+            while (true) {
+                Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                Page<Card> page = internalCardService.findExpiryActiveCards(currentDate, pageable);
+
+                if (page.isEmpty()) {
+                    log.debug("No more expired cards to update");
+                    break;
+                }
+                List<Card> expiredCards = page.getContent();
+                log.debug("List expired cards size={}, pageNumber={}", expiredCards.size(), pageNumber);
+
+                int updatedInPage = updatedStatus(expiredCards);
+                totalUpdated += updatedInPage;
+
+                if (page.isLast()) break;
+
+                pageNumber++;
+                log.info("Scheduler completed. Total updated expired cards: {}", totalUpdated);
+            }
+        } catch (Exception e) {
+            log.error("Error during scheduled updated: {}", e.getMessage(), e);
+        }
+    }
+
+    private int updatedStatus(List<Card> cards) {
+        int updated = 0;
+        for (var card : cards) {
+            try {
+                cardService.updateStatus(new UpdateStatusCardRequest(card.getNumber(), CardStatus.EXPIRED));
+                log.debug("Updated card: id={}, number={}, expiry={}",
+                        card.getId(), CardMaskUtils.maskCardNumber(card.getNumber()), card.getDateExpiry());
+                updated++;
+
+            } catch (Exception e) {
+                log.error("Error updated card: id={}, error={}", card.getId(), e.getMessage());
+            }
+        }
+        return updated;
     }
 
     private int deleteCards(List<Card> cards) {

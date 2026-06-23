@@ -13,15 +13,15 @@ public class DeleteOldCardsScheduler {
 
     private final CardSchedulerService cardSchedulerService;
 
-    @Scheduled(cron = "0 0 2 * * *", zone = "Europe/Moscow")
+    @Scheduled(cron = "${app.scheduler.expiry.cron}", zone = "Europe/Moscow")
     public void clearDbExpiredCards() {
-        log.info("Starting scheduler: clearing old expired cards from DB");
-        cardSchedulerService.removeExpiryCardFromDb();
+        log.info("[SCHEDULER] Starting scheduler: clearing old expired cards from DB");
+        cardSchedulerService.removeExpiryCards();
     }
 
-    @Scheduled(cron = "0 0 3 * * *", zone = "Europe/Moscow")
+    @Scheduled(cron = "${app.scheduler.deleted.cron}", zone = "Europe/Moscow")
     public void clearDbDeletedCards() {
-        log.info("Starting scheduler: clearing old deleted cards from DB");
-        cardSchedulerService.removeDeletedCardFromDb();
+        log.info("[SCHEDULER] Starting scheduler: clearing old deleted cards from DB");
+        cardSchedulerService.removeDeletedCards();
     }
 }

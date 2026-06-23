@@ -27,6 +27,13 @@ public interface CardRepository extends JpaRepository<Card, String>, JpaSpecific
     Page<Card> findExpiryCards(LocalDate dateExpiration, Pageable pageable);
 
     @Query("""
+    SELECT c FROM Card c 
+    WHERE c.dateExpiry <= :dateExpiration AND c.deleted = false 
+        AND c.status IN ('ACTIVE', 'EXTENDED')
+    """)
+    Page<Card> findExpiryActiveCards(LocalDate dateExpiration, Pageable pageable);
+
+    @Query("""
     SELECT c FROM Card c WHERE c.deleted = true AND c.deletedAt <= :deleteDate
     """)
     Page<Card> findDeletedCards(Instant deleteDate, Pageable pageable);
