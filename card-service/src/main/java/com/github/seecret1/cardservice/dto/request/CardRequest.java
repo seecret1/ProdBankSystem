@@ -24,6 +24,6 @@ public record CardRequest (
     BigDecimal balance,
 
     @NotBlank(message = "User must be set!")
-    String userEmail
+    String userCriterial
 
 ) { }
