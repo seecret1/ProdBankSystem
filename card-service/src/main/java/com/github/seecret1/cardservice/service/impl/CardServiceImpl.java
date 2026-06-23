@@ -13,6 +13,7 @@ import com.github.seecret1.cardservice.model.CardFilterModel;
 import com.github.seecret1.cardservice.repository.CardRepository;
 import com.github.seecret1.cardservice.repository.specification.CardSpecification;
 import com.github.seecret1.cardservice.service.CardService;
+import com.github.seecret1.cardservice.service.InternalCardService;
 import com.github.seecret1.cardservice.utils.AuthUtils;
 import com.github.seecret1.cardservice.utils.CardHashUtils;
 import com.github.seecret1.common.dto.PageResponse;
@@ -22,18 +23,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.InvalidParameterException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Optional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class CardServiceImpl implements CardService {
+public class CardServiceImpl implements CardService, InternalCardService {
 
     private final UserServiceClient userServiceClient;
 
@@ -210,6 +213,22 @@ public class CardServiceImpl implements CardService {
         var card = findCardByCriterial(criterial);
         cardRepository.delete(card);
         log.info("Hard delete card successful");
+    }
+
+    @Override
+    public Page<Card> findExpiryCards(LocalDate expirationDate, Pageable pageable) {
+        log.info("Find expiry cards before period: {}", expirationDate);
+        var page = cardRepository.findExpiryCards(expirationDate, pageable);
+        log.debug("Find expiry cards list size: {}", page.getTotalElements());
+        return page;
+    }
+
+    @Override
+    public Page<Card> findDeletedCards(Instant deletedAt, Pageable pageable) {
+        log.info("Find deleted cards before period: {}", deletedAt);
+        var page = cardRepository.findDeletedCards(deletedAt, pageable);
+        log.debug("Find deleted cards list size: {}", page.getTotalElements());
+        return page;
     }
 
     private Card findCardByCriterial(String criterial) {

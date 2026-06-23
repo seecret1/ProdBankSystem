@@ -1,9 +1,9 @@
 package com.github.seecret1.cardservice.service.impl;
 
 import com.github.seecret1.cardservice.entity.Card;
-import com.github.seecret1.cardservice.repository.CardRepository;
 import com.github.seecret1.cardservice.service.CardSchedulerService;
 import com.github.seecret1.cardservice.service.CardService;
+import com.github.seecret1.cardservice.service.InternalCardService;
 import com.github.seecret1.cardservice.utils.CardMaskUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +36,7 @@ public class CardSchedulerServiceImpl implements CardSchedulerService {
 
     private final CardService cardService;
 
-    private final CardRepository cardRepository;
+    private final InternalCardService internalCardService;
 
     @Override
     @Transactional
@@ -50,9 +50,7 @@ public class CardSchedulerServiceImpl implements CardSchedulerService {
         try {
             while (true) {
                 Pageable pageable = PageRequest.of(pageNumber, pageSize);
-
-                log.info("Find all expiry cards start period before: {}", expirationDate);
-                Page<Card> page = cardRepository.findExpiryCards(expirationDate, pageable);
+                Page<Card> page = internalCardService.findExpiryCards(expirationDate, pageable);
 
                 if (page.isEmpty()) {
                     log.debug("No more expired cards to delete");
@@ -88,9 +86,7 @@ public class CardSchedulerServiceImpl implements CardSchedulerService {
         try {
             while (true) {
                 Pageable pageable = PageRequest.of(pageNumber, pageSize);
-
-                log.info("Find all deleted cards start period before: {}", deletedAtDate);
-                Page<Card> page = cardRepository.findDeletedCards(deletedAtDate, pageable);
+                Page<Card> page = internalCardService.findDeletedCards(deletedAtDate, pageable);
 
                 if (page.isEmpty()) {
                     log.debug("No more deleted cards to delete");
