@@ -22,7 +22,7 @@ import java.time.LocalDate;
 public class Card extends BaseEntity {
 
     @Convert(converter = CardNumberConverter.class)
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", unique = true, nullable = false)
     private String number;
 
     private String numberHash;

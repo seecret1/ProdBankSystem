@@ -59,6 +59,8 @@ springdoc:
 
 logging:
   config: "classpath:logback.xml"
+  level:
+    com.github.seecret1.cardservice: DEBUG
 
 management:
   endpoints:

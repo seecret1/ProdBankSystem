@@ -180,7 +180,7 @@ public class CardServiceImpl implements CardService, InternalCardService {
         var status = request.status();
         boolean check = checkCardStatus(card, status);
 
-        if (check) return cardMapper.toDtoResponse(card);
+        if (!check) return cardMapper.toDtoResponse(card);
         card.setStatus(status);
 
         log.debug("Update card status: {}", card);
