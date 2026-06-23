@@ -22,6 +22,8 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.InvalidParameterException;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -49,6 +51,7 @@ public class CardServiceImpl implements CardService, InternalCardService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "${app.cache.cache-names.cardAll}", key = "#pageModel.toString()")
     public PageResponse<CardResponse> findAll(PageModel pageModel) {
         log.info("Find all page cards");
 
@@ -67,6 +70,7 @@ public class CardServiceImpl implements CardService, InternalCardService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "${app.cache.cache-names.cardOnlyNotDeleted}", key = "#pageModel.toString()")
     public PageResponse<CardResponse> findOnlyNotDeleted(PageModel pageModel) {
         log.info("Find all not deleted page cards");
 
@@ -85,6 +89,7 @@ public class CardServiceImpl implements CardService, InternalCardService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "${app.cache.cache-names.cardFilter}", key = "#filter.toString()")
     public PageResponse<CardResponse> findByFilter(CardFilterModel filter) {
         log.info("Find card by filter: {}", filter);
         var page = cardRepository.findNotDeletedCards(
@@ -101,6 +106,7 @@ public class CardServiceImpl implements CardService, InternalCardService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "${app.cache.cache-names.cardByCriterial}", key = "#criterial")
     public CardResponse findByCriterial(String criterial) {
         log.info("Find card by criterial: {}", criterial);
 
@@ -113,6 +119,7 @@ public class CardServiceImpl implements CardService, InternalCardService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "${app.cache.cache-names.cardYour}", key = "#userId")
     public PageResponse<CardResponse> findYourCards(String userId, PageModel pageModel) {
         log.info("Find cards by user criterial: {}, page: {}, size: {}",
                 userId, pageModel.getNumber(), pageModel.getSize());
@@ -137,6 +144,16 @@ public class CardServiceImpl implements CardService, InternalCardService {
 
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
+    @CacheEvict(
+            value = {
+                "${app.cache.cache-names.cardAll}",
+                "${app.cache.cache-names.cardOnlyNotDeleted}",
+                "${app.cache.cache-names.cardYour}",
+                "${app.cache.cache-names.cardFilter}",
+                "${app.cache.cache-names.cardByCriterial}"
+            },
+            allEntries = true
+    )
     public CardResponse create(CardRequest request) {
         String criterial = request.userEmail();
         log.info("Creating a user card, criterial: {}", criterial);
@@ -167,6 +184,16 @@ public class CardServiceImpl implements CardService, InternalCardService {
 
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
+    @CacheEvict(
+            value = {
+                    "${app.cache.cache-names.cardAll}",
+                    "${app.cache.cache-names.cardOnlyNotDeleted}",
+                    "${app.cache.cache-names.cardYour}",
+                    "${app.cache.cache-names.cardFilter}",
+                    "${app.cache.cache-names.cardByCriterial}"
+            },
+            allEntries = true
+    )
     public CardResponse updateStatus(UpdateStatusCardRequest request) {
         String number = request.number();
         log.info("Update status for card: {}", number);
@@ -191,6 +218,16 @@ public class CardServiceImpl implements CardService, InternalCardService {
 
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
+    @CacheEvict(
+            value = {
+                    "${app.cache.cache-names.cardAll}",
+                    "${app.cache.cache-names.cardOnlyNotDeleted}",
+                    "${app.cache.cache-names.cardYour}",
+                    "${app.cache.cache-names.cardFilter}",
+                    "${app.cache.cache-names.cardByCriterial}"
+            },
+            allEntries = true
+    )
     public CardResponse extendCard(ExtendCardRequest request) {
         String number = request.number();
         log.info("Extend the validity period of the card: {}", number);
@@ -211,6 +248,16 @@ public class CardServiceImpl implements CardService, InternalCardService {
 
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
+    @CacheEvict(
+            value = {
+                    "${app.cache.cache-names.cardAll}",
+                    "${app.cache.cache-names.cardOnlyNotDeleted}",
+                    "${app.cache.cache-names.cardYour}",
+                    "${app.cache.cache-names.cardFilter}",
+                    "${app.cache.cache-names.cardByCriterial}"
+            },
+            allEntries = true
+    )
     public void softDelete(String userId, String criterial) {
         log.info("Soft delete card by criterial: {}", criterial);
 
@@ -229,6 +276,16 @@ public class CardServiceImpl implements CardService, InternalCardService {
 
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
+    @CacheEvict(
+            value = {
+                    "${app.cache.cache-names.cardAll}",
+                    "${app.cache.cache-names.cardOnlyNotDeleted}",
+                    "${app.cache.cache-names.cardYour}",
+                    "${app.cache.cache-names.cardFilter}",
+                    "${app.cache.cache-names.cardByCriterial}"
+            },
+            allEntries = true
+    )
     public void hardDelete(String criterial) {
         log.info("Hard delete card by criterial: {}", criterial);
         var card = findCardByCriterial(criterial);

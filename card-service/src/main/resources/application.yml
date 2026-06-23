@@ -92,6 +92,23 @@ otel:
 app:
   cache:
     cache-names:
+      - cardAll
+      - cardOnlyNotDeleted
+      - cardFilter
+      - cardYour
+      - cardByCriterial
+    caches:
+      cardAll:
+        expiry: 30m
+      cardOnlyNotDeleted:
+        expiry: 30m
+      cardFilter:
+        expiry: 20m
+      cardYour:
+        expiry: 30m
+      cardByCriterial:
+        expiry: 10m
+
   scheduler:
     status:
       cron: "0 0 0 * * *"
