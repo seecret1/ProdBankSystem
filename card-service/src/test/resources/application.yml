@@ -1,0 +1,19 @@
+user-service:
+  jwt:
+    secret: test-secret-key
+  client:
+    base-url: http://localhost:8091
+    api-key: test-api-key
+    x-internal-key: X-Internal-Api-Key
+
+logging:
+  level:
+    com.github.seecret1.cardservice: DEBUG
+
+app:
+  scheduler:
+    pageSize: 10
+    expiry:
+      retention-years: 1
+    deleted:
+      retention-years: 1
