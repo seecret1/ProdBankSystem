@@ -22,7 +22,7 @@ public interface CardService {
 
     CardResponse activateCard(String criterial);
 
-    CardResponse create(CardRequest request);
+    CardResponse create(CardRequest request); // TODO: связать с order-service
 
     CardResponse updateStatus(UpdateStatusCardRequest request);
 
