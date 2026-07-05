@@ -9,7 +9,7 @@ val versions = mapOf(
 
 plugins {
 	java
-	id("org.springframework.boot") version "4.0.1"
+	id("org.springframework.boot") version "3.5.8"
 	id("io.spring.dependency-management") version "1.1.7"
 }
 
@@ -41,7 +41,7 @@ dependencies {
 	implementation("io.micrometer:micrometer-registry-prometheus")
 
 	implementation("org.springframework.boot:spring-boot-starter")
-	implementation("org.springframework.boot:spring-boot-starter-webmvc")
+	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
 	implementation("org.apache.commons:commons-pool2")
@@ -54,6 +54,8 @@ dependencies {
 	implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
 
 	implementation("ch.qos.logback:logback-classic:${versions["logbackClassicVersion"]}")
+	implementation("org.springframework.kafka:spring-kafka")
+	testImplementation("org.springframework.kafka:spring-kafka-test")
 
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
@@ -62,7 +64,6 @@ dependencies {
 
 	implementation("org.postgresql:postgresql")
 	implementation("org.flywaydb:flyway-database-postgresql")
-	implementation("org.springframework.boot:spring-boot-starter-flyway")
 	implementation("org.hibernate.orm:hibernate-core:${versions["hibernateVersion"]}")
 	implementation("org.hibernate.orm:hibernate-envers:${versions["hibernateVersion"]}")
 

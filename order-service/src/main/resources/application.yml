@@ -34,6 +34,9 @@ spring:
           max-idle: ${REDIS_POOL_MAX_IDLE:8}
           min-idle: ${REDIS_POOL_MIN_IDLE:0}
 
+  kafka:
+    bootstrap-servers: ${HOST:localhost}:${KAFKA1_PORT:9092}, ${HOST:localhost}:${KAFKA2_PORT:9093}, ${HOST:localhost}:${KAFKA3_PORT:9094}
+
 user-service:
   jwt:
     secret: ${SECRET_KEY:MyVeryLongAndSecureSecretKeyForJWTTokenSigningThatIsAtLeast64CharactersLongToMeetHS512Requirements123456789}
@@ -88,3 +91,20 @@ otel:
     exporter: none
   metrics:
     exporter: none
+
+app:
+  kafka:
+    topic: orders
+    response-topic: response-orders
+    groupId: order-group-id
+    dlt-topic: orders.DLT
+    dlt-group-id: order-group-id.dlt
+    max-pull-records: 10
+    partitions: 3
+    replicas: 3
+
+  retry:
+    max-attempts: 3
+    delay: 1000
+    multiplier: 2
+    max-interval: 10000
