@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   user-postgres:
     image: postgres:17
@@ -435,6 +437,37 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - "${USER_SERVICE_PORT}:${USER_SERVICE_PORT}"
+    working_dir: /app
+    environment:
+      USER_DB_LOCAL_URL: jdbc:postgresql://user-postgres:5432/user_db
+      USER_DB_USERNAME: ${USER_DB_USERNAME:-postgres}
+      USER_DB_PASSWORD: ${USER_DB_PASSWORD:-postgres}
+      HOST: redis
+      REDIS_PORT: 6379
+      REDIS_TIMEOUT: 2000ms
+      REDIS_POOL_MAX_ACTIVE: 8
+      REDIS_POOL_MAX_IDLE: 8
+      REDIS_POOL_MIN_IDLE: 0
+      SECRET_KEY: ${SECRET_KEY:-MyVeryLongAndSecureSecretKeyForJWTTokenSigningThatIsAtLeast64CharactersLongToMeetHS512Requirements123456789}
+      ENCRYPTION_SECRET: ${ENCRYPTION_SECRET:-your-strong-secret-key-here-change-in-production}
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-your-internal-api-key}
+      OTLP_EXPORTER_ENDPOINT: http://tempo:4318
+    depends_on:
+      user-postgres:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-i", "http://localhost:8091/actuator/health" ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
 
 volumes:
   artifacts:
