@@ -65,7 +65,15 @@ public class GlobalExceptionHandler {
             CardAlreadyActivated ex
     ) {
         log.error("GlobalRestControllerAdvice -> CardAlreadyActivated: {}", ex.getMessage());
-        return buildResponse(HttpStatus.UNPROCESSABLE_CONTENT, ex.getMessage());
+        return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    }
+
+    @ExceptionHandler(CardExpiryDateException.class)
+    public ResponseEntity<ErrorResponse> handleCardExpiryDateException(
+            CardExpiryDateException ex
+    ) {
+        log.error("GlobalRestControllerAdvice -> CardExpiryDateException: {}", ex.getMessage());
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(CardException.class)

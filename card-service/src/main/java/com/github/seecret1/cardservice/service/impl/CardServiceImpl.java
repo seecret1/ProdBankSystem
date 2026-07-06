@@ -21,7 +21,6 @@ import com.github.seecret1.common.model.PageModel;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.util.http.InvalidParameterException;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -182,7 +181,7 @@ public class CardServiceImpl implements CardService, InternalCardService {
         if (user == null) throw new EntityNotFoundException("User not found by criterial " + criterial);
 
         if (request.dateExpiry().isBefore(LocalDate.now())) {
-            throw new InvalidParameterException(
+            throw new CardExpiryDateException(
                     "Date expiry is before now!"
             );
         }

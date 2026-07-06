@@ -90,6 +90,22 @@ otel:
     exporter: none
 
 app:
+  kafka:
+    topic: orders
+    response-topic: response-orders
+    groupId: order-group-id
+    dlt-topic: orders.DLT
+    dlt-group-id: order-group-id.dlt
+    max-pull-records: 10
+    partitions: 3
+    replicas: 3
+
+  retry:
+    max-attempts: 3
+    delay: 1000
+    multiplier: 2
+    max-interval: 10000
+
   cache:
     cache-names:
       - cardAll
