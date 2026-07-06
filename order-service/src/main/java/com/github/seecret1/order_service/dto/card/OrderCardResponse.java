@@ -18,7 +18,7 @@ public class OrderCardResponse {
 
     String traceId;
 
-    UUID orderId;
+    String orderId;
 
     String userId;
 

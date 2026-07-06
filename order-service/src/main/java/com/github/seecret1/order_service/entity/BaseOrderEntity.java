@@ -8,7 +8,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -21,7 +20,7 @@ public abstract class BaseOrderEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    UUID id;
+    String id;
 
     @Column(name = "trace_id", nullable = false)
     String traceId;
@@ -32,9 +31,6 @@ public abstract class BaseOrderEntity {
     @Column(name = "status", nullable = false, length = 15)
     @Enumerated(EnumType.STRING)
     OrderStatus status;
-
-    @Column(name = "comment")
-    String comment;
 
     Boolean deleted = false;
 
@@ -47,4 +43,7 @@ public abstract class BaseOrderEntity {
     Instant deletedAt;
 
     String deletedBy;
+
+    @Column(name = "comment")
+    String comment;
 }

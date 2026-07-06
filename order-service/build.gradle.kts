@@ -3,7 +3,7 @@ val versions = mapOf(
 	"commonVersion" to "1.0.0-SNAPSHOT",
 	"springdocOpenapiStarterWebmvcUiVersion" to "2.5.0",
 	"logbackClassicVersion" to "1.5.18",
-	"hibernateVersion" to "7.2.0.Final",
+	"hibernateVersion" to "6.5.2.Final",
 	"feignMicrometerVersion" to "13.6"
 )
 
@@ -29,7 +29,7 @@ repositories {
 
 dependencyManagement {
 	imports {
-		mavenBom("org.springframework.cloud:spring-cloud-dependencies:2025.1.0")
+		mavenBom("org.springframework.cloud:spring-cloud-dependencies:2025.0.0")
 		mavenBom("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.15.0")
 	}
 }
