@@ -41,9 +41,6 @@ public class KafkaConfig {
     @Value("${app.kafka.groupId}")
     private String groupId;
 
-    @Value("${app.kafka.dlt-group-id}")
-    private String dltGroupId;
-
     @Value("${app.kafka.dlt-topic}")
     private String dltTopicName;
 
@@ -69,16 +66,8 @@ public class KafkaConfig {
     private Long maxInterval;
 
     @Bean
-    public NewTopic orderTopic() {
+    public NewTopic responsesTopic() {
         return TopicBuilder.name(responseTopicName)
-                .partitions(partitions)
-                .replicas(replicas)
-                .build();
-    }
-
-    @Bean
-    public NewTopic orderDltTopic() {
-        return TopicBuilder.name(dltTopicName)
                 .partitions(partitions)
                 .replicas(replicas)
                 .build();
@@ -170,25 +159,6 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, Object> consumerDtlFactory(
-            ObjectMapper objectMapper
-    ) {
-        Map<String, Object> config = new HashMap<>();
-
-        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        config.put(ConsumerConfig.GROUP_ID_CONFIG, dltGroupId);
-        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-
-        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, OrderCreateCardDto.class.getName());
-        config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
-
-        config.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPullRecords);
-
-        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), new JsonDeserializer<>(objectMapper));
-    }
-
-    @Bean
     public ConcurrentKafkaListenerContainerFactory<String, OrderMessage<OrderCardResponse>> orderCardKafkaListenerContainerFactory(
             ConsumerFactory<String, OrderMessage<OrderCardResponse>> consumerFactory,
             KafkaTemplate<String, OrderMessage<OrderCardResponse>> orderCreateKafkaTemplate
@@ -214,16 +184,6 @@ public class KafkaConfig {
         errorHandler.setRetryListeners();
 
         factory.setCommonErrorHandler(errorHandler);
-        return factory;
-    }
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, Object> dltKafkaListenerContainerFactory(
-            ConsumerFactory<String, Object> consumerDtlFactory
-    ) {
-        ConcurrentKafkaListenerContainerFactory<String, Object> factory =
-                new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerDtlFactory);
         return factory;
     }
 }

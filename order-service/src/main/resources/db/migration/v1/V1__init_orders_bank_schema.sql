@@ -11,7 +11,7 @@ CREATE TABLE order_bank.orders_card
     deleted_by VARCHAR(128),
     comment VARCHAR(255) UNIQUE NOT NULL,
     card_id VARCHAR NOT NULL,
-    card_type VARCHAR(10) NOT NULL,
+    card_type VARCHAR(20) NOT NULL,
     personal boolean NOT NULL DEFAULT FALSE,
     spending_limit DECIMAL(19, 2) NOT NULL
 );

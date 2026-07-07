@@ -126,6 +126,8 @@ app:
         expiry: 10m
 
   scheduler:
+    limit:
+      cron: "0 0 4 * * *"
     status:
       cron: "0 0 0 * * *"
     expiry:
@@ -135,3 +137,18 @@ app:
       cron: "0 0 2 * * *"
       retention-years: 4
     pageSize: 100
+
+  card:
+    limits:
+      DEBIT:
+        max-spending-limit: 10000
+        commission-spending-limit: 50000
+        description: "Дебетовая карта"
+      DEBIT_PERSONAL:
+        max-spending-limit: 200000
+        commission-spending-limit: 10000
+        description: "Именная дебетовая карта"
+      CREDIT:
+        max-spending-limit: 500000
+        commission-spending-limit: 300000
+        description: "Кредитная карта"

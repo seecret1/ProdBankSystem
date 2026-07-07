@@ -1,13 +1,16 @@
 package com.github.seecret1.cardservice.service.impl;
 
 import com.github.seecret1.cardservice.client.UserServiceClient;
+import com.github.seecret1.cardservice.config.CardSpendingLimitsConfig;
 import com.github.seecret1.cardservice.dto.request.CardRequest;
 import com.github.seecret1.cardservice.dto.request.ExtendCardRequest;
 import com.github.seecret1.cardservice.dto.request.UpdateStatusCardRequest;
 import com.github.seecret1.cardservice.dto.response.CardResponse;
 import com.github.seecret1.cardservice.entity.Card;
 import com.github.seecret1.cardservice.entity.enums.CardStatus;
+import com.github.seecret1.cardservice.entity.enums.CardType;
 import com.github.seecret1.cardservice.exception.*;
+import com.github.seecret1.cardservice.kafka.service.OrderKafkaProducerService;
 import com.github.seecret1.cardservice.mapper.CardMapper;
 import com.github.seecret1.cardservice.model.CardFilterModel;
 import com.github.seecret1.cardservice.repository.CardRepository;
@@ -38,7 +41,11 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class CardServiceImpl implements CardService, InternalCardService {
+public class CardServiceImpl implements CardService {
+
+    private final OrderKafkaProducerService orderKafkaProducerService;
+
+    private final CardSpendingLimitsConfig cardSpendingLimitsConfig;
 
     private final UserServiceClient userServiceClient;
 
@@ -186,12 +193,18 @@ public class CardServiceImpl implements CardService, InternalCardService {
             );
         }
         try {
-            var card = cardRepository.save(cardMapper.toEntity(request, user.id()));
+            log.info("Init order cerated card");
+            var orderCard = cardMapper.toEntity(request, user.id());
 
-            log.debug("Created card: {}", card);
-            log.info("Create card successful");
-
-            return cardMapper.toDtoResponse(card);
+            orderKafkaProducerService.sendWithWait(
+                    orderCard,
+                    request.comment(),
+                    user.id()
+            );
+            cardRepository.save(orderCard);
+            log.info("Save card with status PENDING");
+            log.debug("Init order created card: {}", orderCard);
+            return cardMapper.toDtoResponse(orderCard);
 
         } catch (DataIntegrityViolationException ex) {
             throw new CardExistsException(
@@ -265,6 +278,20 @@ public class CardServiceImpl implements CardService, InternalCardService {
     }
 
     @Override
+    public CardResponse refreshSpendingLimit(String cardId, CardType cardType) {
+        var card = cardRepository.findById(cardId)
+                .orElseThrow(() -> new CardNotFoundException(
+                        "Card not found by id: " + cardId
+                ));
+
+        log.info("Refresh spending limit for card by id: {}", cardId);
+        card.setSpendingLimit(cardSpendingLimitsConfig.getMaxLimitForType(cardType));
+        var newCard = cardRepository.save(card);
+        log.debug("Refreshed spending limit for card: {}", card);
+        return cardMapper.toDtoResponse(newCard);
+    }
+
+    @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
     @CacheEvict(
             value = {
@@ -311,26 +338,6 @@ public class CardServiceImpl implements CardService, InternalCardService {
         log.info("Hard delete card successful");
     }
 
-    @Override
-    @Transactional(isolation = Isolation.READ_COMMITTED)
-    public Page<Card> findExpiryCards(LocalDate expirationDate, Pageable pageable) {
-        log.info("Find expiry cards before period: {}", expirationDate);
-        return cardRepository.findExpiryCards(expirationDate, pageable);
-    }
-
-    @Override
-    @Transactional(isolation = Isolation.READ_COMMITTED)
-    public Page<Card> findDeletedCards(Instant deletedAt, Pageable pageable) {
-        log.info("Find deleted cards before period: {}", deletedAt);
-        return cardRepository.findDeletedCards(deletedAt, pageable);
-    }
-
-    @Override
-    @Transactional(isolation = Isolation.READ_COMMITTED)
-    public Page<Card> findExpiryActiveCards(LocalDate expirationDate, Pageable pageable) {
-        log.info("Find updated status cards before period: {}", expirationDate);
-        return cardRepository.findExpiryActiveCards(expirationDate, pageable);
-    }
 
     private Card findCardByCriterial(String criterial) {
         log.debug("Searching card by criterial: {}", criterial);

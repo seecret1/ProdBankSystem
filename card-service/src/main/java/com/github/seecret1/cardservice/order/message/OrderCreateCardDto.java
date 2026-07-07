@@ -2,15 +2,14 @@ package com.github.seecret1.cardservice.order.message;
 
 import com.github.seecret1.cardservice.entity.enums.CardType;
 import jakarta.validation.ValidationException;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 
 @Getter
 @Setter
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderCreateCardDto extends OrderDto {
@@ -20,8 +19,6 @@ public class OrderCreateCardDto extends OrderDto {
     private CardType cardType;
 
     private BigDecimal spendingLimit;
-
-    private boolean personal;
 
     private String comment;
 
