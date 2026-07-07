@@ -30,14 +30,14 @@ public class OrderKafkaProducerServiceImpl implements OrderKafkaProducerService 
 
         OrderMessage<OrderCardResponse> message = OrderMessage.<OrderCardResponse>builder()
                 .traceId(event.getTraceId())
-                .orderId(event.getOrderId())
+                .orderId(response.getOrderId())
                 .userId(event.getUserId())
                 .status(OrderStatus.SUCCESS)
                 .data(response)
                 .message("Order created successfully")
                 .build();
 
-        kafkaTemplate.send(responseTopic, event.getOrderId(), message);
+        kafkaTemplate.send(responseTopic, event.getTraceId(), message);
     }
 
     @Override
@@ -45,7 +45,7 @@ public class OrderKafkaProducerServiceImpl implements OrderKafkaProducerService 
 
         OrderMessage<OrderCardResponse> message = OrderMessage.<OrderCardResponse>builder()
                 .traceId(event.getTraceId())
-                .orderId(event.getOrderId())
+                .orderId(response.getOrderId())
                 .userId(event.getUserId())
                 .status(OrderStatus.SUCCESS)
                 .data(response)
@@ -56,7 +56,7 @@ public class OrderKafkaProducerServiceImpl implements OrderKafkaProducerService 
             try {
                 kafkaTemplate.send(
                         responseTopic,
-                        event.getOrderId(),
+                        event.getTraceId(),
                         message
                 ).get();
 

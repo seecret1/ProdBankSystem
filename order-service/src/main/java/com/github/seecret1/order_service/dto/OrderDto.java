@@ -14,8 +14,6 @@ public abstract class OrderDto {
 
     private String traceId;
 
-    private String orderId;
-
     private String userId;
 
     private OrderType orderType;
