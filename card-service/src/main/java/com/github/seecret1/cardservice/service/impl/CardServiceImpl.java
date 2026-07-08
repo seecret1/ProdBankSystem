@@ -3,8 +3,6 @@ package com.github.seecret1.cardservice.service.impl;
 import com.github.seecret1.cardservice.client.UserServiceClient;
 import com.github.seecret1.cardservice.config.CardSpendingLimitsConfig;
 import com.github.seecret1.cardservice.dto.request.CardRequest;
-import com.github.seecret1.cardservice.dto.request.ExtendCardRequest;
-import com.github.seecret1.cardservice.dto.request.UpdateStatusCardRequest;
 import com.github.seecret1.cardservice.dto.response.CardResponse;
 import com.github.seecret1.cardservice.entity.Card;
 import com.github.seecret1.cardservice.entity.enums.CardStatus;
@@ -208,30 +206,31 @@ public class CardServiceImpl implements CardService {
 
         if (user == null) throw new EntityNotFoundException("User not found by criterial " + criterial);
 
+        var card = cardRepository.findByNumberHash(request.number());
+
+        if (card.isPresent()) {
+            throw new CardExistsException(
+                    "Card with number " + request.number() + " already exists!"
+            );
+        }
         if (request.dateExpiry().isBefore(LocalDate.now())) {
             throw new CardExpiryDateException(
                     "Date expiry is before now!"
             );
         }
-        try {
-            log.info("Init order cerated card");
-            var orderCard = cardMapper.toEntity(request, user.id());
 
-            orderKafkaProducerService.sendWithWait(
-                    orderCard,
-                    request.comment(),
-                    user.id()
-            );
-            cardRepository.save(orderCard);
-            log.info("Save card with status PENDING");
-            log.debug("Init order created card: {}", orderCard);
-            return cardMapper.toDtoResponse(orderCard);
+        log.info("Init order cerated card");
+        var orderCard = cardMapper.toEntity(request, user.id());
 
-        } catch (DataIntegrityViolationException ex) {
-            throw new CardExistsException(
-                    "Card with number " + request.number() + " already exists!"
-            );
-        }
+        orderKafkaProducerService.sendWithWait(
+                orderCard,
+                request.comment(),
+                user.id()
+        );
+        cardRepository.save(orderCard);
+        log.info("Save card with status PENDING");
+        log.debug("Init order created card: {}", orderCard);
+        return cardMapper.toDtoResponse(orderCard);
     }
 
     @Override

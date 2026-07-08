@@ -1,6 +1,5 @@
 package com.github.seecret1.cardservice.service.impl;
 
-import com.github.seecret1.cardservice.dto.request.UpdateStatusCardRequest;
 import com.github.seecret1.cardservice.entity.Card;
 import com.github.seecret1.cardservice.entity.enums.CardStatus;
 import com.github.seecret1.cardservice.service.CardSchedulerService;
@@ -195,7 +194,7 @@ public class CardSchedulerServiceImpl implements CardSchedulerService {
         int updated = 0;
         for (var card : cards) {
             try {
-                cardService.updateStatus(new UpdateStatusCardRequest(card.getNumber(), CardStatus.EXPIRED));
+                cardService.updateStatus(card.getNumber(), CardStatus.EXPIRED);
                 log.debug("Updated card: id={}, number={}, expiry={}",
                         card.getId(), CardMaskUtils.maskCardNumber(card.getNumber()), card.getDateExpiry());
                 updated++;

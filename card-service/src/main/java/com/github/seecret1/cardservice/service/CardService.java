@@ -1,8 +1,6 @@
 package com.github.seecret1.cardservice.service;
 
 import com.github.seecret1.cardservice.dto.request.CardRequest;
-import com.github.seecret1.cardservice.dto.request.ExtendCardRequest;
-import com.github.seecret1.cardservice.dto.request.UpdateStatusCardRequest;
 import com.github.seecret1.cardservice.dto.response.CardResponse;
 import com.github.seecret1.cardservice.entity.enums.CardStatus;
 import com.github.seecret1.cardservice.entity.enums.CardType;
