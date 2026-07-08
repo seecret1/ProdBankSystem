@@ -1,9 +1,8 @@
 package com.github.seecret1.cardservice.controller;
 
 import com.github.seecret1.cardservice.dto.request.CardRequest;
-import com.github.seecret1.cardservice.dto.request.ExtendCardRequest;
-import com.github.seecret1.cardservice.dto.request.UpdateStatusCardRequest;
 import com.github.seecret1.cardservice.dto.response.CardResponse;
+import com.github.seecret1.cardservice.entity.enums.CardStatus;
 import com.github.seecret1.cardservice.model.CardFilterModel;
 import com.github.seecret1.cardservice.service.CardService;
 import com.github.seecret1.common.dto.PageResponse;
@@ -23,6 +22,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+
 @Validated
 @RestController
 @RequestMapping("/api/v1/private/cards")
@@ -32,6 +33,20 @@ import org.springframework.web.bind.annotation.*;
 public class PrivateCardController {
 
     private final CardService cardService;
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')")
+    @Operation(summary = "Get card by ID", description = "Get card by ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success get card by ID"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden")
+    })
+    public ResponseEntity<CardResponse> findById(
+            @PathVariable String id
+    ) {
+        return ResponseEntity.ok(cardService.findById(id));
+    }
 
     @GetMapping("/all")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -90,7 +105,7 @@ public class PrivateCardController {
                 .body(cardService.create(cardRequest));
     }
 
-    @PatchMapping("/update-status")
+    @PatchMapping("/update-status/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "Update status", description = "Update card status")
     @ApiResponses(value = {
@@ -99,12 +114,13 @@ public class PrivateCardController {
             @ApiResponse(responseCode = "403", description = "Forbidden")
     })
     public ResponseEntity<CardResponse> updateCard(
-            @Valid @RequestBody UpdateStatusCardRequest request
+            @PathVariable String id,
+            @RequestParam CardStatus status
     ) {
-        return ResponseEntity.ok(cardService.updateStatus(request));
+        return ResponseEntity.ok(cardService.updateStatus(id, status));
     }
 
-    @PatchMapping("/extend")
+    @PatchMapping("/extend/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "Extend card", description = "Extend the validity period of the card")
     @ApiResponses(value = {
@@ -114,14 +130,15 @@ public class PrivateCardController {
             @ApiResponse(responseCode = "403", description = "Forbidden")
     })
     public ResponseEntity<CardResponse> extendCard(
-            @Valid @RequestBody ExtendCardRequest request
+            @PathVariable String id,
+            @RequestParam LocalDate dateExpiry
     ) {
-        return ResponseEntity.ok(cardService.extendCard(request));
+        return ResponseEntity.ok(cardService.extendCard(id, dateExpiry));
     }
 
-    @DeleteMapping("/{cardCriterial}")
+    @DeleteMapping("/{cardId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @Operation(summary = "Soft delete card", description = "Soft delete card by criterial")
+    @Operation(summary = "Soft delete card", description = "Soft delete card by id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Success delete card"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
@@ -130,25 +147,25 @@ public class PrivateCardController {
     })
     public ResponseEntity<Void> softDelete(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @PathVariable String cardCriterial
+            @PathVariable String cardId
     ) {
         String userId = userPrincipal.getUserId();
-        cardService.softDelete(userId, cardCriterial);
+        cardService.softDelete(userId, cardId);
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/hard-delete/{cardCriterial}")
+    @DeleteMapping("/hard-delete/{cardId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @Operation(summary = "Hard delete card", description = "Hard delete card by criterial")
+    @Operation(summary = "Hard delete card", description = "Hard delete card by id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Success delete card"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "403", description = "Forbidden")
     })
     public ResponseEntity<Void> hardDelete(
-            @PathVariable String cardCriterial
+            @PathVariable String cardId
     ) {
-        cardService.hardDelete(cardCriterial);
+        cardService.hardDelete(cardId);
         return ResponseEntity.noContent().build();
     }
 }

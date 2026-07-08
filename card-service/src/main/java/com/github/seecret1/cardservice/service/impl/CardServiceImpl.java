@@ -16,7 +16,6 @@ import com.github.seecret1.cardservice.model.CardFilterModel;
 import com.github.seecret1.cardservice.repository.CardRepository;
 import com.github.seecret1.cardservice.repository.specification.CardSpecification;
 import com.github.seecret1.cardservice.service.CardService;
-import com.github.seecret1.cardservice.service.InternalCardService;
 import com.github.seecret1.cardservice.utils.AuthUtils;
 import com.github.seecret1.cardservice.utils.CardHashUtils;
 import com.github.seecret1.common.dto.PageResponse;
@@ -25,16 +24,15 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -112,14 +110,27 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "${app.cache.cache-names.cardByCriterial}", key = "#criterial")
-    public CardResponse findByCriterial(String criterial) {
-        log.info("Find card by criterial: {}", criterial);
+    @Cacheable(value = "${app.cache.cache-names.cardByCriterial}", key = "#id")
+    public CardResponse findById(String id) {
+        log.info("Find card by id: {}", id);
 
-        var card = findCardByCriterial(criterial);
+        var card = findCardById(id);
         authUtils.checkCardAccess(card);
 
-        log.debug("Find by criterial card: {}", card);
+        log.debug("Find by ID card: {}", card);
+        return cardMapper.toYourDtoResponse(card);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "${app.cache.cache-names.cardByCriterial}", key = "#number")
+    public CardResponse findByNumber(String number) {
+        log.info("Find card by number: {}", number);
+
+        var card = findCardByNumber(number);
+        authUtils.checkCardAccess(card);
+
+        log.debug("Find by number card: {}", card);
         return cardMapper.toYourDtoResponse(card);
     }
 
@@ -150,15 +161,25 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public CardResponse activateCard(String criterial) {
-        log.info("Activate card by criterial: {}", criterial);
+    @CacheEvict(
+            value = {
+                    "${app.cache.cache-names.cardAll}",
+                    "${app.cache.cache-names.cardOnlyNotDeleted}",
+                    "${app.cache.cache-names.cardYour}",
+                    "${app.cache.cache-names.cardFilter}",
+                    "${app.cache.cache-names.cardByCriterial}"
+            },
+            allEntries = true
+    )
+    public CardResponse activateCard(String number) {
+        log.info("Activate card by number: {}", number);
 
-        var card = findCardByCriterial(criterial);
+        var card = findCardByNumber(number);
         authUtils.checkCardAccess(card);
 
         if (card.getStatus() == CardStatus.PENDING) {
             card.setStatus(CardStatus.ACTIVE);
-            log.info("Successfully activate card: {}", criterial);
+            log.info("Successfully activate card: {}", number);
             return cardMapper.toYourDtoResponse(card);
         }
         if (card.getStatus() == CardStatus.ACTIVE) {
@@ -220,22 +241,15 @@ public class CardServiceImpl implements CardService {
                     "${app.cache.cache-names.cardAll}",
                     "${app.cache.cache-names.cardOnlyNotDeleted}",
                     "${app.cache.cache-names.cardYour}",
-                    "${app.cache.cache-names.cardFilter}",
-                    "${app.cache.cache-names.cardByCriterial}"
+                    "${app.cache.cache-names.cardFilter}"
             },
             allEntries = true
     )
-    public CardResponse updateStatus(UpdateStatusCardRequest request) {
-        String number = request.number();
-        log.info("Update status for card: {}", number);
+    @CachePut(value = "${app.cache.cache-names.cardByCriterial}", key = "#id")
+    public CardResponse updateStatus(String id, CardStatus status) {
+        log.info("Update status for card: {}", id);
 
-        String hash = CardHashUtils.hash(number);
-        var card = cardRepository.findByNumberHash(hash)
-                .orElseThrow(() -> new CardNotFoundException(
-                        "Card not found by number: " + number
-                ));
-
-        var status = request.status();
+        var card = findCardById(id);
         boolean check = checkCardStatus(card, status);
 
         if (!check) return cardMapper.toDtoResponse(card);
@@ -254,22 +268,16 @@ public class CardServiceImpl implements CardService {
                     "${app.cache.cache-names.cardAll}",
                     "${app.cache.cache-names.cardOnlyNotDeleted}",
                     "${app.cache.cache-names.cardYour}",
-                    "${app.cache.cache-names.cardFilter}",
-                    "${app.cache.cache-names.cardByCriterial}"
+                    "${app.cache.cache-names.cardFilter}"
             },
             allEntries = true
     )
-    public CardResponse extendCard(ExtendCardRequest request) {
-        String number = request.number();
-        log.info("Extend the validity period of the card: {}", number);
+    @CachePut(value = "${app.cache.cache-names.cardByCriterial}", key = "#id")
+    public CardResponse extendCard(String id, LocalDate dateExpiry) {
+        log.info("Extend the validity period of the card: {}", id);
 
-        String hash = CardHashUtils.hash(number);
-        var card = cardRepository.findByNumberHash(hash)
-                .orElseThrow(() -> new CardNotFoundException(
-                        "Card not found by number: " + number
-                ));
-
-        checkCardValid(card, request);
+        var card = findCardById(id);
+        checkCardValid(card, dateExpiry);
 
         log.debug("Extend card status: {}", card.getStatus());
         cardRepository.save(card);
@@ -303,12 +311,12 @@ public class CardServiceImpl implements CardService {
             },
             allEntries = true
     )
-    public void softDelete(String userId, String criterial) {
-        log.info("Soft delete card by criterial: {}", criterial);
+    public void softDelete(String userId, String cardId) {
+        log.info("Soft delete card by id: {}", cardId);
 
-        var card = findCardByCriterial(criterial);
+        var card = findCardById(cardId);
         if (card.getDeleted() == true) {
-            throw new CardDeletedException("Card already deleted by criterial " + criterial);
+            throw new CardDeletedException("Card already deleted by id " + cardId);
         }
 
         var user = userServiceClient.findUserByCriterial(userId);
@@ -331,33 +339,33 @@ public class CardServiceImpl implements CardService {
             },
             allEntries = true
     )
-    public void hardDelete(String criterial) {
-        log.info("Hard delete card by criterial: {}", criterial);
-        var card = findCardByCriterial(criterial);
+    public void hardDelete(String id) {
+        log.info("Hard delete card by id: {}", id);
+        var card = findCardById(id);
         cardRepository.delete(card);
         log.info("Hard delete card successful");
     }
 
 
-    private Card findCardByCriterial(String criterial) {
-        log.debug("Searching card by criterial: {}", criterial);
+    private Card findCardById(String id) {
+        log.debug("Searching card by id: {}", id);
 
-        if (criterial != null && criterial.length() == 36) {
-            Optional<Card> byId = cardRepository.findById(criterial);
-            if (byId.isPresent()) {
-                log.debug("Card found by ID: {}", criterial);
-                return byId.get();
-            }
+        Optional<Card> byId = cardRepository.findById(id);
+        if (byId.isPresent()) {
+            log.debug("Card found by ID: {}", id);
+            return byId.get();
         }
+        throw new CardNotFoundException("Card not found by id: " + id);
+    }
 
-        String hash = CardHashUtils.hash(criterial);
+    private Card findCardByNumber(String number) {
+        String hash = CardHashUtils.hash(number);
         Optional<Card> byHash = cardRepository.findByNumberHash(hash);
         if (byHash.isPresent()) {
-            log.debug("Card found by number hash: {}", criterial);
+            log.debug("Card found by card number hash: {}", number);
             return byHash.get();
         }
-
-        throw new CardNotFoundException("Card not found by criterial: " + criterial);
+        throw new CardNotFoundException("Card not found by card number: " + number);
     }
 
     private boolean checkCardStatus(Card card, CardStatus status) {
@@ -378,9 +386,9 @@ public class CardServiceImpl implements CardService {
         return true;
     }
 
-    private void checkCardValid(Card card, ExtendCardRequest request) {
+    private void checkCardValid(Card card, LocalDate dateExpiry) {
 
-        if (!card.getDateExpiry().isBefore(request.dateExpiry()))
+        if (!card.getDateExpiry().isBefore(dateExpiry))
             throw new CardStatusUpdateException("The card status cannot be EXTENDED");
 
         if (card.getStatus() == CardStatus.BLOCKED) {
@@ -392,7 +400,7 @@ public class CardServiceImpl implements CardService {
         if (card.getStatus() == CardStatus.EXPIRED ||
                 card.getStatus() == CardStatus.ACTIVE ||
                 card.getStatus() == CardStatus.EXTENDED) {
-            card.setDateExpiry(request.dateExpiry());
+            card.setDateExpiry(dateExpiry);
             card.setStatus(CardStatus.EXTENDED);
         }
     }

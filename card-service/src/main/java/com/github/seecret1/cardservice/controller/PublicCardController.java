@@ -29,18 +29,18 @@ public class PublicCardController {
 
     private final CardService cardService;
 
-    @GetMapping("/{criterial}")
+    @GetMapping("/card-number/{number}")
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MANAGER')")
-    @Operation(summary = "Get card by criterial", description = "Get card by ID or number")
+    @Operation(summary = "Get card by number", description = "Get card by number")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Success get card by ID or number"),
+            @ApiResponse(responseCode = "200", description = "Success get card by number"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "403", description = "Forbidden")
     })
-    public ResponseEntity<CardResponse> findByCriterial(
-            @PathVariable String criterial
+    public ResponseEntity<CardResponse> findByNumber(
+            @PathVariable String number
     ) {
-        return ResponseEntity.ok(cardService.findByCriterial(criterial));
+        return ResponseEntity.ok(cardService.findByNumber(number));
     }
 
     @GetMapping("/your")
