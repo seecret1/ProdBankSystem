@@ -135,24 +135,24 @@ class IndividualServiceTest {
     }
 
     @Test
-    void findByCriterial_ShouldReturnIndividualResponse_WhenExists() {
-        when(individualRepository.findByCriterial(anyString())).thenReturn(Optional.of(individual));
+    void findById_ShouldReturnIndividualResponse_WhenExists() {
+        when(individualRepository.findById(anyString())).thenReturn(Optional.of(individual));
         when(individualMapper.toResponseDto(individual)).thenReturn(individualResponse);
 
-        IndividualResponse result = individualService.findByCriterial("AB1234567");
+        IndividualResponse result = individualService.findById("AB1234567");
 
         assertThat(result).isNotNull();
         assertThat(result.passportNumber()).isEqualTo("AB1234567");
-        verify(individualRepository).findByCriterial("AB1234567");
+        verify(individualRepository).findById("AB1234567");
     }
 
     @Test
-    void findByCriterial_ShouldThrowEntityNotFoundException_WhenNotExists() {
-        when(individualRepository.findByCriterial(anyString())).thenReturn(Optional.empty());
+    void findById_ShouldThrowEntityNotFoundException_WhenNotExists() {
+        when(individualRepository.findById(anyString())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> individualService.findByCriterial("nonexistent"))
-                .isInstanceOf(EntityNotFoundException.class)
-                .hasMessageContaining("Individual not found by criterial");
+        assertThatThrownBy(() -> individualService.findById("nonexistent"))
+                .isInstanceOf(PersonException.class)
+                .hasMessageContaining("Individual not found by id=[nonexistent]");
     }
 
     @Test
@@ -215,7 +215,7 @@ class IndividualServiceTest {
                 new AddressRequest("456 Main St", "54321", "Boston", "US")
         );
 
-        when(individualRepository.findByCriterial(anyString())).thenReturn(Optional.of(testIndividual));
+        when(individualRepository.findById(anyString())).thenReturn(Optional.of(testIndividual));
         when(individualRepository.existsIndividualByPassportNumber("XY9876543")).thenReturn(false);
         when(individualRepository.existsIndividualByPhoneNumber("+9876543210")).thenReturn(false);
         when(individualRepository.save(any(Individual.class))).thenReturn(testIndividual);
@@ -241,7 +241,7 @@ class IndividualServiceTest {
         testIndividual.setPhoneNumber("+1234567890");
         testIndividual.setUser(activeUser);
 
-        when(individualRepository.findByCriterial(anyString())).thenReturn(Optional.of(testIndividual));
+        when(individualRepository.findById(anyString())).thenReturn(Optional.of(testIndividual));
         when(individualRepository.existsIndividualByPassportNumber("NEW_PASSPORT")).thenReturn(true);
 
         IndividualRequest requestWithNewPassport = new IndividualRequest(
@@ -266,7 +266,7 @@ class IndividualServiceTest {
         testIndividual.setPhoneNumber("+1234567890");
         testIndividual.setUser(activeUser);
 
-        when(individualRepository.findByCriterial(anyString())).thenReturn(Optional.of(testIndividual));
+        when(individualRepository.findById(anyString())).thenReturn(Optional.of(testIndividual));
         when(individualRepository.existsIndividualByPhoneNumber("+9999999999")).thenReturn(true);
 
         IndividualRequest requestWithNewPhone = new IndividualRequest(
@@ -281,11 +281,11 @@ class IndividualServiceTest {
 
     @Test
     void update_ShouldThrowPersonException_WhenIndividualNotFound() {
-        when(individualRepository.findByCriterial(anyString())).thenReturn(Optional.empty());
+        when(individualRepository.findById(anyString())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> individualService.update("nonexistent", individualRequest))
                 .isInstanceOf(PersonException.class)
-                .hasMessageContaining("Individual not found by criterial");
+                .hasMessageContaining("Individual not found by id=[nonexistent]");
     }
 
     @Test
@@ -392,7 +392,7 @@ class IndividualServiceTest {
 
     @Test
     void hardDelete_ShouldDeleteIndividual_WhenExists() {
-        when(individualRepository.findByCriterial(anyString())).thenReturn(Optional.of(individual));
+        when(individualRepository.findById(anyString())).thenReturn(Optional.of(individual));
         doNothing().when(individualRepository).delete(any(Individual.class));
 
         individualService.hardDelete("AB1234567");
@@ -402,7 +402,7 @@ class IndividualServiceTest {
 
     @Test
     void hardDelete_ShouldThrowPersonException_WhenIndividualNotFound() {
-        when(individualRepository.findByCriterial(anyString())).thenReturn(Optional.empty());
+        when(individualRepository.findById(anyString())).thenReturn(Optional.empty());
         assertThatThrownBy(() -> individualService.hardDelete("nonexistent"))
                 .isInstanceOf(PersonException.class);
     }

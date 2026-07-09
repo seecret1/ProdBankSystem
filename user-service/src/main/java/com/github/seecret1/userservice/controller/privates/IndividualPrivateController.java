@@ -41,19 +41,34 @@ public class IndividualPrivateController {
         return ResponseEntity.ok(individualService.findAll(pageModel));
     }
 
-    @GetMapping("/{criterial}")
+    @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')")
     @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Get individual by criterial")
+    @Operation(summary = "Get individual by id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Individual found"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "Individual not found")
     })
-    public ResponseEntity<IndividualResponse> findByCriterial(
-            @PathVariable String criterial
+    public ResponseEntity<IndividualResponse> findById(
+            @PathVariable String id
     ) {
-        return ResponseEntity.ok(individualService.findByCriterial(criterial));
+        return ResponseEntity.ok(individualService.findById(id));
+    }
+
+    @GetMapping("/phone/{phoneNumber}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Get individual by phone number")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Individual found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Individual not found")
+    })
+    public ResponseEntity<IndividualResponse> findByPhoneNumber(
+            @PathVariable String phoneNumber
+    ) {
+        return ResponseEntity.ok(individualService.findByPhoneNumber(phoneNumber));
     }
 
     @PutMapping("/{criterial}")

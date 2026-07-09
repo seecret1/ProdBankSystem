@@ -9,7 +9,9 @@ public interface IndividualService {
 
     PageResponse<IndividualResponse> findAll(PageModel pageModel);
 
-    IndividualResponse findByCriterial(String criterial);
+    IndividualResponse findById(String criterial);
+
+    IndividualResponse findByPhoneNumber(String phoneNumber);
 
     IndividualResponse recordPersonalData(String userId, IndividualRequest request);
 
