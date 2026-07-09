@@ -74,18 +74,46 @@ public class UserPrivateController {
         return ResponseEntity.ok(userService.findByFilter(filter));
     }
 
-    @GetMapping("/{criterial}")
+    @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')")
-    @Operation(summary = "Get user by criterial", description = "Find user by ID, username or email (Admin only)")
+    @Operation(summary = "Get user by criterial", description = "Find user by ID (Admin only)")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Success get user by ID, username or email"),
+            @ApiResponse(responseCode = "200", description = "Success get user by ID"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "403", description = "Forbidden")
     })
-    public ResponseEntity<UserResponse> findByCriterial(
-            @PathVariable String criterial
+    public ResponseEntity<UserResponse> findById(
+            @PathVariable String id
     ) {
-        return ResponseEntity.ok(userService.findByCriterial(criterial));
+        return ResponseEntity.ok(userService.findById(id));
+    }
+
+    @GetMapping("/byEmail/{email}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')")
+    @Operation(summary = "Get user by criterial", description = "Find user by email (Admin only)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success get user by email"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden")
+    })
+    public ResponseEntity<UserResponse> findByEmail(
+            @PathVariable String email
+    ) {
+        return ResponseEntity.ok(userService.findByEmail(email));
+    }
+
+    @GetMapping("/byUsername/{username}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')")
+    @Operation(summary = "Get user by criterial", description = "Find user by username (Admin only)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success get user by username"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden")
+    })
+    public ResponseEntity<UserResponse> findByUsername(
+            @PathVariable String username
+    ) {
+        return ResponseEntity.ok(userService.findByUsername(username));
     }
 
     @PostMapping
@@ -118,7 +146,7 @@ public class UserPrivateController {
         return ResponseEntity.ok(userService.updateFull(criterial, request));
     }
 
-    @DeleteMapping("/{criterial}")
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "Delete user", description = "Delete user by ID, username or email (Admin only)")
     @ApiResponses(value = {
@@ -130,12 +158,12 @@ public class UserPrivateController {
             @ApiResponse(responseCode = "403", description = "Forbidden")
     })
     public ResponseEntity<Void> delete(
-            @PathVariable String criterial,
+            @PathVariable String id,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         userService.delete(
                 AuthUtil.getCurrentUserId(userDetails),
-                criterial
+                id
         );
         return ResponseEntity.noContent().build();
     }

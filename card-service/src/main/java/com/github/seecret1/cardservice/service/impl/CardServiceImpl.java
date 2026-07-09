@@ -24,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -108,7 +107,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "${app.cache.cache-names.cardByCriterial}", key = "#id")
+    @Cacheable(value = "${app.cache.cache-names.cardById}", key = "#id")
     public CardResponse findById(String id) {
         log.info("Find card by id: {}", id);
 
@@ -121,7 +120,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "${app.cache.cache-names.cardByCriterial}", key = "#number")
+    @Cacheable(value = "${app.cache.cache-names.cardByNumber}", key = "#number")
     public CardResponse findByNumber(String number) {
         log.info("Find card by number: {}", number);
 
@@ -165,7 +164,8 @@ public class CardServiceImpl implements CardService {
                     "${app.cache.cache-names.cardOnlyNotDeleted}",
                     "${app.cache.cache-names.cardYour}",
                     "${app.cache.cache-names.cardFilter}",
-                    "${app.cache.cache-names.cardByCriterial}"
+                    "${app.cache.cache-names.cardById}",
+                    "${app.cache.cache-names.cardByNumber}"
             },
             allEntries = true
     )
@@ -190,21 +190,21 @@ public class CardServiceImpl implements CardService {
     @Transactional(isolation = Isolation.READ_COMMITTED)
     @CacheEvict(
             value = {
-                "${app.cache.cache-names.cardAll}",
-                "${app.cache.cache-names.cardOnlyNotDeleted}",
-                "${app.cache.cache-names.cardYour}",
-                "${app.cache.cache-names.cardFilter}",
-                "${app.cache.cache-names.cardByCriterial}"
+                    "${app.cache.cache-names.cardAll}",
+                    "${app.cache.cache-names.cardOnlyNotDeleted}",
+                    "${app.cache.cache-names.cardYour}",
+                    "${app.cache.cache-names.cardFilter}",
+                    "${app.cache.cache-names.cardById}",
+                    "${app.cache.cache-names.cardByNumber}"
             },
             allEntries = true
     )
-    public CardResponse create(CardRequest request) {
-        String criterial = request.userCriterial();
-        log.info("Creating a user card, criterial: {}", criterial);
+    public CardResponse create(String userId, CardRequest request) {
+        log.info("Creating a user card, userId: {}", userId);
 
-        var user = userServiceClient.findUserByCriterial(criterial);
+        var user = userServiceClient.findUserById(userId);
 
-        if (user == null) throw new EntityNotFoundException("User not found by criterial " + criterial);
+        if (user == null) throw new EntityNotFoundException("User not found by id " + userId);
 
         var card = cardRepository.findByNumberHash(request.number());
 
@@ -240,11 +240,12 @@ public class CardServiceImpl implements CardService {
                     "${app.cache.cache-names.cardAll}",
                     "${app.cache.cache-names.cardOnlyNotDeleted}",
                     "${app.cache.cache-names.cardYour}",
-                    "${app.cache.cache-names.cardFilter}"
+                    "${app.cache.cache-names.cardFilter}",
+                    "${app.cache.cache-names.cardByNumber}"
             },
             allEntries = true
     )
-    @CachePut(value = "${app.cache.cache-names.cardByCriterial}", key = "#id")
+    @CachePut(value = "${app.cache.cache-names.cardById}", key = "#id")
     public CardResponse updateStatus(String id, CardStatus status) {
         log.info("Update status for card: {}", id);
 
@@ -267,11 +268,12 @@ public class CardServiceImpl implements CardService {
                     "${app.cache.cache-names.cardAll}",
                     "${app.cache.cache-names.cardOnlyNotDeleted}",
                     "${app.cache.cache-names.cardYour}",
-                    "${app.cache.cache-names.cardFilter}"
+                    "${app.cache.cache-names.cardFilter}",
+                    "${app.cache.cache-names.cardByNumber}"
             },
             allEntries = true
     )
-    @CachePut(value = "${app.cache.cache-names.cardByCriterial}", key = "#id")
+    @CachePut(value = "${app.cache.cache-names.cardById}", key = "#id")
     public CardResponse extendCard(String id, LocalDate dateExpiry) {
         log.info("Extend the validity period of the card: {}", id);
 
@@ -306,7 +308,8 @@ public class CardServiceImpl implements CardService {
                     "${app.cache.cache-names.cardOnlyNotDeleted}",
                     "${app.cache.cache-names.cardYour}",
                     "${app.cache.cache-names.cardFilter}",
-                    "${app.cache.cache-names.cardByCriterial}"
+                    "${app.cache.cache-names.cardById}",
+                    "${app.cache.cache-names.cardByNumber}"
             },
             allEntries = true
     )
@@ -318,7 +321,7 @@ public class CardServiceImpl implements CardService {
             throw new CardDeletedException("Card already deleted by id " + cardId);
         }
 
-        var user = userServiceClient.findUserByCriterial(userId);
+        var user = userServiceClient.findUserById(userId);
         log.debug("Find user {} from the server", user.username());
 
         card.softDelete(user.username());
@@ -334,7 +337,8 @@ public class CardServiceImpl implements CardService {
                     "${app.cache.cache-names.cardOnlyNotDeleted}",
                     "${app.cache.cache-names.cardYour}",
                     "${app.cache.cache-names.cardFilter}",
-                    "${app.cache.cache-names.cardByCriterial}"
+                    "${app.cache.cache-names.cardById}",
+                    "${app.cache.cache-names.cardByNumber}"
             },
             allEntries = true
     )

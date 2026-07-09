@@ -1,6 +1,5 @@
 package com.github.seecret1.cardservice.controller;
 
-import com.github.seecret1.cardservice.dto.request.CardRequest;
 import com.github.seecret1.cardservice.dto.response.CardResponse;
 import com.github.seecret1.cardservice.entity.enums.CardStatus;
 import com.github.seecret1.cardservice.model.CardFilterModel;
@@ -15,7 +14,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -88,21 +86,6 @@ public class PrivateCardController {
             @Valid CardFilterModel filter
     ) {
         return ResponseEntity.ok(cardService.findByFilter(filter));
-    }
-
-    @PostMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @Operation(summary = "Create card", description = "Create new card")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Success create new card"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "403", description = "Forbidden")
-    })
-    public ResponseEntity<CardResponse> createCard(
-            @Valid @RequestBody CardRequest cardRequest
-    ) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(cardService.create(cardRequest));
     }
 
     @PatchMapping("/update-status/{id}")

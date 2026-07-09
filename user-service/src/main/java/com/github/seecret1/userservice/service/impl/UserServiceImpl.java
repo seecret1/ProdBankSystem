@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
@@ -98,33 +99,52 @@ public class UserServiceImpl implements UserService, InternalUserService {
     }
 
     @Override
-    @Cacheable(value = "${app.cache.cache-names.userByCriterial}", key = "#criterial")
+    @Cacheable(value = "${app.cache.cache-names.userById}", key = "#id")
     @Transactional(readOnly = true)
-    public UserResponse findByCriterial(String criterial) {
-        log.info("Find user by criterial: {}", criterial);
-        var user = findUserEntityByCriterial(criterial);
-        log.debug("Found user by criterial. User: {}", user);
+    public UserResponse findById(String id) {
+        log.info("Find user by id: {}", id);
+        var user = findUserEntityById(id);
         return userMapper.toResponse(user);
     }
 
     @Override
-    @Cacheable(value = "${app.cache.cache-names.userByCriterial}", key = "#criterial")
+    @Cacheable(value = "${app.cache.cache-names.userByEmail}", key = "#email")
     @Transactional(readOnly = true)
-    public UserResponse findByCriterial(String criterial, String apiKey) {
+    public UserResponse findByEmail(String email) {
+        log.info("Find user by email: {}", email);
+        var user = findUserEntityByEmail(email);
+        return userMapper.toResponse(user);
+    }
+
+    @Override
+    @Cacheable(value = "${app.cache.cache-names.userByUsername}", key = "#username")
+    @Transactional(readOnly = true)
+    public UserResponse findByUsername(String username) {
+        log.info("Find user by username: {}", username);
+        var user = findUserEntityByUsername(username);
+        return userMapper.toResponse(user);
+    }
+
+    @Override
+    @Cacheable(value = "${app.cache.cache-names.userById}", key = "#id")
+    @Transactional(readOnly = true)
+    public UserResponse findById(String id, String apiKey) {
 
         log.info("Check api key with internal api key");
         if (!internalApiKey.equals(apiKey)) {
             throw new SecurityException("Invalid internal API key");
         }
-        return findByCriterial(criterial);
+        return findById(id);
     }
 
     @Override
     @CacheEvict(
             value = {
                     "${app.cache.cache-names.userAll}",
-                    "${app.cache.cache-names.userByCriterial}",
-                    "${app.cache.cache-names.userFilter}"
+                    "${app.cache.cache-names.userFilter}",
+                    "${app.cache.cache-names.userById}",
+                    "${app.cache.cache-names.userByEmail}",
+                    "${app.cache.cache-names.userByUsername}"
             },
             allEntries = true
     )
@@ -156,15 +176,17 @@ public class UserServiceImpl implements UserService, InternalUserService {
             value = {
                     "${app.cache.cache-names.userAll}",
                     "${app.cache.cache-names.userFilter}",
-                    "${app.cache.cache-names.userByCriterial}"
+                    "${app.cache.cache-names.userByEmail}",
+                    "${app.cache.cache-names.userByUsername}"
             },
             allEntries = true
     )
+    @CachePut(value = "${app.cache.cache-names.userById}", key = "#id")
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public UserResponse updateFull(String criterial, CreateUserRequest request) {
-        log.info("Full update user by criterial: {}", criterial);
+    public UserResponse updateFull(String id, CreateUserRequest request) {
+        log.info("Full update user by id: {}", id);
 
-        User existingUser = findUserEntityByCriterial(criterial);
+        User existingUser = findUserEntityById(id);
 
         existingUser.setUsername(request.username());
         existingUser.setStatus(request.status());
@@ -187,10 +209,12 @@ public class UserServiceImpl implements UserService, InternalUserService {
             value = {
                     "${app.cache.cache-names.userAll}",
                     "${app.cache.cache-names.userFilter}",
-                    "${app.cache.cache-names.userByCriterial}"
+                    "${app.cache.cache-names.userByEmail}",
+                    "${app.cache.cache-names.userByUsername}"
             },
             allEntries = true
     )
+    @CachePut(value = "${app.cache.cache-names.userById}", key = "#userId")
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public UserResponse updateYour(String userId, UpdateUserRequest request) {
         log.info("Update user by id: {}", userId);
@@ -217,15 +241,17 @@ public class UserServiceImpl implements UserService, InternalUserService {
     @CacheEvict(
             value = {
                     "${app.cache.cache-names.userAll}",
-                    "${app.cache.cache-names.userByCriterial}",
-                    "${app.cache.cache-names.userFilter}"
+                    "${app.cache.cache-names.userFilter}",
+                    "${app.cache.cache-names.userById}",
+                    "${app.cache.cache-names.userByEmail}",
+                    "${app.cache.cache-names.userByUsername}"
             },
             allEntries = true
     )
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void delete(String deletedBy, String criterial) {
-        log.info("Delete user by criterial: {}", criterial);
-        var user = findUserEntityByCriterial(criterial);
+    public void delete(String deletedBy, String id) {
+        log.info("Delete user by id: {}", id);
+        var user = findUserEntityById(id);
         log.debug("Success delete user: {}", user);
 
         user.softDelete(deletedBy);
@@ -234,22 +260,26 @@ public class UserServiceImpl implements UserService, InternalUserService {
 
     @Override
     @Transactional(readOnly = true)
-    public User findUserEntityByCriterial(String criterial) {
-        log.info("Find user entity by criterial: {}", criterial);
-        var user = userRepository.findByCriterial(criterial)
-                .orElseThrow(() -> new UserNotFoundException(
-                        "User not found by criterial: " + criterial
-                ));
-        log.debug("Found user entity by criterial. User: {}", user);
-        return user;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public User findUserEntityById(String id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(
-                        "User not found with id: " + id
+                        "User not found by id: " + id
+                ));
+    }
+
+    @Override
+    public User findUserEntityByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(
+                        "User not found by email: " + email
+                ));
+    }
+
+    @Override
+    public User findUserEntityByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException(
+                        "User not found by username: " + username
                 ));
     }
 

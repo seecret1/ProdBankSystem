@@ -56,17 +56,4 @@ public interface UserSpecification {
             return cb.equal(root.get(fieldName), roleType);
         };
     }
-
-    static Specification<User> searchByCriterial(String searchCriterial) {
-        return (root, query, cb) -> {
-
-            if (!StringUtils.hasText(searchCriterial))  return cb.conjunction();
-
-            return cb.or(
-                    cb.equal(root.get("id"), searchCriterial),
-                    cb.equal(root.get("username"), searchCriterial),
-                    cb.equal(root.get("email"), searchCriterial)
-            );
-        };
-    }
 }

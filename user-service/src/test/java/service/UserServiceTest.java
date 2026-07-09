@@ -137,24 +137,66 @@ class UserServiceTest {
     }
 
     @Test
-    void findByCriterial_ShouldReturnUserResponse_WhenUserExists() {
-        when(userRepository.findByCriterial(anyString())).thenReturn(Optional.of(user));
+    void findById_ShouldReturnUserResponse_WhenUserExists() {
+        when(userRepository.findById(anyString())).thenReturn(Optional.of(user));
         when(userMapper.toResponse(user)).thenReturn(userResponse);
 
-        UserResponse result = userService.findByCriterial("testuser");
+        UserResponse result = userService.findById("testuser");
 
         assertThat(result).isNotNull();
         assertThat(result.username()).isEqualTo("testuser");
-        verify(userRepository).findByCriterial("testuser");
+        verify(userRepository).findById("testuser");
     }
 
     @Test
-    void findByCriterial_ShouldThrowUserNotFoundException_WhenUserNotFound() {
-        when(userRepository.findByCriterial(anyString())).thenReturn(Optional.empty());
+    void findById_ShouldThrowUserNotFoundException_WhenUserNotFound() {
+        when(userRepository.findById(anyString())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> userService.findByCriterial("nonexistent"))
+        assertThatThrownBy(() -> userService.findById("nonexistent"))
                 .isInstanceOf(UserNotFoundException.class)
-                .hasMessageContaining("User not found by criterial");
+                .hasMessageContaining("User not found by id: nonexistent");
+    }
+
+    @Test
+    void findByEmail_ShouldReturnUserResponse_WhenUserExists() {
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
+        when(userMapper.toResponse(user)).thenReturn(userResponse);
+
+        UserResponse result = userService.findByEmail("testuser");
+
+        assertThat(result).isNotNull();
+        assertThat(result.username()).isEqualTo("testuser");
+        verify(userRepository).findByEmail("testuser");
+    }
+
+    @Test
+    void findByEmail_ShouldThrowUserNotFoundException_WhenUserNotFound() {
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.findByEmail("nonexistent"))
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("User not found by email: nonexistent");
+    }
+
+    @Test
+    void findByUsername_ShouldReturnUserResponse_WhenUserExists() {
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
+        when(userMapper.toResponse(user)).thenReturn(userResponse);
+
+        UserResponse result = userService.findByUsername("testuser");
+
+        assertThat(result).isNotNull();
+        assertThat(result.username()).isEqualTo("testuser");
+        verify(userRepository).findByUsername("testuser");
+    }
+
+    @Test
+    void findByUsername_ShouldThrowUserNotFoundException_WhenUserNotFound() {
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.findByUsername("nonexistent"))
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("User not found by username: nonexistent");
     }
 
     @Test
@@ -183,7 +225,7 @@ class UserServiceTest {
 
     @Test
     void updateFull_ShouldReturnUpdatedUserResponse() {
-        when(userRepository.findByCriterial(anyString())).thenReturn(Optional.of(user));
+        when(userRepository.findById(anyString())).thenReturn(Optional.of(user));
         when(passwordEncoder.encode(anyString())).thenReturn("newEncodedPassword");
         when(userRepository.save(any(User.class))).thenReturn(user);
         when(userMapper.toResponse(user)).thenReturn(userResponse);
@@ -209,7 +251,7 @@ class UserServiceTest {
 
     @Test
     void delete_ShouldSoftDeleteUser() {
-        when(userRepository.findByCriterial(anyString())).thenReturn(Optional.of(user));
+        when(userRepository.findById(anyString())).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenReturn(user);
 
         userService.delete("admin", "testuser");
@@ -219,22 +261,6 @@ class UserServiceTest {
         verify(userRepository).save(user);
     }
 
-    @Test
-    void findUserEntityByCriterial_ShouldReturnUser_WhenExists() {
-        when(userRepository.findByCriterial(anyString())).thenReturn(Optional.of(user));
-
-        User result = userService.findUserEntityByCriterial("testuser");
-
-        assertThat(result).isNotNull();
-        assertThat(result.getUsername()).isEqualTo("testuser");
-    }
-
-    @Test
-    void findUserEntityByCriterial_ShouldThrowUserNotFoundException_WhenNotExists() {
-        when(userRepository.findByCriterial(anyString())).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> userService.findUserEntityByCriterial("nonexistent"))
-                .isInstanceOf(UserNotFoundException.class);
-    }
 
     @Test
     void findUserEntityById_ShouldReturnUser_WhenExists() {

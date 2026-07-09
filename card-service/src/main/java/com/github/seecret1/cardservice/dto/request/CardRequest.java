@@ -27,9 +27,6 @@ public record CardRequest (
     @Positive(message = "spending limit must only positive value!")
     BigDecimal spendingLimit,
 
-    @NotBlank(message = "User must be set!")
-    String userCriterial,
-
     @Size(max = 255, message = "Max size message in {max} symbols")
     String comment
 

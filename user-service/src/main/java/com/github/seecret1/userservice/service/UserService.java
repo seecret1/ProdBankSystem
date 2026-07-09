@@ -15,9 +15,13 @@ public interface UserService {
 
     PageResponse<UserResponse> findByFilter(UserFilterModel filter);
 
-    UserResponse findByCriterial(String criterial);
+    UserResponse findById(String id);
 
-    UserResponse findByCriterial(String criterial, String apiKey);
+    UserResponse findByEmail(String email);
+
+    UserResponse findByUsername(String username);
+
+    UserResponse findById(String criterial, String apiKey);
 
     UserResponse create(CreateUserRequest request);
 

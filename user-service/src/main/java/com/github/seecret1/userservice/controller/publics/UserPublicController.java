@@ -30,12 +30,12 @@ public class UserPublicController {
 
     private final UserService userService;
 
-    @GetMapping("/services/{criterial}")
-    public UserResponse findUserByCriterial(
-            @PathVariable String criterial,
+    @GetMapping("/services/{id}")
+    public UserResponse findUserById(
+            @PathVariable String id,
             @RequestHeader(value = X_INTERNAL_API_KEY, required = false) String apiKey
     ) {
-        return userService.findByCriterial(criterial, apiKey);
+        return userService.findById(id, apiKey);
     }
 
     @PatchMapping

@@ -112,7 +112,8 @@ app:
       - cardOnlyNotDeleted
       - cardFilter
       - cardYour
-      - cardByCriterial
+      - cardById
+      - cardByNumber
     caches:
       cardAll:
         expiry: 30m
@@ -122,7 +123,9 @@ app:
         expiry: 20m
       cardYour:
         expiry: 30m
-      cardByCriterial:
+      cardById:
+        expiry: 20m
+      cardByNumber:
         expiry: 10m
 
   scheduler:

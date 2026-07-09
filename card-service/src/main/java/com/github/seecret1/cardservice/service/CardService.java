@@ -26,7 +26,7 @@ public interface CardService {
 
     CardResponse activateCard(String criterial);
 
-    CardResponse create(CardRequest request);
+    CardResponse create(String userId, CardRequest request);
 
     CardResponse updateStatus(String id, CardStatus status);
 
