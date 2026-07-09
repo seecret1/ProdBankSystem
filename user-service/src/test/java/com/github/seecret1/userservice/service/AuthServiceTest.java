@@ -1,4 +1,4 @@
-package service;
+package com.github.seecret1.userservice.service;
 
 import com.github.seecret1.userservice.dto.request.*;
 import com.github.seecret1.userservice.dto.response.JwtAuthenticationDto;

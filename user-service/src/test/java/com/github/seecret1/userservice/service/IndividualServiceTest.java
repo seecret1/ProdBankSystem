@@ -1,4 +1,4 @@
-package service;
+package com.github.seecret1.userservice.service;
 
 import com.github.seecret1.common.dto.PageResponse;
 import com.github.seecret1.common.model.PageModel;
