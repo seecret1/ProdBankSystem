@@ -30,12 +30,14 @@ public class OrderKafkaProducerServiceImpl implements OrderKafkaProducerService 
     public void sendNoWait(Card card, String comment, String userId) {
         OrderCreateCardDto message = createCardDto(card, comment, userId);
         kafkaTemplate.send(ordersTopic, message.getTraceId(), message);
+        loggingMessage(message);
     }
 
     @Override
     public void sendWithWait(Card card, String comment, String userId) {
 
         OrderCreateCardDto message = createCardDto(card, comment, userId);
+        loggingMessage(message);
 
         kafkaRetryTemplate.execute(context -> {
             try {
@@ -66,5 +68,11 @@ public class OrderKafkaProducerServiceImpl implements OrderKafkaProducerService 
                 .comment(comment)
                 .createdAt(Instant.now())
                 .build();
+    }
+
+    private static void loggingMessage(OrderCreateCardDto message) {
+        log.debug("Order message: traceId={}, userId={}, cardId={}, cardType={}, orderType={}, spendingLimit={}, comment={}, createdAt={}",
+                message.getTraceId(), message.getUserId(), message.getCardId(), message.getCardType(), message.getOrderType(),
+                message.getSpendingLimit(), message.getComment(), message.getCreatedAt());
     }
 }

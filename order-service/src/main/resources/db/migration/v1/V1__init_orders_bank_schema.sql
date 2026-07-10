@@ -12,6 +12,5 @@ CREATE TABLE order_bank.orders_card
     comment VARCHAR(255) UNIQUE NOT NULL,
     card_id VARCHAR NOT NULL,
     card_type VARCHAR(20) NOT NULL,
-    personal boolean NOT NULL DEFAULT FALSE,
     spending_limit DECIMAL(19, 2) NOT NULL
 );

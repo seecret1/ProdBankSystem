@@ -13,10 +13,10 @@ public class CustomUserServiceImpl implements UserDetailsService {
     private final UserRepository userRepository;
 
     @Override
-    public CustomUserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        var user =  userRepository.findByUsername(username).orElseThrow(
+    public CustomUserDetails loadUserByUsername(String id) throws UsernameNotFoundException {
+        var user =  userRepository.findById(id).orElseThrow(
                 () -> new UsernameNotFoundException(
-                        "User not found by username: " + username
+                        "User not found by id: " + id
                 )
         );
 

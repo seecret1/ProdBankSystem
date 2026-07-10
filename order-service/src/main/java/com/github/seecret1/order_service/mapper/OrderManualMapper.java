@@ -16,9 +16,9 @@ public class OrderManualMapper {
                 .cardId(event.getCardId())
                 .cardType(event.getCardType())
                 .spendingLimit(event.getSpendingLimit())
-                .personal(event.isPersonal())
                 .comment(event.getComment())
                 .status(OrderStatus.PENDING)
+                .deleted(false)
                 .build();
     }
 
@@ -30,7 +30,6 @@ public class OrderManualMapper {
                 .cardId(order.getCardId())
                 .cardType(order.getCardType())
                 .spendingLimit(order.getSpendingLimit())
-                .personal(order.getPersonal())
                 .comment(order.getComment())
                 .status(order.getStatus())
                 .timestamp(order.getCreatedAt())

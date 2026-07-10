@@ -31,7 +31,7 @@ public class OrderCardServiceImpl implements OrderCardService {
         var response = OrderManualMapper.toResponse(order);
         orderKafkaProducerService.sendWithWait(event, response);
 
-        log.info("Response sent to Kafka: orderId={}", event.getOrderId());
+        log.info("Response sent to Kafka: order ID={}", order.getId());
         return response;
     }
 }

@@ -16,6 +16,7 @@ import com.github.seecret1.cardservice.repository.specification.CardSpecificatio
 import com.github.seecret1.cardservice.service.CardService;
 import com.github.seecret1.cardservice.utils.AuthUtils;
 import com.github.seecret1.cardservice.utils.CardHashUtils;
+import com.github.seecret1.cardservice.utils.CardMaskUtils;
 import com.github.seecret1.common.dto.PageResponse;
 import com.github.seecret1.common.model.PageModel;
 import jakarta.persistence.EntityNotFoundException;
@@ -119,7 +120,7 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     @Cacheable(value = "${app.cache.cache-names.cardByNumber}", key = "#number")
     public CardResponse findByNumber(String number) {
         log.info("Find card by number: {}", number);
@@ -206,30 +207,32 @@ public class CardServiceImpl implements CardService {
 
         if (user == null) throw new EntityNotFoundException("User not found by id " + userId);
 
-        var card = cardRepository.findByNumberHash(request.number());
+        var card = cardRepository.findByNumberHash(CardHashUtils.hash(request.number()));
 
         if (card.isPresent()) {
             throw new CardExistsException(
-                    "Card with number " + request.number() + " already exists!"
+                    "Card with number " + CardMaskUtils.maskCardNumber(request.number()) + " already exists!"
             );
         }
+
         if (request.dateExpiry().isBefore(LocalDate.now())) {
             throw new CardExpiryDateException(
                     "Date expiry is before now!"
             );
         }
 
-        log.info("Init order cerated card");
+        log.info("Init order created card");
         var orderCard = cardMapper.toEntity(request, user.id());
+
+        cardRepository.save(orderCard);
 
         orderKafkaProducerService.sendWithWait(
                 orderCard,
                 request.comment(),
                 user.id()
         );
-        cardRepository.save(orderCard);
+
         log.info("Save card with status PENDING");
-        log.debug("Init order created card: {}", orderCard);
         return cardMapper.toDtoResponse(orderCard);
     }
 
@@ -364,11 +367,12 @@ public class CardServiceImpl implements CardService {
     private Card findCardByNumber(String number) {
         String hash = CardHashUtils.hash(number);
         Optional<Card> byHash = cardRepository.findByNumberHash(hash);
+        String maskedNumber = CardMaskUtils.maskCardNumber(number);
         if (byHash.isPresent()) {
-            log.debug("Card found by card number hash: {}", number);
+            log.debug("Card found by card number hash: {}", maskedNumber);
             return byHash.get();
         }
-        throw new CardNotFoundException("Card not found by card number: " + number);
+        throw new CardNotFoundException("Card not found by card number: " + maskedNumber);
     }
 
     private boolean checkCardStatus(Card card, CardStatus status) {

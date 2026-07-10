@@ -23,6 +23,9 @@ spring:
   flyway:
     enabled: true
 
+  kafka:
+    bootstrap-servers: ${HOST:localhost}:${KAFKA1_PORT:9092}
+
   data:
     redis:
       host: ${HOST:localhost}

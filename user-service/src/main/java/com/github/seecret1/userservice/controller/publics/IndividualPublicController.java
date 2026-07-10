@@ -29,7 +29,7 @@ public class IndividualPublicController {
     private final IndividualService individualService;
 
     @PostMapping
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MANAGER')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Complete client profile", description = "Link personal data to the authenticated user account")
     @ApiResponses(value = {

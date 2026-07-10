@@ -35,7 +35,7 @@ spring:
           min-idle: ${REDIS_POOL_MIN_IDLE:0}
 
   kafka:
-    bootstrap-servers: ${HOST:localhost}:${KAFKA1_PORT:9092}, ${HOST:localhost}:${KAFKA2_PORT:9093}, ${HOST:localhost}:${KAFKA3_PORT:9094}
+    bootstrap-servers: ${HOST:localhost}:${KAFKA1_PORT:9092}
 
 user-service:
   jwt:

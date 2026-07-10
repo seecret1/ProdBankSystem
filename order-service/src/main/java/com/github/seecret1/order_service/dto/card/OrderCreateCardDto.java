@@ -19,20 +19,5 @@ public class OrderCreateCardDto extends OrderDto {
 
     private BigDecimal spendingLimit;
 
-    private boolean personal;
-
     private String comment;
-
-    @Override
-    public void validate() {
-        if (cardId.isBlank()) {
-            throw new ValidationException("Card id must not be blank!");
-        }
-        if (spendingLimit == null || spendingLimit.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new ValidationException("Spending limit must be positive for credit card");
-        }
-        if (spendingLimit.compareTo(BigDecimal.valueOf(100000)) > 0) {
-            throw new ValidationException("Spending limit exceeds maximum allowed");
-        }
-    }
 }

@@ -88,7 +88,6 @@ class CardServiceImplTest {
                 LocalDate.now().plusYears(1),
                 BigDecimal.valueOf(1000),
                 BigDecimal.valueOf(100000),
-                "user-email",
                 "empty comment"
         );
 
@@ -124,12 +123,12 @@ class CardServiceImplTest {
     @Test
     @DisplayName("Should create card successfully")
     void shouldCreateCardSuccessfully() {
-        when(userServiceClient.findUserByCriterial(anyString())).thenReturn(userResponse);
+        when(userServiceClient.findUserById(anyString())).thenReturn(userResponse);
         when(cardMapper.toEntity(any(CardRequest.class), anyString())).thenReturn(card);
         when(cardRepository.save(any(Card.class))).thenReturn(card);
         when(cardMapper.toDtoResponse(any(Card.class))).thenReturn(cardResponse);
 
-        CardResponse result = cardService.create(cardRequest);
+        CardResponse result = cardService.create(anyString(), cardRequest);
 
         assertThat(result).isNotNull();
         assertThat(result.status()).isEqualTo(CardStatus.PENDING);
@@ -139,9 +138,9 @@ class CardServiceImplTest {
     @Test
     @DisplayName("Should throw exception when user not found during card creation")
     void shouldThrowExceptionWhenUserNotFound() {
-        when(userServiceClient.findUserByCriterial(anyString())).thenReturn(null);
+        when(userServiceClient.findUserById(anyString())).thenReturn(null);
 
-        assertThatThrownBy(() -> cardService.create(cardRequest))
+        assertThatThrownBy(() -> cardService.create(anyString(), cardRequest))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessageContaining("User not found");
     }
@@ -149,11 +148,11 @@ class CardServiceImplTest {
     @Test
     @DisplayName("Should throw exception when card already exists")
     void shouldThrowExceptionWhenCardExists() {
-        when(userServiceClient.findUserByCriterial(anyString())).thenReturn(userResponse);
+        when(userServiceClient.findUserById(anyString())).thenReturn(userResponse);
         when(cardMapper.toEntity(any(CardRequest.class), anyString())).thenReturn(card);
         when(cardRepository.save(any(Card.class))).thenThrow(DataIntegrityViolationException.class);
 
-        assertThatThrownBy(() -> cardService.create(cardRequest))
+        assertThatThrownBy(() -> cardService.create(anyString(), cardRequest))
                 .isInstanceOf(CardExistsException.class);
     }
 

@@ -32,6 +32,7 @@ public abstract class BaseOrderEntity {
     @Enumerated(EnumType.STRING)
     OrderStatus status;
 
+    @Builder.Default
     Boolean deleted = false;
 
     @CreationTimestamp

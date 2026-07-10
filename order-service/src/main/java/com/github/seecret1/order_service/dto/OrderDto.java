@@ -19,6 +19,4 @@ public abstract class OrderDto {
     private OrderType orderType;
 
     private Instant createdAt;
-
-    public abstract void validate();
 }

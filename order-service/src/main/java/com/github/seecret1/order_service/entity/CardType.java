@@ -4,5 +4,7 @@ public enum CardType {
 
     DEBIT,
 
+    DEBIT_PERSONAL,
+
     CREDIT
 }

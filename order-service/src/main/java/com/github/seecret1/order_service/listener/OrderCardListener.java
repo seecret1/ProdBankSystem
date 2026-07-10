@@ -33,19 +33,12 @@ public class OrderCardListener {
             @Header(value = KafkaHeaders.RECEIVED_PARTITION) Integer partition,
             @Header(value = KafkaHeaders.RECEIVED_TIMESTAMP) Long timestamp
     ) {
-        log.info("Order received: traceId={} orderId={}, userId={}, cardId={}, createdAt={}",
-                order.getTraceId(), order.getOrderId(), order.getUserId(), order.getCardId(), order.getCreatedAt());
+        log.info("Order received: traceId={}, userId={}, cardId={}, createdAt={}",
+                order.getTraceId(), order.getUserId(), order.getCardId(), order.getCreatedAt());
         log.info("Key: {}; Partition: {}; Topic: {}; Timestamp: {}",
                 key, partition, topic, Instant.ofEpochMilli(timestamp));
 
+        service.createOrder(order);
         log.debug("Order body: {}", order);
-
-        try {
-            order.validate();
-            service.createOrder(order);
-        } catch(Exception ex) {
-            log.error("Order not validate: {}", order);
-            throw new OrderCardCreationException("Order not valid");
-        }
     }
 }

@@ -6,7 +6,9 @@ import com.github.seecret1.userservice.dto.request.CreateUserRequest;
 import com.github.seecret1.userservice.dto.request.UpdateUserRequest;
 import com.github.seecret1.userservice.dto.response.UserResponse;
 import com.github.seecret1.userservice.entity.User;
+import com.github.seecret1.userservice.entity.enums.UserStatus;
 import com.github.seecret1.userservice.exception.AuthException;
+import com.github.seecret1.userservice.exception.PersonException;
 import com.github.seecret1.userservice.exception.RegisterUserException;
 import com.github.seecret1.userservice.exception.UserNotFoundException;
 import com.github.seecret1.userservice.mapper.UserMapper;
@@ -134,7 +136,11 @@ public class UserServiceImpl implements UserService, InternalUserService {
         if (!internalApiKey.equals(apiKey)) {
             throw new SecurityException("Invalid internal API key");
         }
-        return findById(id);
+        var response = findById(id);
+        if (response.status() != UserStatus.ACTIVE) {
+            throw new PersonException("User status not ACTIVE");
+        }
+        return response;
     }
 
     @Override
