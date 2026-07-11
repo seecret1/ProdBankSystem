@@ -25,6 +25,7 @@ public class OrderCardServiceImpl implements OrderCardService {
     @Transactional
     public OrderMessage createOrder(OrderCardDto event) {
 
+        // TODO: Добавить обработку и работу со статусами
         OrderCard order = OrderCardManualMapper.toEntity(event);
         orderCardRepository.save(order);
 
