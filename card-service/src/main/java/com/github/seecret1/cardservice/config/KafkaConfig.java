@@ -2,7 +2,7 @@ package com.github.seecret1.cardservice.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.seecret1.cardservice.order.message.OrderCardResponse;
-import com.github.seecret1.cardservice.order.message.OrderCreateCardDto;
+import com.github.seecret1.cardservice.order.message.OrderCardDto;
 import com.github.seecret1.cardservice.order.message.OrderMessage;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -40,6 +40,9 @@ public class KafkaConfig {
 
     @Value("${app.kafka.groupId}")
     private String groupId;
+
+    @Value("${app.kafka.dlt-group-id}")
+    private String dltGroupId;
 
     @Value("${app.kafka.dlt-topic}")
     private String dltTopicName;
@@ -91,7 +94,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ProducerFactory<String, OrderCreateCardDto> orderCreateProducerFactory(
+    public ProducerFactory<String, OrderCardDto> orderCreateProducerFactory(
             ObjectMapper objectMapper
     ) {
         Map<String, Object> config = new HashMap<>();
@@ -133,8 +136,8 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, OrderCreateCardDto> orderCreateKafkaTemplate(
-            ProducerFactory<String, OrderCreateCardDto> producerFactory
+    public KafkaTemplate<String, OrderCardDto> orderCreateKafkaTemplate(
+            ProducerFactory<String, OrderCardDto> producerFactory
     ) {
         return new KafkaTemplate<>(producerFactory);
     }
@@ -150,7 +153,7 @@ public class KafkaConfig {
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
 
-        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, OrderCreateCardDto.class.getName());
+        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, OrderMessage.class.getName());
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
 
         config.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPullRecords);
@@ -159,7 +162,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, OrderMessage<OrderCardResponse>> orderCardKafkaListenerContainerFactory(
+    public ConcurrentKafkaListenerContainerFactory<String, OrderMessage<OrderCardResponse>> responseCardKafkaListenerContainerFactory(
             ConsumerFactory<String, OrderMessage<OrderCardResponse>> consumerFactory,
             KafkaTemplate<String, OrderMessage<OrderCardResponse>> orderCreateKafkaTemplate
     ) {

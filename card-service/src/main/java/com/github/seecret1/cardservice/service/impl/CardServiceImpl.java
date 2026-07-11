@@ -170,15 +170,15 @@ public class CardServiceImpl implements CardService {
             },
             allEntries = true
     )
-    public CardResponse activateCard(String number) {
-        log.info("Activate card by number: {}", number);
+    public CardResponse activateCard(String id) {
+        log.info("Activate card by id: {}", id);
 
-        var card = findCardByNumber(number);
+        var card = findCardById(id);
         authUtils.checkCardAccess(card);
 
         if (card.getStatus() == CardStatus.PENDING) {
             card.setStatus(CardStatus.ACTIVE);
-            log.info("Successfully activate card: {}", number);
+            log.info("Successfully activate card: {}", id);
             return cardMapper.toYourDtoResponse(card);
         }
         if (card.getStatus() == CardStatus.ACTIVE) {
@@ -226,10 +226,8 @@ public class CardServiceImpl implements CardService {
 
         cardRepository.save(orderCard);
 
-        orderKafkaProducerService.sendWithWait(
-                orderCard,
-                request.comment(),
-                user.id()
+        orderKafkaProducerService.sendNoWait(
+                cardMapper.toOrderCardDto(orderCard, request.comment(), userId)
         );
 
         log.info("Save card with status PENDING");

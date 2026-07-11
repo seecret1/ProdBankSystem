@@ -1,25 +1,29 @@
 package com.github.seecret1.cardservice.order.message;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
 import java.time.Instant;
 
 @Data
-@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PROTECTED)
 public abstract class OrderDto {
 
-    private String traceId;
+    String traceId;
 
-    private String userId;
+    String userId;
 
-    private OrderType orderType;
+    OrderType orderType;
 
-    private Instant createdAt;
+    Instant createdAt;
+
+    String comment;
 
     public abstract void validate();
 

@@ -15,23 +15,11 @@ import java.time.Instant;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderCardResponse {
 
-    String traceId;
-
-    String orderId;
-
-    String userId;
-
     String cardId;
 
     CardType cardType;
 
     BigDecimal spendingLimit;
 
-    boolean personal;
-
-    String comment;
-
-    OrderStatus status;
-
-    Instant timestamp;
+    Instant createdAt;
 }

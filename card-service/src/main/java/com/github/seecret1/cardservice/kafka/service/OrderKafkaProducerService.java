@@ -1,10 +1,10 @@
 package com.github.seecret1.cardservice.kafka.service;
 
-import com.github.seecret1.cardservice.entity.Card;
+import com.github.seecret1.cardservice.order.message.OrderCardDto;
 
 public interface OrderKafkaProducerService {
 
-    void sendNoWait(Card card, String comment, String userId);
+    void sendNoWait(OrderCardDto dto);
 
-    void sendWithWait(Card card, String comment, String userId);
+    void sendWithWait(OrderCardDto dto);
 }

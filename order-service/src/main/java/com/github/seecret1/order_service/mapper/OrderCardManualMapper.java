@@ -27,6 +27,7 @@ public class OrderCardManualMapper {
         return OrderCardResponse.builder()
                 .cardId(order.getCardId())
                 .cardType(order.getCardType())
+                .spendingLimit(order.getSpendingLimit())
                 .createdAt(order.getCreatedAt())
                 .build();
     }

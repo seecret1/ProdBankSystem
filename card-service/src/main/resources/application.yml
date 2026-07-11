@@ -24,7 +24,7 @@ spring:
     enabled: true
 
   kafka:
-    bootstrap-servers: ${HOST:localhost}:${KAFKA1_PORT:9092}
+    bootstrap-servers: ${HOST:localhost}:${KAFKA1_PORT:9092}, ${HOST:localhost}:${KAFKA2_PORT:9093}, ${HOST:localhost}:${KAFKA3_PORT:9094}
 
   data:
     redis:

@@ -20,5 +20,7 @@ public class OrderCardResponse {
 
     CardType cardType;
 
+    BigDecimal spendingLimit;
+
     Instant createdAt;
 }
