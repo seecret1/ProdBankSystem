@@ -32,7 +32,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -123,8 +122,6 @@ public class CardServiceImpl implements CardService {
     @Transactional
     @Cacheable(value = "${app.cache.cache-names.cardByNumber}", key = "#number")
     public CardResponse findByNumber(String number) {
-        log.info("Find card by number: {}", number);
-
         var card = findCardByNumber(number);
         authUtils.checkCardAccess(card);
 
@@ -165,11 +162,11 @@ public class CardServiceImpl implements CardService {
                     "${app.cache.cache-names.cardOnlyNotDeleted}",
                     "${app.cache.cache-names.cardYour}",
                     "${app.cache.cache-names.cardFilter}",
-                    "${app.cache.cache-names.cardById}",
                     "${app.cache.cache-names.cardByNumber}"
             },
             allEntries = true
     )
+    @CachePut(value = "${app.cache.cache-names.cardById}", key = "#id")
     public CardResponse activateCard(String id) {
         log.info("Activate card by id: {}", id);
 
@@ -251,7 +248,8 @@ public class CardServiceImpl implements CardService {
     public CardResponse updateStatus(String id, CardStatus status) {
         log.info("Update status for card: {}", id);
 
-        var card = findCardById(id);
+        var card = findCardUpdatedById(id);
+
         boolean check = checkCardStatus(card, status);
 
         if (!check) return cardMapper.toDtoResponse(card);
@@ -279,7 +277,7 @@ public class CardServiceImpl implements CardService {
     public CardResponse extendCard(String id, LocalDate dateExpiry) {
         log.info("Extend the validity period of the card: {}", id);
 
-        var card = findCardById(id);
+        var card = findCardUpdatedById(id);
         checkCardValid(card, dateExpiry);
 
         log.debug("Extend card status: {}", card.getStatus());
@@ -290,10 +288,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public CardResponse refreshSpendingLimit(String cardId, CardType cardType) {
-        var card = cardRepository.findById(cardId)
-                .orElseThrow(() -> new CardNotFoundException(
-                        "Card not found by id: " + cardId
-                ));
+        var card = findCardUpdatedById(cardId);
 
         log.info("Refresh spending limit for card by id: {}", cardId);
         card.setSpendingLimit(cardSpendingLimitsConfig.getMaxLimitForType(cardType));
@@ -320,7 +315,8 @@ public class CardServiceImpl implements CardService {
 
         var card = findCardById(cardId);
         if (card.getDeleted() == true) {
-            throw new CardDeletedException("Card already deleted by id " + cardId);
+            log.warn("Card already deleted by id: {}", cardId);
+            return;
         }
 
         var user = userServiceClient.findUserById(userId);
@@ -355,23 +351,29 @@ public class CardServiceImpl implements CardService {
     private Card findCardById(String id) {
         log.debug("Searching card by id: {}", id);
 
-        Optional<Card> byId = cardRepository.findById(id);
-        if (byId.isPresent()) {
-            log.debug("Card found by ID: {}", id);
-            return byId.get();
-        }
-        throw new CardNotFoundException("Card not found by id: " + id);
+        return cardRepository.findById(id)
+                .orElseThrow(() -> new CardNotFoundException(
+                        "Card not found by id: " + id
+                ));
+    }
+
+    private Card findCardUpdatedById(String id) {
+        log.info("Find card by ID={} in update method", id);
+        return cardRepository.findByIdInUpdate(id)
+                .orElseThrow(() -> new CardNotFoundException(
+                        "Card not found by ID: " + id
+                ));
     }
 
     private Card findCardByNumber(String number) {
         String hash = CardHashUtils.hash(number);
-        Optional<Card> byHash = cardRepository.findByNumberHash(hash);
         String maskedNumber = CardMaskUtils.maskCardNumber(number);
-        if (byHash.isPresent()) {
-            log.debug("Card found by card number hash: {}", maskedNumber);
-            return byHash.get();
-        }
-        throw new CardNotFoundException("Card not found by card number: " + maskedNumber);
+        log.info("Find card by number: {}", maskedNumber);
+
+        return cardRepository.findByNumberHash(hash)
+                .orElseThrow(() -> new CardNotFoundException(
+                        "Card not found by number: " + maskedNumber
+                ));
     }
 
     private boolean checkCardStatus(Card card, CardStatus status) {

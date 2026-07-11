@@ -24,6 +24,12 @@ public interface CardRepository extends JpaRepository<Card, String>, JpaSpecific
     """)
     Optional<Card> findById(String id);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+    SELECT c FROM Card c WHERE c.id = :id AND c.deleted = false
+    """)
+    Optional<Card> findByIdInUpdate(String id);
+
     @Query("""
     SELECT c FROM Card c WHERE c.deleted = false
     """)
