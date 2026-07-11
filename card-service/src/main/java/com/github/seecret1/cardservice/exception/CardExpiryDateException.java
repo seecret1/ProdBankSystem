@@ -5,6 +5,4 @@ public class CardExpiryDateException extends RuntimeException {
     public CardExpiryDateException(String message) {
         super(message);
     }
-
-    public CardExpiryDateException() { }
 }

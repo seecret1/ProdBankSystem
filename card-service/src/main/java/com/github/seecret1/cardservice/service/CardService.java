@@ -20,6 +20,8 @@ public interface CardService {
 
     CardResponse findById(String id);
 
+    CardResponse findByIdDeletedOrNot(String id);
+
     CardResponse findByNumber(String number);
 
     PageResponse<CardResponse> findYourCards(String userId, PageModel pageModel);

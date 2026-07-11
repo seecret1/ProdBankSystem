@@ -7,7 +7,6 @@ import com.github.seecret1.cardservice.dto.user.UserResponse;
 import com.github.seecret1.cardservice.entity.Card;
 import com.github.seecret1.cardservice.entity.enums.CardStatus;
 import com.github.seecret1.cardservice.entity.enums.CardType;
-import com.github.seecret1.cardservice.exception.CardAlreadyActivated;
 import com.github.seecret1.cardservice.exception.CardExistsException;
 import com.github.seecret1.cardservice.exception.CardNotFoundException;
 import com.github.seecret1.cardservice.mapper.CardMapper;
@@ -154,18 +153,6 @@ class CardServiceImplTest {
 
         assertThatThrownBy(() -> cardService.create(anyString(), cardRequest))
                 .isInstanceOf(CardExistsException.class);
-    }
-
-    @Test
-    @DisplayName("Should throw exception when activating already active card")
-    void shouldThrowExceptionWhenActivatingActiveCard() {
-        card.setStatus(CardStatus.ACTIVE);
-        when(cardRepository.findByNumberHash(anyString())).thenReturn(Optional.of(card));
-        doNothing().when(authUtils).checkCardAccess(any(Card.class));
-
-        assertThatThrownBy(() -> cardService.activateCard("1234567890123456"))
-                .isInstanceOf(CardAlreadyActivated.class)
-                .hasMessageContaining("already activated");
     }
 
     @Test

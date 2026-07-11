@@ -1,12 +1,13 @@
 package com.github.seecret1.cardservice.utils;
 
+import lombok.experimental.UtilityClass;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Base64;
 
-@Component
+@UtilityClass
 public class CardHashUtils {
 
     public static String hash(String number) {

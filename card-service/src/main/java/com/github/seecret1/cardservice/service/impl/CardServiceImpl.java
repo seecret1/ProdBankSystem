@@ -17,6 +17,7 @@ import com.github.seecret1.cardservice.service.CardService;
 import com.github.seecret1.cardservice.utils.AuthUtils;
 import com.github.seecret1.cardservice.utils.CardHashUtils;
 import com.github.seecret1.cardservice.utils.CardMaskUtils;
+import com.github.seecret1.cardservice.utils.CardValidateUtils;
 import com.github.seecret1.common.dto.PageResponse;
 import com.github.seecret1.common.model.PageModel;
 import jakarta.persistence.EntityNotFoundException;
@@ -30,7 +31,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Slf4j
@@ -119,6 +119,15 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "${app.cache.cache-names.cardById}", key = "#id")
+    public CardResponse findByIdDeletedOrNot(String id) {
+        var card = findCardByIdDeletedOrNot(id);
+        log.debug("Find by ID card: {}", card);
+        return cardMapper.toYourDtoResponse(card);
+    }
+
+    @Override
     @Transactional
     @Cacheable(value = "${app.cache.cache-names.cardByNumber}", key = "#number")
     public CardResponse findByNumber(String number) {
@@ -171,7 +180,7 @@ public class CardServiceImpl implements CardService {
         log.info("Activate card by id: {}", id);
 
         // TODO: добавить проверки
-        var card = findCardById(id);
+        var card = findCardByIdUseLock(id);
 
         if (card.getStatus() == CardStatus.PENDING) {
             card.setStatus(CardStatus.ACTIVE);
@@ -248,11 +257,14 @@ public class CardServiceImpl implements CardService {
     public CardResponse updateStatus(String id, CardStatus status) {
         log.info("Update status for card: {}", id);
 
-        var card = findCardUpdatedById(id);
+        var card = findCardByIdUseLock(id);
 
-        boolean check = checkCardStatus(card, status);
+        boolean check = CardValidateUtils.checkCardStatus(card, status);
 
         if (!check) return cardMapper.toDtoResponse(card);
+        if (status == CardStatus.EXPIRED) {
+            extendCard(id, card.getDateExpiry());
+        }
         card.setStatus(status);
 
         log.debug("Update card status: {}", card);
@@ -277,8 +289,8 @@ public class CardServiceImpl implements CardService {
     public CardResponse extendCard(String id, LocalDate dateExpiry) {
         log.info("Extend the validity period of the card: {}", id);
 
-        var card = findCardUpdatedById(id);
-        checkCardValid(card, dateExpiry);
+        var card = findCardByIdUseLock(id);
+        CardValidateUtils.checkCardValid(card, dateExpiry);
 
         log.debug("Extend card status: {}", card.getStatus());
         cardRepository.save(card);
@@ -288,7 +300,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public CardResponse refreshSpendingLimit(String cardId, CardType cardType) {
-        var card = findCardUpdatedById(cardId);
+        var card = findCardByIdUseLock(cardId);
 
         log.info("Refresh spending limit for card by id: {}", cardId);
         card.setSpendingLimit(cardSpendingLimitsConfig.getMaxLimitForType(cardType));
@@ -313,12 +325,7 @@ public class CardServiceImpl implements CardService {
     public void softDelete(String userId, String cardId) {
         log.info("Soft delete card by id: {}", cardId);
 
-        var card = findCardById(cardId);
-        if (card.getDeleted() == true) {
-            log.warn("Card already deleted by id: {}", cardId);
-            return;
-        }
-
+        var card = findCardByIdUseLock(cardId);
         var user = userServiceClient.findUserById(userId);
         log.debug("Find user {} from the server", user.username());
 
@@ -342,11 +349,10 @@ public class CardServiceImpl implements CardService {
     )
     public void hardDelete(String id) {
         log.info("Hard delete card by id: {}", id);
-        var card = findCardById(id);
+        var card = findCardByIdDeletedOrNot(id);
         cardRepository.delete(card);
         log.info("Hard delete card successful");
     }
-
 
     private Card findCardById(String id) {
         log.debug("Searching card by id: {}", id);
@@ -357,12 +363,27 @@ public class CardServiceImpl implements CardService {
                 ));
     }
 
-    private Card findCardUpdatedById(String id) {
+    private Card findCardByIdUseLock(String id) {
         log.info("Find card by ID={} in update method", id);
-        return cardRepository.findByIdInUpdate(id)
+        return cardRepository.findByIdUseLock(id)
                 .orElseThrow(() -> new CardNotFoundException(
                         "Card not found by ID: " + id
                 ));
+    }
+
+    private Card findCardByIdDeletedOrNot(String id) {
+        log.info("Find card deleted or not by ID: {}", id);
+        var card = cardRepository.findByIdDeletedOrNot(id)
+                .orElseThrow(() -> new CardNotFoundException(
+                        "Card not found by id: " + id
+                ));
+        if (card.getDeleted() == true) {
+            throw new CardDeletedException(
+                    "Card already deleted by id: %s and user: %s",
+                    id, card.getDeletedBy()
+            );
+        }
+        return card;
     }
 
     private Card findCardByNumber(String number) {
@@ -374,42 +395,5 @@ public class CardServiceImpl implements CardService {
                 .orElseThrow(() -> new CardNotFoundException(
                         "Card not found by number: " + maskedNumber
                 ));
-    }
-
-    private boolean checkCardStatus(Card card, CardStatus status) {
-        if (card.getStatus() == status) return false;
-
-        if (status == CardStatus.ACTIVE &&
-                card.getDateExpiry().isBefore(LocalDate.now())) {
-            throw new CardStatusUpdateException("The card status cannot be active");
-        }
-        if (status == CardStatus.EXPIRED &&
-                card.getDateExpiry().isAfter(LocalDate.now())) {
-            throw new CardStatusUpdateException("The card status cannot be expired");
-        }
-        if (status == CardStatus.EXTENDED) {
-            throw new CardStatusUpdateException("Please use another method: extendCard");
-        }
-
-        return true;
-    }
-
-    private void checkCardValid(Card card, LocalDate dateExpiry) {
-
-        if (!card.getDateExpiry().isBefore(dateExpiry))
-            throw new CardStatusUpdateException("The card status cannot be EXTENDED");
-
-        if (card.getStatus() == CardStatus.BLOCKED) {
-            throw new CardStatusUpdateException("The card status BLOCKED");
-        }
-        if (card.getBalance().compareTo(BigDecimal.ZERO) < 0)
-            throw new ExtendedException("Card status cannot be EXTENDED");
-
-        if (card.getStatus() == CardStatus.EXPIRED ||
-                card.getStatus() == CardStatus.ACTIVE ||
-                card.getStatus() == CardStatus.EXTENDED) {
-            card.setDateExpiry(dateExpiry);
-            card.setStatus(CardStatus.EXTENDED);
-        }
     }
 }

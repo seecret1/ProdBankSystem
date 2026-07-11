@@ -1,5 +1,8 @@
 package com.github.seecret1.cardservice.utils;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class CardMaskUtils {
 
     public static String maskCardNumber(String cardNumber) {

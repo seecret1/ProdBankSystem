@@ -46,6 +46,20 @@ public class PrivateCardController {
         return ResponseEntity.ok(cardService.findById(id));
     }
 
+    @GetMapping("/admin/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')")
+    @Operation(summary = "Get card deleted or not by ID", description = "Get card deleted or not by ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success get card by ID"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden")
+    })
+    public ResponseEntity<CardResponse> findByIdDeletedOrNot(
+            @PathVariable String id
+    ) {
+        return ResponseEntity.ok(cardService.findByIdDeletedOrNot(id));
+    }
+
     @GetMapping("/all")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "Get all cards", description = "Retrieve paginated list of all cards")
