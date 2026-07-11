@@ -1,6 +1,7 @@
 package com.github.seecret1.order_service.listener;
 
-import com.github.seecret1.order_service.dto.card.OrderCreateCardDto;
+import com.github.seecret1.order_service.dto.card.OrderCardDto;
+import com.github.seecret1.order_service.entity.OrderType;
 import com.github.seecret1.order_service.exception.OrderCardCreationException;
 import com.github.seecret1.order_service.service.OrderCardService;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderCardListener {
 
-    private final OrderCardService service;
+    private final OrderCardService orderCardService;
 
     @KafkaListener(
             topics = "${app.kafka.topic}",
@@ -27,7 +28,7 @@ public class OrderCardListener {
             containerFactory = "orderCardKafkaListenerContainerFactory"
     )
     public void listenOrderCard(
-            @Payload OrderCreateCardDto order,
+            @Payload OrderCardDto order,
             @Header(value = KafkaHeaders.RECEIVED_KEY, required = false) UUID key,
             @Header(value = KafkaHeaders.RECEIVED_TOPIC) String topic,
             @Header(value = KafkaHeaders.RECEIVED_PARTITION) Integer partition,
@@ -38,7 +39,15 @@ public class OrderCardListener {
         log.info("Key: {}; Partition: {}; Topic: {}; Timestamp: {}",
                 key, partition, topic, Instant.ofEpochMilli(timestamp));
 
-        service.createOrder(order);
-        log.debug("Order body: {}", order);
+        try {
+            if (order.getOrderType() == OrderType.CARD) {
+                order.validate();
+                orderCardService.createOrder(order);
+            }
+            log.debug("Order body: {}", order);
+        } catch (Exception ex) {
+            log.error("Order not validate or creation error", ex);
+            throw new OrderCardCreationException("Order not validate or creation error");
+        }
     }
 }

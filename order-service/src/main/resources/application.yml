@@ -6,7 +6,7 @@ spring:
     name: ${SERVICE_NAME:order-service}
 
   datasource:
-    url: ${ORDER_DB_LOCAL_URL:jdbc:postgresql://${HOST:localhost}:${CARD_DB_PORT:5435}/${CARD_DB_NAME:order_db}}
+    url: ${ORDER_DB_LOCAL_URL:jdbc:postgresql://${HOST:localhost}:${ORDER_DB_PORT:5435}/${ORDER_DB_NAME:order_db}}
     username: ${ORDER_DB_USERNAME:postgres}
     password: ${ORDER_DB_PASSWORD:postgres}
 
@@ -35,7 +35,7 @@ spring:
           min-idle: ${REDIS_POOL_MIN_IDLE:0}
 
   kafka:
-    bootstrap-servers: ${HOST:localhost}:${KAFKA1_PORT:9092}
+    bootstrap-servers: ${HOST:localhost}:${KAFKA1_PORT:9092}, ${HOST:localhost}:${KAFKA2_PORT:9093}, ${HOST:localhost}:${KAFKA3_PORT:9094}
 
 user-service:
   jwt:

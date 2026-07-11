@@ -1,10 +1,11 @@
 package com.github.seecret1.order_service.service.impl;
 
+import com.github.seecret1.order_service.dto.OrderMessage;
 import com.github.seecret1.order_service.dto.card.OrderCardResponse;
-import com.github.seecret1.order_service.dto.card.OrderCreateCardDto;
+import com.github.seecret1.order_service.dto.card.OrderCardDto;
 import com.github.seecret1.order_service.entity.OrderCard;
 import com.github.seecret1.order_service.kafka.OrderKafkaProducerService;
-import com.github.seecret1.order_service.mapper.OrderManualMapper;
+import com.github.seecret1.order_service.mapper.OrderCardManualMapper;
 import com.github.seecret1.order_service.repository.OrderCardRepository;
 import com.github.seecret1.order_service.service.OrderCardService;
 import lombok.RequiredArgsConstructor;
@@ -23,15 +24,15 @@ public class OrderCardServiceImpl implements OrderCardService {
 
     @Override
     @Transactional
-    public OrderCardResponse createOrder(OrderCreateCardDto event) {
+    public OrderMessage<OrderCardResponse> createOrder(OrderCardDto event) {
 
-        OrderCard order = OrderManualMapper.toEntity(event);
+        OrderCard order = OrderCardManualMapper.toEntity(event);
         orderCardRepository.save(order);
 
-        var response = OrderManualMapper.toResponse(order);
-        orderKafkaProducerService.sendWithWait(event, response);
+        var message = OrderCardManualMapper.toMessage(order);
+        orderKafkaProducerService.sendWithWait(event, message);
 
         log.info("Response sent to Kafka: order ID={}", order.getId());
-        return response;
+        return message;
     }
 }

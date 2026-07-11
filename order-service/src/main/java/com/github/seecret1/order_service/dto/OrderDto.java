@@ -1,22 +1,26 @@
 package com.github.seecret1.order_service.dto;
 
 import com.github.seecret1.order_service.entity.OrderType;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PROTECTED)
 public abstract class OrderDto {
 
-    private String traceId;
+    String traceId;
 
-    private String userId;
+    String userId;
 
-    private OrderType orderType;
+    OrderType orderType;
 
-    private Instant createdAt;
+    Instant createdAt;
+
+    String comment;
+
+    public abstract void validate();
 }

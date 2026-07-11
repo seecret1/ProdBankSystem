@@ -2,8 +2,7 @@ package com.github.seecret1.order_service.kafka;
 
 import com.github.seecret1.order_service.dto.OrderMessage;
 import com.github.seecret1.order_service.dto.card.OrderCardResponse;
-import com.github.seecret1.order_service.dto.card.OrderCreateCardDto;
-import com.github.seecret1.order_service.entity.OrderStatus;
+import com.github.seecret1.order_service.dto.card.OrderCardDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,32 +25,12 @@ public class OrderKafkaProducerServiceImpl implements OrderKafkaProducerService 
     private final KafkaTemplate<String, OrderMessage<OrderCardResponse>> kafkaTemplate;
 
     @Override
-    public void sendNoWait(OrderCreateCardDto event, OrderCardResponse response) {
-
-        OrderMessage<OrderCardResponse> message = OrderMessage.<OrderCardResponse>builder()
-                .traceId(event.getTraceId())
-                .orderId(response.getOrderId())
-                .userId(event.getUserId())
-                .status(OrderStatus.SUCCESS)
-                .data(response)
-                .message("Order created successfully")
-                .build();
-
+    public void sendNoWait(OrderCardDto event, OrderMessage<OrderCardResponse> message) {
         kafkaTemplate.send(responseTopic, event.getTraceId(), message);
     }
 
     @Override
-    public void sendWithWait(OrderCreateCardDto event, OrderCardResponse response) {
-
-        OrderMessage<OrderCardResponse> message = OrderMessage.<OrderCardResponse>builder()
-                .traceId(event.getTraceId())
-                .orderId(response.getOrderId())
-                .userId(event.getUserId())
-                .status(OrderStatus.SUCCESS)
-                .data(response)
-                .message("Order created successfully")
-                .build();
-
+    public void sendWithWait(OrderCardDto event, OrderMessage<OrderCardResponse> message) {
         kafkaRetryTemplate.execute(context -> {
             try {
                 kafkaTemplate.send(

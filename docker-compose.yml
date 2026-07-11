@@ -405,6 +405,7 @@ services:
     volumes:
       - kafka3_data:/var/lib/kafka/data
 
+  # TODO: исправить RabbitMQ
   rabbitmq:
     image: rabbitmq:3.10.7-management
     container_name: rabbitmq

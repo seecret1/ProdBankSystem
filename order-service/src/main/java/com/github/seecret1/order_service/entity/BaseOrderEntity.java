@@ -35,6 +35,8 @@ public abstract class BaseOrderEntity {
     @Builder.Default
     Boolean deleted = false;
 
+    Instant requestTimestamp;
+
     @CreationTimestamp
     Instant createdAt;
 

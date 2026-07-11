@@ -1,6 +1,6 @@
 package com.github.seecret1.order_service.listener;
 
-import com.github.seecret1.order_service.dto.OrderDto;
+import com.github.seecret1.order_service.dto.card.OrderCardDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -18,7 +18,7 @@ public class DltListener {
             containerFactory = "dltKafkaListenerContainerFactory"
     )
     public void dltListen(
-            @Payload OrderDto event,
+            @Payload OrderCardDto event,
             @Header(value = KafkaHeaders.RECEIVED_TOPIC) String topic,
             @Header(value = KafkaHeaders.OFFSET) long offset,
             @Header(value = KafkaHeaders.DLT_EXCEPTION_MESSAGE, required = false) String exception

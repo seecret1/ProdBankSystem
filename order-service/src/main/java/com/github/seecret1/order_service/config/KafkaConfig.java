@@ -3,7 +3,7 @@ package com.github.seecret1.order_service.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.seecret1.order_service.dto.OrderMessage;
 import com.github.seecret1.order_service.dto.card.OrderCardResponse;
-import com.github.seecret1.order_service.dto.card.OrderCreateCardDto;
+import com.github.seecret1.order_service.dto.card.OrderCardDto;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -102,7 +102,24 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ProducerFactory<String, OrderCreateCardDto> orderCreateProducerFactory(
+    public ProducerFactory<String, OrderCardDto> orderCreateProducerFactory(
+            ObjectMapper objectMapper
+    ) {
+        Map<String, Object> config = new HashMap<>();
+
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+
+        return new DefaultKafkaProducerFactory<>(
+                config,
+                new StringSerializer(),
+                new JsonSerializer<>(objectMapper)
+        );
+    }
+
+    @Bean
+    public ProducerFactory<String, Object> orderDtlProducerFactory(
             ObjectMapper objectMapper
     ) {
         Map<String, Object> config = new HashMap<>();
@@ -144,14 +161,21 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, OrderCreateCardDto> orderCreateKafkaTemplate(
-            ProducerFactory<String, OrderCreateCardDto> producerFactory
+    public KafkaTemplate<String, OrderCardDto> orderCreateKafkaTemplate(
+            ProducerFactory<String, OrderCardDto> producerFactory
     ) {
         return new KafkaTemplate<>(producerFactory);
     }
 
     @Bean
-    public ConsumerFactory<String, OrderCreateCardDto> consumerFactory(
+    public KafkaTemplate<String, Object> orderDltKafkaTemplate(
+            ProducerFactory<String, Object> producerFactory
+    ) {
+        return new KafkaTemplate<>(producerFactory);
+    }
+
+    @Bean
+    public ConsumerFactory<String, OrderCardDto> consumerFactory(
             ObjectMapper objectMapper
     ) {
         Map<String, Object> config = new HashMap<>();
@@ -161,7 +185,7 @@ public class KafkaConfig {
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
 
-        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, OrderCreateCardDto.class.getName());
+        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, OrderCardDto.class.getName());
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
 
         config.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPullRecords);
@@ -180,7 +204,6 @@ public class KafkaConfig {
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
 
-        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, OrderCreateCardDto.class.getName());
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
 
         config.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPullRecords);
@@ -189,11 +212,11 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, OrderCreateCardDto> orderCardKafkaListenerContainerFactory(
-            ConsumerFactory<String, OrderCreateCardDto> consumerFactory,
-            KafkaTemplate<String, OrderCreateCardDto> orderCreateKafkaTemplate
+    public ConcurrentKafkaListenerContainerFactory<String, OrderCardDto> orderCardKafkaListenerContainerFactory(
+            ConsumerFactory<String, OrderCardDto> consumerFactory,
+            KafkaTemplate<String, OrderCardDto> orderCreateKafkaTemplate
     ) {
-        ConcurrentKafkaListenerContainerFactory<String, OrderCreateCardDto> factory =
+        ConcurrentKafkaListenerContainerFactory<String, OrderCardDto> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
 
