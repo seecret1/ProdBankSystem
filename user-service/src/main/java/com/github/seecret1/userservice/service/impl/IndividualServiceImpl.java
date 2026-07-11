@@ -15,6 +15,8 @@ import com.github.seecret1.userservice.repository.UserRepository;
 import com.github.seecret1.userservice.service.IndividualService;
 import com.github.seecret1.userservice.service.InternalUserService;
 import com.github.seecret1.userservice.utils.AuthUtil;
+import com.github.seecret1.userservice.utils.PassportMaskUtils;
+import com.github.seecret1.userservice.utils.PhoneUtils;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -105,6 +107,8 @@ public class IndividualServiceImpl implements IndividualService {
 
         individualRepository.save(individual);
 
+        loggingIndividualInfo(request);
+
         log.info("IN - recordPersonalData: individual for user [{}] created", user.getEmail());
         return individualMapper.toResponseDto(individual);
     }
@@ -134,6 +138,7 @@ public class IndividualServiceImpl implements IndividualService {
                         "User not found by id: " + userId
                 ));
         AuthUtil.checkUserPersonalData(user);
+        loggingIndividualInfo(request);
         var individual = user.getIndividual();
         return updateIndividual(individual, request);
     }
@@ -196,5 +201,11 @@ public class IndividualServiceImpl implements IndividualService {
         individualMapper.update(individual, request);
         individualRepository.save(individual);
         return individualMapper.toResponseDto(individual);
+    }
+
+    private static void loggingIndividualInfo(IndividualRequest request) {
+        log.info("Body: phoneNumber={}, passportNumber={}",
+                PhoneUtils.maskPhoneWithPrefix(request.phoneNumber()),
+                PassportMaskUtils.maskPassportFull(request.passportNumber()));
     }
 }
