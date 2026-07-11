@@ -12,7 +12,7 @@ import java.time.Instant;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderMessage<T> {
+public class OrderMessage {
 
     private String traceId;
 
@@ -20,9 +20,11 @@ public class OrderMessage<T> {
 
     private String userId;
 
+    private String productId;
+
     private OrderStatus status;
 
-    private T data;
+    private Object data;
 
     private String message;
 

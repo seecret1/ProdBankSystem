@@ -173,16 +173,17 @@ public class CardServiceImpl implements CardService {
     public CardResponse activateCard(String id) {
         log.info("Activate card by id: {}", id);
 
+        // TODO: добавить проверки
         var card = findCardById(id);
-        authUtils.checkCardAccess(card);
 
         if (card.getStatus() == CardStatus.PENDING) {
             card.setStatus(CardStatus.ACTIVE);
             log.info("Successfully activate card: {}", id);
             return cardMapper.toYourDtoResponse(card);
         }
-        if (card.getStatus() == CardStatus.ACTIVE) {
-            throw new CardAlreadyActivated("Card already activated");
+        else if (card.getStatus() == CardStatus.ACTIVE) {
+            log.warn("Card already activated: {}", id);
+            return cardMapper.toYourDtoResponse(card);
         }
         else throw new CardException("Card cannot be activated");
     }

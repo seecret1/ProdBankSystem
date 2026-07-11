@@ -2,7 +2,6 @@ package com.github.seecret1.order_service.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.seecret1.order_service.dto.OrderMessage;
-import com.github.seecret1.order_service.dto.card.OrderCardResponse;
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -85,7 +84,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ProducerFactory<String, OrderMessage<OrderCardResponse>> orderProducerFactory(
+    public ProducerFactory<String, OrderMessage> orderProducerFactory(
             ObjectMapper objectMapper
     ) {
         Map<String, Object> config = new HashMap<>();
@@ -154,8 +153,8 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, OrderMessage<OrderCardResponse>> orderCardKafkaTemplate(
-            ProducerFactory<String, OrderMessage<OrderCardResponse>> producerFactory
+    public KafkaTemplate<String, OrderMessage> orderCardKafkaTemplate(
+            ProducerFactory<String, OrderMessage> producerFactory
     ) {
         return new KafkaTemplate<>(producerFactory);
     }
@@ -206,6 +205,7 @@ public class KafkaConfig {
 
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
 
+        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class.getName());
         config.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPullRecords);
 
         return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), new JsonDeserializer<>(objectMapper));

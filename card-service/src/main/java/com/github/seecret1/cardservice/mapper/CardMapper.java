@@ -12,6 +12,7 @@ import com.github.seecret1.cardservice.utils.CardHashUtils;
 import com.github.seecret1.cardservice.utils.CardMaskUtils;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -90,7 +91,7 @@ public final class CardMapper {
         dto.setCardType(card.getType());
         dto.setSpendingLimit(card.getSpendingLimit());
         dto.setComment(comment);
-        dto.setCreatedAt(card.getCreatedAt());
+        dto.setCreatedAt(Instant.now());
         return dto;
     }
 }

@@ -41,9 +41,6 @@ public class KafkaConfig {
     @Value("${app.kafka.groupId}")
     private String groupId;
 
-    @Value("${app.kafka.dlt-group-id}")
-    private String dltGroupId;
-
     @Value("${app.kafka.dlt-topic}")
     private String dltTopicName;
 
@@ -77,7 +74,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ProducerFactory<String, OrderMessage<OrderCardResponse>> orderProducerFactory(
+    public ProducerFactory<String, OrderMessage> orderProducerFactory(
             ObjectMapper objectMapper
     ) {
         Map<String, Object> config = new HashMap<>();
@@ -129,8 +126,8 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, OrderMessage<OrderCardResponse>> orderCardKafkaTemplate(
-            ProducerFactory<String, OrderMessage<OrderCardResponse>> producerFactory
+    public KafkaTemplate<String, OrderMessage> orderCardKafkaTemplate(
+            ProducerFactory<String, OrderMessage> producerFactory
     ) {
         return new KafkaTemplate<>(producerFactory);
     }
@@ -143,7 +140,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, OrderMessage<OrderCardResponse>> consumerFactory(
+    public ConsumerFactory<String, OrderMessage> consumerFactory(
             ObjectMapper objectMapper
     ) {
         Map<String, Object> config = new HashMap<>();
@@ -162,11 +159,11 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, OrderMessage<OrderCardResponse>> responseCardKafkaListenerContainerFactory(
-            ConsumerFactory<String, OrderMessage<OrderCardResponse>> consumerFactory,
-            KafkaTemplate<String, OrderMessage<OrderCardResponse>> orderCreateKafkaTemplate
+    public ConcurrentKafkaListenerContainerFactory<String, OrderMessage> responseCardKafkaListenerContainerFactory(
+            ConsumerFactory<String, OrderMessage> consumerFactory,
+            KafkaTemplate<String, OrderMessage> orderCreateKafkaTemplate
     ) {
-        ConcurrentKafkaListenerContainerFactory<String, OrderMessage<OrderCardResponse>> factory =
+        ConcurrentKafkaListenerContainerFactory<String, OrderMessage> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
 

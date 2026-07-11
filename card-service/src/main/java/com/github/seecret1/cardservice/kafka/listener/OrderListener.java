@@ -28,22 +28,21 @@ public class OrderListener {
             containerFactory = "responseCardKafkaListenerContainerFactory"
     )
     public void listenOrderCardResponses(
-            @Payload OrderMessage<OrderCardResponse> order,
+            @Payload OrderMessage order,
             @Header(value = KafkaHeaders.RECEIVED_KEY, required = false) UUID key,
             @Header(value = KafkaHeaders.RECEIVED_TOPIC) String topic,
             @Header(value = KafkaHeaders.RECEIVED_PARTITION) Integer partition,
             @Header(value = KafkaHeaders.RECEIVED_TIMESTAMP) Long timestamp
     ) {
-        log.info("Response order received: traceId={} orderId={}, userId={}, cardId={}, createdAt={}",
-                order.getTraceId(), order.getOrderId(), order.getUserId(), order.getData().getCardId(), order.getTimestamp());
+        log.info("Response order received: traceId={} orderId={}, userId={}, cardData={}, createdAt={}",
+                order.getTraceId(), order.getOrderId(), order.getUserId(), order.getProductId(), order.getTimestamp());
         log.info("Key: {}; Partition: {}; Topic: {}; Timestamp: {}",
                 key, partition, topic, Instant.ofEpochMilli(timestamp));
 
         // TODO: временная обработка
         if (order.getStatus() == OrderStatus.SUCCESS) {
-            String cardId = order.getData().getCardId();
+            String cardId = order.getProductId();
             service.activateCard(cardId);
-            log.info("Activated card: {}", cardId);
         }
 
         log.debug("Response order body: {}", order);

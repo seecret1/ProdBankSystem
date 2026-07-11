@@ -1,7 +1,6 @@
 package com.github.seecret1.order_service.kafka;
 
 import com.github.seecret1.order_service.dto.OrderMessage;
-import com.github.seecret1.order_service.dto.card.OrderCardResponse;
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,15 +21,15 @@ public class OrderKafkaProducerServiceImpl implements OrderKafkaProducerService 
 
     private final RetryTemplate kafkaRetryTemplate;
 
-    private final KafkaTemplate<String, OrderMessage<OrderCardResponse>> kafkaTemplate;
+    private final KafkaTemplate<String, OrderMessage> kafkaTemplate;
 
     @Override
-    public void sendNoWait(OrderCardDto event, OrderMessage<OrderCardResponse> message) {
+    public void sendNoWait(OrderCardDto event, OrderMessage message) {
         kafkaTemplate.send(responseTopic, event.getTraceId(), message);
     }
 
     @Override
-    public void sendWithWait(OrderCardDto event, OrderMessage<OrderCardResponse> message) {
+    public void sendWithWait(OrderCardDto event, OrderMessage message) {
         kafkaRetryTemplate.execute(context -> {
             try {
                 kafkaTemplate.send(

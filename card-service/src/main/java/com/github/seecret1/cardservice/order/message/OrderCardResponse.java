@@ -15,8 +15,6 @@ import java.time.Instant;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderCardResponse {
 
-    String cardId;
-
     CardType cardType;
 
     BigDecimal spendingLimit;

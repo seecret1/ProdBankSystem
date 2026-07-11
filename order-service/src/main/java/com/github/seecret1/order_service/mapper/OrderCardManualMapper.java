@@ -1,8 +1,8 @@
 package com.github.seecret1.order_service.mapper;
 
 import com.github.seecret1.order_service.dto.OrderMessage;
-import com.github.seecret1.order_service.dto.card.OrderCardResponse;
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
+import com.github.seecret1.order_service.dto.card.OrderCardResponse;
 import com.github.seecret1.order_service.entity.OrderCard;
 import com.github.seecret1.order_service.entity.OrderStatus;
 import lombok.experimental.UtilityClass;
@@ -15,8 +15,9 @@ public class OrderCardManualMapper {
                 .traceId(event.getTraceId())
                 .userId(event.getUserId())
                 .cardId(event.getCardId())
+                .spendingLimit(event.getSpendingLimit())
                 .cardType(event.getCardType())
-                .status(OrderStatus.PENDING)
+                .status(OrderStatus.SUCCESS)
                 .comment(event.getComment())
                 .requestTimestamp(event.getCreatedAt())
                 .deleted(false)
@@ -25,18 +26,18 @@ public class OrderCardManualMapper {
 
     private static OrderCardResponse toResponse(OrderCard order) {
         return OrderCardResponse.builder()
-                .cardId(order.getCardId())
                 .cardType(order.getCardType())
                 .spendingLimit(order.getSpendingLimit())
                 .createdAt(order.getCreatedAt())
                 .build();
     }
 
-    public static OrderMessage<OrderCardResponse> toMessage(OrderCard order) {
-        OrderMessage<OrderCardResponse> message = new OrderMessage<>();
+    public static OrderMessage toMessage(OrderCard order) {
+        OrderMessage message = new OrderMessage();
         message.setTraceId(order.getTraceId());
         message.setUserId(order.getUserId());
         message.setOrderId(order.getId());
+        message.setProductId(order.getCardId());
         message.setStatus(order.getStatus());
         message.setData(toResponse(order));
         message.setMessage(order.getComment());
