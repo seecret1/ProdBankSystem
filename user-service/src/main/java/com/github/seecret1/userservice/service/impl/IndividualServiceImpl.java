@@ -15,6 +15,7 @@ import com.github.seecret1.userservice.repository.UserRepository;
 import com.github.seecret1.userservice.service.IndividualService;
 import com.github.seecret1.userservice.service.InternalUserService;
 import com.github.seecret1.userservice.utils.AuthUtil;
+import com.github.seecret1.userservice.utils.EncryptionUtils;
 import com.github.seecret1.userservice.utils.PassportMaskUtils;
 import com.github.seecret1.userservice.utils.PhoneUtils;
 import jakarta.persistence.EntityNotFoundException;
@@ -72,7 +73,8 @@ public class IndividualServiceImpl implements IndividualService {
     @Cacheable(value = "${app.cache.cache-names.individualByCriterial}", key = "#phoneNumber")
     @Transactional(readOnly = true)
     public IndividualResponse findByPhoneNumber(String phoneNumber) {
-        var individual = individualRepository.findByPhoneNumber(phoneNumber)
+        String phoneEncrypt = EncryptionUtils.encrypt(phoneNumber);
+        var individual = individualRepository.findByPhoneNumber(phoneEncrypt)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Individual not found by phone number: " + phoneNumber
                 ));

@@ -4,11 +4,11 @@ import com.github.seecret1.userservice.dto.request.IndividualRequest;
 import com.github.seecret1.userservice.dto.response.IndividualResponse;
 import com.github.seecret1.userservice.entity.Individual;
 import com.github.seecret1.userservice.utils.DateTimeUtil;
+import com.github.seecret1.userservice.utils.EncryptionUtils;
+import com.github.seecret1.userservice.utils.PassportMaskUtils;
+import com.github.seecret1.userservice.utils.PhoneUtils;
 import lombok.Setter;
-import org.mapstruct.BeanMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collections;
@@ -37,6 +37,8 @@ public abstract class IndividualMapper {
     @Mapping(target = "updatedAt", expression = "java(dateTimeUtil.now())")
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "address", source = "address", qualifiedByName = "toAddress")
+    @Mapping(target = "phoneNumber", source = "phoneNumber", qualifiedByName = "encrypt")
+    @Mapping(target = "passportNumber", source = "passportNumber", qualifiedByName = "encrypt")
     public abstract Individual toEntity(IndividualRequest dto);
 
     @Mapping(target = "firstName", source = "user.firstName")
@@ -44,6 +46,8 @@ public abstract class IndividualMapper {
     @Mapping(target = "middleName", source = "user.middleName")
     @Mapping(target = "email", source = "user.email")
     @Mapping(target = "address", source = "address", qualifiedByName = "fromAddress")
+    @Mapping(target = "phoneNumber", source = "phoneNumber", qualifiedByName = "decryptAndMaskPhone")
+    @Mapping(target = "passportNumber", source = "passportNumber", qualifiedByName = "decryptAndMaskPassport")
     public abstract IndividualResponse toResponseDto(Individual individual);
 
     public List<IndividualResponse> toResponseDto(List<Individual> individuals) {
@@ -56,14 +60,44 @@ public abstract class IndividualMapper {
 
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "updatedAt", expression = "java(dateTimeUtil.now())")
-    @Mapping(target = "passportNumber", source = "passportNumber")
-    @Mapping(target = "phoneNumber", source = "phoneNumber")
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "address", source = "address", qualifiedByName = "toAddress")
+    @Mapping(target = "phoneNumber", source = "phoneNumber", qualifiedByName = "encrypt")
+    @Mapping(target = "passportNumber", source = "passportNumber", qualifiedByName = "encrypt")
     public abstract void update(
             @MappingTarget
             Individual individual,
             IndividualRequest dto
     );
+
+    @Named("encrypt")
+    protected String encrypt(String value) {
+        if (value == null || value.isEmpty()) {
+            return value;
+        }
+        return EncryptionUtils.encrypt(value);
+    }
+
+    @Named("decrypt")
+    protected String decrypt(String value) {
+        if (value == null || value.isEmpty()) {
+            return value;
+        }
+        try {
+            return EncryptionUtils.decrypt(value);
+        } catch (Exception e) {
+            return value;
+        }
+    }
+
+    @Named("decryptAndMaskPhone")
+    protected String decryptAndMaskPhone(String value) {
+        return PhoneUtils.maskPhoneWithPrefix(decrypt(value));
+    }
+
+    @Named("decryptAndMaskPassport")
+    protected String decryptAndMaskPassport(String value) {
+        return PassportMaskUtils.maskPassportFull(decrypt(value));
+    }
 }
 
