@@ -9,7 +9,7 @@ val versions = mapOf(
 
 plugins {
 	java
-	id("org.springframework.boot") version "4.0.1"
+	id("org.springframework.boot") version "3.4.8"
 	id("io.spring.dependency-management") version "1.1.7"
 }
 
@@ -29,7 +29,7 @@ repositories {
 
 dependencyManagement {
 	imports {
-		mavenBom("org.springframework.cloud:spring-cloud-dependencies:2025.1.0")
+		mavenBom("org.springframework.cloud:spring-cloud-dependencies:2024.0.0")
 		mavenBom("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.15.0")
 	}
 }
@@ -41,9 +41,12 @@ dependencies {
 	implementation("io.micrometer:micrometer-registry-prometheus")
 
 	implementation("org.springframework.boot:spring-boot-starter")
-	implementation("org.springframework.boot:spring-boot-starter-webmvc")
+	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
+	implementation("org.springframework.kafka:spring-kafka")
+
+	implementation("org.springframework.boot:spring-boot-starter-data-redis")
 	implementation("org.apache.commons:commons-pool2")
 
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -62,9 +65,10 @@ dependencies {
 
 	implementation("org.postgresql:postgresql")
 	implementation("org.flywaydb:flyway-database-postgresql")
-	implementation("org.springframework.boot:spring-boot-starter-flyway")
 	implementation("org.hibernate.orm:hibernate-core:${versions["hibernateVersion"]}")
 	implementation("org.hibernate.orm:hibernate-envers:${versions["hibernateVersion"]}")
+
+	implementation("jakarta.persistence:jakarta.persistence-api:3.2.0")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")

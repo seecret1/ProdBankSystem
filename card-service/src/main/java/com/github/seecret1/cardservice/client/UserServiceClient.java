@@ -12,6 +12,6 @@ import org.springframework.web.bind.annotation.*;
 )
 public interface UserServiceClient {
 
-    @GetMapping("/api/v1/users/services/{criterial}")
-    UserResponse findUserByCriterial(@PathVariable String criterial);
+    @GetMapping("/api/v1/users/services/{id}")
+    UserResponse findUserById(@PathVariable String id);
 }

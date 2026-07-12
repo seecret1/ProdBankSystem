@@ -1,9 +1,7 @@
 package com.github.seecret1.cardservice.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
-import jakarta.validation.constraints.Size;
+import com.github.seecret1.cardservice.entity.enums.CardType;
+import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -14,16 +12,22 @@ public record CardRequest (
     @Size(min = 16, max = 16, message = "The card number must contain 16 characters")
     String number,
 
+    @NotNull(message = "Card type must be set!")
+    CardType type,
+
     @NotNull(message = "Date activation must be set!")
     LocalDate dateActivation,
 
     @NotNull(message = "Date expiry must be set!")
     LocalDate dateExpiry,
 
-    @PositiveOrZero
+    @PositiveOrZero(message = "Balance can't be negative value!")
     BigDecimal balance,
 
-    @NotBlank(message = "User must be set!")
-    String userCriterial
+    @Positive(message = "spending limit must only positive value!")
+    BigDecimal spendingLimit,
+
+    @Size(max = 255, message = "Max size message in {max} symbols")
+    String comment
 
 ) { }

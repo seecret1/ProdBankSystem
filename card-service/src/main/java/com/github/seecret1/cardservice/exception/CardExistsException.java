@@ -5,6 +5,4 @@ public class CardExistsException extends RuntimeException{
     public CardExistsException(String message) {
         super(message);
     }
-
-    public CardExistsException() { }
 }

@@ -1,4 +1,4 @@
-package service;
+package com.github.seecret1.userservice.security.jwt;
 
 import com.github.seecret1.userservice.dto.response.JwtAuthenticationDto;
 import com.github.seecret1.userservice.entity.RefreshToken;

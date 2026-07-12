@@ -1,4 +1,4 @@
-package service;
+package com.github.seecret1.userservice.service;
 
 import com.github.seecret1.userservice.dto.request.*;
 import com.github.seecret1.userservice.dto.response.JwtAuthenticationDto;
@@ -115,7 +115,7 @@ class AuthServiceTest {
 
     @Test
     void signInByEmail_ShouldReturnJwtAuthenticationDto_WhenValidCredentials() {
-        when(internalUserService.findUserEntityByCriterial(anyString())).thenReturn(user);
+        when(internalUserService.findUserEntityByEmail(anyString())).thenReturn(user);
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
         when(jwtService.generateAuthToken(anyString())).thenReturn(jwtAuthDto);
 
@@ -129,7 +129,7 @@ class AuthServiceTest {
 
     @Test
     void signInByEmail_ShouldThrowAuthException_WhenInvalidPassword() {
-        when(internalUserService.findUserEntityByCriterial(anyString())).thenReturn(user);
+        when(internalUserService.findUserEntityByEmail(anyString())).thenReturn(user);
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(false);
 
         assertThatThrownBy(() -> authService.signIn(signInEmailRequest))
@@ -139,7 +139,7 @@ class AuthServiceTest {
 
     @Test
     void signInByUsername_ShouldReturnJwtAuthenticationDto_WhenValidCredentials() {
-        when(internalUserService.findUserEntityByCriterial(anyString())).thenReturn(user);
+        when(internalUserService.findUserEntityByUsername(anyString())).thenReturn(user);
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
         when(jwtService.generateAuthToken(anyString())).thenReturn(jwtAuthDto);
 
@@ -266,7 +266,7 @@ class AuthServiceTest {
     void refreshToken_ShouldReturnJwtAuthenticationDto_WhenValidToken() {
         when(jwtService.validateRefreshToken(anyString())).thenReturn(true);
         when(jwtService.getEmailFromToken(anyString())).thenReturn("test@example.com");
-        when(internalUserService.findUserEntityByCriterial(anyString())).thenReturn(user);
+        when(internalUserService.findUserEntityByEmail(anyString())).thenReturn(user);
         when(jwtService.refreshBaseToken(anyString(), anyString())).thenReturn(jwtAuthDto);
 
         JwtAuthenticationDto result = authService.refreshToken(refreshTokenRequest);
@@ -290,7 +290,7 @@ class AuthServiceTest {
         user.setStatus(UserStatus.BLOCKED);
         when(jwtService.validateRefreshToken(anyString())).thenReturn(true);
         when(jwtService.getEmailFromToken(anyString())).thenReturn("test@example.com");
-        when(internalUserService.findUserEntityByCriterial(anyString())).thenReturn(user);
+        when(internalUserService.findUserEntityByEmail(anyString())).thenReturn(user);
 
         assertThatThrownBy(() -> authService.refreshToken(refreshTokenRequest))
                 .isInstanceOf(AuthException.class)

@@ -2,12 +2,11 @@ package com.github.seecret1.cardservice.service;
 
 import com.github.seecret1.cardservice.client.UserServiceClient;
 import com.github.seecret1.cardservice.dto.request.CardRequest;
-import com.github.seecret1.cardservice.dto.request.UpdateStatusCardRequest;
 import com.github.seecret1.cardservice.dto.response.CardResponse;
 import com.github.seecret1.cardservice.dto.user.UserResponse;
 import com.github.seecret1.cardservice.entity.Card;
 import com.github.seecret1.cardservice.entity.enums.CardStatus;
-import com.github.seecret1.cardservice.exception.CardAlreadyActivated;
+import com.github.seecret1.cardservice.entity.enums.CardType;
 import com.github.seecret1.cardservice.exception.CardExistsException;
 import com.github.seecret1.cardservice.exception.CardNotFoundException;
 import com.github.seecret1.cardservice.mapper.CardMapper;
@@ -83,10 +82,12 @@ class CardServiceImplTest {
 
         cardRequest = new CardRequest(
                 "1234567890123456",
+                CardType.DEBIT,
                 LocalDate.now(),
                 LocalDate.now().plusYears(1),
                 BigDecimal.valueOf(1000),
-                "user-email"
+                BigDecimal.valueOf(100000),
+                "empty comment"
         );
 
         userResponse = new UserResponse(
@@ -108,10 +109,12 @@ class CardServiceImplTest {
 
         cardResponse = new CardResponse(
                 "**** **** **** 3456",
+                CardType.DEBIT,
                 LocalDate.now(),
                 LocalDate.now().plusYears(1),
                 CardStatus.PENDING,
                 BigDecimal.valueOf(1000),
+                BigDecimal.valueOf(100000),
                 "user-id"
         );
     }
@@ -119,12 +122,12 @@ class CardServiceImplTest {
     @Test
     @DisplayName("Should create card successfully")
     void shouldCreateCardSuccessfully() {
-        when(userServiceClient.findUserByCriterial(anyString())).thenReturn(userResponse);
+        when(userServiceClient.findUserById(anyString())).thenReturn(userResponse);
         when(cardMapper.toEntity(any(CardRequest.class), anyString())).thenReturn(card);
         when(cardRepository.save(any(Card.class))).thenReturn(card);
         when(cardMapper.toDtoResponse(any(Card.class))).thenReturn(cardResponse);
 
-        CardResponse result = cardService.create(cardRequest);
+        CardResponse result = cardService.create(anyString(), cardRequest);
 
         assertThat(result).isNotNull();
         assertThat(result.status()).isEqualTo(CardStatus.PENDING);
@@ -134,9 +137,9 @@ class CardServiceImplTest {
     @Test
     @DisplayName("Should throw exception when user not found during card creation")
     void shouldThrowExceptionWhenUserNotFound() {
-        when(userServiceClient.findUserByCriterial(anyString())).thenReturn(null);
+        when(userServiceClient.findUserById(anyString())).thenReturn(null);
 
-        assertThatThrownBy(() -> cardService.create(cardRequest))
+        assertThatThrownBy(() -> cardService.create(anyString(), cardRequest))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessageContaining("User not found");
     }
@@ -144,38 +147,24 @@ class CardServiceImplTest {
     @Test
     @DisplayName("Should throw exception when card already exists")
     void shouldThrowExceptionWhenCardExists() {
-        when(userServiceClient.findUserByCriterial(anyString())).thenReturn(userResponse);
+        when(userServiceClient.findUserById(anyString())).thenReturn(userResponse);
         when(cardMapper.toEntity(any(CardRequest.class), anyString())).thenReturn(card);
         when(cardRepository.save(any(Card.class))).thenThrow(DataIntegrityViolationException.class);
 
-        assertThatThrownBy(() -> cardService.create(cardRequest))
-                .isInstanceOf(CardExistsException.class)
-                .hasMessageContaining("already exists");
-    }
-
-    @Test
-    @DisplayName("Should throw exception when activating already active card")
-    void shouldThrowExceptionWhenActivatingActiveCard() {
-        card.setStatus(CardStatus.ACTIVE);
-        when(cardRepository.findByNumberHash(anyString())).thenReturn(Optional.of(card));
-        doNothing().when(authUtils).checkCardAccess(any(Card.class));
-
-        assertThatThrownBy(() -> cardService.activateCard("1234567890123456"))
-                .isInstanceOf(CardAlreadyActivated.class)
-                .hasMessageContaining("already activated");
+        assertThatThrownBy(() -> cardService.create(anyString(), cardRequest))
+                .isInstanceOf(CardExistsException.class);
     }
 
     @Test
     @DisplayName("Should update status to BLOCKED successfully")
     void shouldUpdateStatusToBlockedSuccessfully() {
         card.setStatus(CardStatus.ACTIVE);
-        UpdateStatusCardRequest request = new UpdateStatusCardRequest("1234567890123456", CardStatus.BLOCKED);
 
-        when(cardRepository.findByNumberHash(anyString())).thenReturn(Optional.of(card));
+        when(cardRepository.findById(anyString())).thenReturn(Optional.of(card));
         when(cardRepository.save(any(Card.class))).thenReturn(card);
         when(cardMapper.toDtoResponse(any(Card.class))).thenReturn(cardResponse);
 
-        CardResponse result = cardService.updateStatus(request);
+        CardResponse result = cardService.updateStatus(anyString(), CardStatus.BLOCKED);
 
         assertThat(result).isNotNull();
         verify(cardRepository, times(1)).save(any(Card.class));
@@ -184,10 +173,9 @@ class CardServiceImplTest {
     @Test
     @DisplayName("Should throw exception when card not found for status update")
     void shouldThrowExceptionWhenCardNotFoundForStatusUpdate() {
-        UpdateStatusCardRequest request = new UpdateStatusCardRequest("1234567890123456", CardStatus.ACTIVE);
-        when(cardRepository.findByNumberHash(anyString())).thenReturn(Optional.empty());
+        when(cardRepository.findById(anyString())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> cardService.updateStatus(request))
+        assertThatThrownBy(() -> cardService.updateStatus(anyString(), CardStatus.ACTIVE))
                 .isInstanceOf(CardNotFoundException.class)
                 .hasMessageContaining("Card not found");
     }

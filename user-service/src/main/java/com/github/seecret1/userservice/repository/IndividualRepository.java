@@ -1,7 +1,6 @@
 package com.github.seecret1.userservice.repository;
 
 import com.github.seecret1.userservice.entity.Individual;
-import com.github.seecret1.userservice.repository.specification.IndividualSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -35,13 +34,15 @@ public interface IndividualRepository extends JpaRepository<Individual, String>,
         """)
     boolean existsIndividualByPhoneNumber(String phoneNumber);
 
+    @Query("""
+         SELECT i FROM Individual i
+         WHERE i.phoneNumber = :phoneNumber
+        """)
+    Optional<Individual> findByPhoneNumber(String phoneNumber);
+
     @Modifying
     @Query("""
-        UPDATE Individual i SET i.deleted = true WHERE i.id = :criterial OR i.phoneNumber = :criterial
+        UPDATE Individual i SET i.deleted = true WHERE i.id = :id
         """)
-    void softDelete(@Param("criterial") String criterial);
-
-    default Optional<Individual> findByCriterial(String searchCriterial) {
-        return findOne(IndividualSpecification.searchByCriterial(searchCriterial));
-    }
+    void softDelete(@Param("id") String id);
 }

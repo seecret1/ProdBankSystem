@@ -23,6 +23,9 @@ spring:
   flyway:
     enabled: true
 
+  kafka:
+    bootstrap-servers: ${HOST:localhost}:${KAFKA1_PORT:9092}, ${HOST:localhost}:${KAFKA2_PORT:9093}, ${HOST:localhost}:${KAFKA3_PORT:9094}
+
   data:
     redis:
       host: ${HOST:localhost}
@@ -90,13 +93,30 @@ otel:
     exporter: none
 
 app:
+  kafka:
+    topic: orders
+    response-topic: response-orders
+    groupId: order-group-id
+    dlt-topic: orders.DLT
+    dlt-group-id: order-group-id.dlt
+    max-pull-records: 10
+    partitions: 3
+    replicas: 3
+
+  retry:
+    max-attempts: 3
+    delay: 1000
+    multiplier: 2
+    max-interval: 10000
+
   cache:
     cache-names:
       - cardAll
       - cardOnlyNotDeleted
       - cardFilter
       - cardYour
-      - cardByCriterial
+      - cardById
+      - cardByNumber
     caches:
       cardAll:
         expiry: 30m
@@ -106,10 +126,14 @@ app:
         expiry: 20m
       cardYour:
         expiry: 30m
-      cardByCriterial:
+      cardById:
+        expiry: 20m
+      cardByNumber:
         expiry: 10m
 
   scheduler:
+    limit:
+      cron: "0 0 4 * * *"
     status:
       cron: "0 0 0 * * *"
     expiry:
@@ -119,3 +143,18 @@ app:
       cron: "0 0 2 * * *"
       retention-years: 4
     pageSize: 100
+
+  card:
+    limits:
+      DEBIT:
+        max-spending-limit: 10000
+        commission-spending-limit: 50000
+        description: "Дебетовая карта"
+      DEBIT_PERSONAL:
+        max-spending-limit: 200000
+        commission-spending-limit: 10000
+        description: "Именная дебетовая карта"
+      CREDIT:
+        max-spending-limit: 500000
+        commission-spending-limit: 300000
+        description: "Кредитная карта"

@@ -1,3 +1,5 @@
+package com.github.seecret1.userservice.mapper;
+
 import com.github.seecret1.userservice.dto.request.AddressRequest;
 import com.github.seecret1.userservice.dto.response.AddressResponse;
 import com.github.seecret1.userservice.entity.Address;

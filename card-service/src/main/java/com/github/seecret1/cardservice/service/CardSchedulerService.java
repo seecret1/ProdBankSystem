@@ -7,4 +7,6 @@ public interface CardSchedulerService {
     void removeDeletedCards();
 
     void updateStatusExpiryCards();
+
+    void refreshSpendingLimit();
 }

@@ -89,7 +89,9 @@ app:
   cache:
     cache-names:
       - userAll
-      - userByCriterial
+      - userById
+      - userByEmail
+      - userByUsername
       - userFilter
       - individualAll
       - individualByCriterial

@@ -1,0 +1,110 @@
+server:
+  port: 8093
+
+spring:
+  application:
+    name: ${SERVICE_NAME:order-service}
+
+  datasource:
+    url: ${ORDER_DB_LOCAL_URL:jdbc:postgresql://${HOST:localhost}:${ORDER_DB_PORT:5435}/${ORDER_DB_NAME:order_db}}
+    username: ${ORDER_DB_USERNAME:postgres}
+    password: ${ORDER_DB_PASSWORD:postgres}
+
+  jpa:
+    generate-ddl: false
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      org.hibernate.envers.audit_table_suffix: _history
+      org.hibernate.envers.audit_table_prefix:
+      org.hibernate.envers.default_schema: person_bank_history
+
+  flyway:
+    enabled: true
+
+  data:
+    redis:
+      host: ${HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: ${REDIS_TIMEOUT:2000ms}
+      lettuce:
+        pool:
+          max-active: ${REDIS_POOL_MAX_ACTIVE:8}
+          max-idle: ${REDIS_POOL_MAX_IDLE:8}
+          min-idle: ${REDIS_POOL_MIN_IDLE:0}
+
+  kafka:
+    bootstrap-servers: ${HOST:localhost}:${KAFKA1_PORT:9092}, ${HOST:localhost}:${KAFKA2_PORT:9093}, ${HOST:localhost}:${KAFKA3_PORT:9094}
+
+user-service:
+  jwt:
+    secret: ${SECRET_KEY:MyVeryLongAndSecureSecretKeyForJWTTokenSigningThatIsAtLeast64CharactersLongToMeetHS512Requirements123456789}
+  client:
+    base-url: http://localhost:8091
+    api-key: ${INTERNAL_API_KEY:your-internal-api-key}
+    x-internal-key: X-Internal-Api-Key
+
+springdoc:
+  api-docs:
+    path: /api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operationsSorter: method
+    tagsSorter: alpha
+    try-it-out-enabled: true
+    filter: true
+  show-actuator: true
+  packages-to-scan: com.github.seecret1.cardservice.controller
+  paths-to-match: /api/v1/**
+
+logging:
+  config: "classpath:logback.xml"
+  level:
+    com.github.seecret1.cardservice: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    prometheus:
+      access: read_only
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+
+otel:
+  exporter:
+    otlp:
+      endpoint: ${OTLP_EXPORTER_ENDPOINT:http://localhost:4318}
+      protocol: http/protobuf
+  logs:
+    exporter: none
+  metrics:
+    exporter: none
+
+app:
+  kafka:
+    topic: orders
+    response-topic: response-orders
+    groupId: order-group-id
+    dlt-topic: orders.DLT
+    dlt-group-id: order-group-id.dlt
+    max-pull-records: 10
+    partitions: 3
+    replicas: 3
+
+  retry:
+    max-attempts: 3
+    delay: 1000
+    multiplier: 2
+    max-interval: 10000

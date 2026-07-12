@@ -108,7 +108,7 @@ class CardSchedulerServiceImplTest {
         schedulerService.updateStatusExpiryCards();
 
         verify(internalCardService, times(1)).findExpiryActiveCards(any(LocalDate.class), any(Pageable.class));
-        verify(cardService, never()).updateStatus(any());
+        verify(cardService, never()).updateStatus(anyString(), any(CardStatus.class));
     }
 
     @Test
@@ -118,6 +118,6 @@ class CardSchedulerServiceImplTest {
                 .thenThrow(new RuntimeException("Database error"));
 
         schedulerService.updateStatusExpiryCards();
-        verify(cardService, never()).updateStatus(any());
+        verify(cardService, never()).updateStatus(anyString(), any(CardStatus.class));
     }
 }

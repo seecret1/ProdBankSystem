@@ -1,5 +1,6 @@
 package com.github.seecret1.cardservice.controller;
 
+import com.github.seecret1.cardservice.dto.request.CardRequest;
 import com.github.seecret1.cardservice.dto.response.CardResponse;
 import com.github.seecret1.cardservice.service.CardService;
 import com.github.seecret1.common.dto.PageResponse;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,18 +31,18 @@ public class PublicCardController {
 
     private final CardService cardService;
 
-    @GetMapping("/{criterial}")
+    @GetMapping("/card-number/{number}")
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MANAGER')")
-    @Operation(summary = "Get card by criterial", description = "Get card by ID or number")
+    @Operation(summary = "Get card by number", description = "Get card by number")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Success get card by ID or number"),
+            @ApiResponse(responseCode = "200", description = "Success get card by number"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "403", description = "Forbidden")
     })
-    public ResponseEntity<CardResponse> findByCriterial(
-            @PathVariable String criterial
+    public ResponseEntity<CardResponse> findByNumber(
+            @PathVariable String number
     ) {
-        return ResponseEntity.ok(cardService.findByCriterial(criterial));
+        return ResponseEntity.ok(cardService.findByNumber(number));
     }
 
     @GetMapping("/your")
@@ -62,21 +64,20 @@ public class PublicCardController {
         ));
     }
 
-    @PostMapping("/activate/{criterial}")
+    @PostMapping
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MANAGER')")
-    @Operation(summary = "Activate new card", description = "Activate card has current status in PENDING")
+    @Operation(summary = "Create card", description = "Create new card")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Success activate cards to current user"),
-            @ApiResponse(responseCode = "400", description = "Bad Request"),
+            @ApiResponse(responseCode = "201", description = "Success create new card"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "403", description = "Forbidden"),
-            @ApiResponse(responseCode = "422", description = "Unprocessable content")
+            @ApiResponse(responseCode = "403", description = "Forbidden")
     })
-    public ResponseEntity<CardResponse> activateCard(
-            @PathVariable String criterial
+    public ResponseEntity<CardResponse> createCard(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @Valid @RequestBody CardRequest cardRequest
     ) {
-        return ResponseEntity.ok(cardService.activateCard(
-                criterial
-        ));
+        String userId = userPrincipal.getUserId();
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(cardService.create(userId, cardRequest));
     }
 }
