@@ -16,6 +16,7 @@ import com.github.seecret1.cardservice.repository.CardRepository;
 import com.github.seecret1.cardservice.service.impl.CardServiceImpl;
 import com.github.seecret1.cardservice.utils.AuthUtils;
 import com.github.seecret1.cardservice.utils.CardHashUtils;
+import com.github.seecret1.cardservice.utils.CardMaskUtils;
 import com.github.seecret1.common.dto.PageResponse;
 import com.github.seecret1.common.model.PageModel;
 import jakarta.persistence.EntityNotFoundException;
@@ -128,9 +129,6 @@ class CardServiceImplTest {
         );
     }
 
-    // ============================
-    // Тесты для findAll
-    // ============================
     @Test
     @DisplayName("Should find all cards with pagination")
     void shouldFindAllCards() {
@@ -146,9 +144,6 @@ class CardServiceImplTest {
         verify(cardRepository, times(1)).findAll(any(Pageable.class));
     }
 
-    // ============================
-    // Тесты для findOnlyNotDeleted
-    // ============================
     @Test
     @DisplayName("Should find only not deleted cards")
     void shouldFindOnlyNotDeletedCards() {
@@ -162,9 +157,6 @@ class CardServiceImplTest {
         verify(cardRepository).findNotDeletedCards(any(Pageable.class));
     }
 
-    // ============================
-    // Тесты для findByFilter
-    // ============================
     @Test
     @DisplayName("Should find cards by filter")
     void shouldFindCardsByFilter() {
@@ -182,9 +174,6 @@ class CardServiceImplTest {
         verify(cardRepository).findNotDeletedCards(any(), any(Pageable.class));
     }
 
-    // ============================
-    // Тесты для findById
-    // ============================
     @Test
     @DisplayName("Should find card by id when user has access")
     void shouldFindCardById() {
@@ -208,9 +197,6 @@ class CardServiceImplTest {
                 .hasMessageContaining("Card not found by id: " + cardId);
     }
 
-    // ============================
-    // Тесты для findByIdDeletedOrNot
-    // ============================
     @Test
     @DisplayName("Should find card by id even if deleted or not")
     void shouldFindCardByIdDeletedOrNot() {
@@ -234,9 +220,6 @@ class CardServiceImplTest {
                 .hasMessageContaining("Card already deleted");
     }
 
-    // ============================
-    // Тесты для findByNumber
-    // ============================
     @Test
     @DisplayName("Should find card by number")
     void shouldFindCardByNumber() {
@@ -260,9 +243,6 @@ class CardServiceImplTest {
                 .hasMessageContaining("Card not found by number");
     }
 
-    // ============================
-    // Тесты для findYourCards
-    // ============================
     @Test
     @DisplayName("Should find cards by user id")
     void shouldFindCardsByUserId() {
@@ -287,9 +267,6 @@ class CardServiceImplTest {
                 .hasMessageContaining("User not found");
     }
 
-    // ============================
-    // Тесты для create
-    // ============================
     @Test
     @DisplayName("Should create card successfully")
     void shouldCreateCardSuccessfully() {
@@ -348,22 +325,17 @@ class CardServiceImplTest {
                 .hasMessageContaining("Date expiry is before now");
     }
 
-    // ============================
-    // Тесты для activateCard
-    // ============================
     @Test
     @DisplayName("Should activate PENDING card")
     void shouldActivatePendingCard() {
         card.setStatus(CardStatus.PENDING);
         when(cardRepository.findByIdUseLock(cardId)).thenReturn(Optional.of(card));
-        // Не мокаем cardRepository.save() - он не вызывается явно, т.к. @Transactional
         when(cardMapper.toYourDtoResponse(card)).thenReturn(cardResponse);
 
         CardResponse result = cardService.activateCard(cardId);
 
         assertThat(result).isNotNull();
         assertThat(card.getStatus()).isEqualTo(CardStatus.ACTIVE);
-        // Проверяем, что карта была сохранена (через транзакцию)
         verify(cardRepository, never()).save(any(Card.class));
     }
 
@@ -391,9 +363,6 @@ class CardServiceImplTest {
                 .hasMessageContaining("Card cannot be activated");
     }
 
-    // ============================
-    // Тесты для updateStatus
-    // ============================
     @Test
     @DisplayName("Should update status to BLOCKED successfully")
     void shouldUpdateStatusToBlockedSuccessfully() {
@@ -432,9 +401,6 @@ class CardServiceImplTest {
                 .hasMessageContaining("The card status cannot be active");
     }
 
-    // ============================
-    // Тесты для extendCard
-    // ============================
     @Test
     @DisplayName("Should extend card validity")
     void shouldExtendCardSuccessfully() {
@@ -476,9 +442,6 @@ class CardServiceImplTest {
                 .hasMessageContaining("The card status cannot be EXTENDED");
     }
 
-    // ============================
-    // Тесты для refreshSpendingLimit
-    // ============================
     @Test
     @DisplayName("Should refresh spending limit for card")
     void shouldRefreshSpendingLimit() {
@@ -495,9 +458,6 @@ class CardServiceImplTest {
         verify(cardRepository).save(card);
     }
 
-    // ============================
-    // Тесты для softDelete
-    // ============================
     @Test
     @DisplayName("Should soft delete card")
     void shouldSoftDeleteCard() {
@@ -521,9 +481,6 @@ class CardServiceImplTest {
                 .isInstanceOf(CardNotFoundException.class);
     }
 
-    // ============================
-    // Тесты для hardDelete
-    // ============================
     @Test
     @DisplayName("Should hard delete card")
     void shouldHardDeleteCard() {
@@ -541,5 +498,29 @@ class CardServiceImplTest {
 
         assertThatThrownBy(() -> cardService.hardDelete(cardId))
                 .isInstanceOf(CardNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("Should use CardMaskUtils for logging masked card numbers")
+    void shouldUseCardMaskUtilsForLogging() {
+        String number = "1234567890123456";
+        String masked = CardMaskUtils.maskCardNumber(number);
+
+        assertThat(masked).isEqualTo("**** **** **** 3456");
+        assertThat(masked).doesNotContain("123456789012");
+    }
+
+    @Test
+    @DisplayName("Should handle null card number in CardMaskUtils")
+    void shouldHandleNullCardNumberInMaskUtils() {
+        String masked = CardMaskUtils.maskCardNumber(null);
+        assertThat(masked).isNull();
+    }
+
+    @Test
+    @DisplayName("Should handle short card number in CardMaskUtils")
+    void shouldHandleShortCardNumberInMaskUtils() {
+        String masked = CardMaskUtils.maskCardNumber("123");
+        assertThat(masked).isEqualTo("123");
     }
 }

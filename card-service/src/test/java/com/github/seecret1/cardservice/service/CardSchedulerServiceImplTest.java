@@ -5,6 +5,7 @@ import com.github.seecret1.cardservice.entity.Card;
 import com.github.seecret1.cardservice.entity.enums.CardStatus;
 import com.github.seecret1.cardservice.entity.enums.CardType;
 import com.github.seecret1.cardservice.service.impl.CardSchedulerServiceImpl;
+import com.github.seecret1.cardservice.utils.CardMaskUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -106,7 +108,6 @@ class CardSchedulerServiceImplTest {
         Page<Card> page = new PageImpl<>(List.of(card, card2));
         when(internalCardService.findExpiryCards(any(LocalDate.class), any(Pageable.class)))
                 .thenReturn(page);
-        // Первая карта выбрасывает исключение, вторая успешно удаляется
         doThrow(new RuntimeException("Delete failed")).when(cardService).hardDelete(card.getId());
         doNothing().when(cardService).hardDelete(card2.getId());
 
@@ -114,6 +115,20 @@ class CardSchedulerServiceImplTest {
 
         verify(cardService, times(1)).hardDelete(card.getId());
         verify(cardService, times(1)).hardDelete(card2.getId());
+    }
+
+    @Test
+    @DisplayName("Should log masked card number when deleting")
+    void shouldLogMaskedCardNumberWhenDeleting() {
+        Page<Card> page = new PageImpl<>(List.of(card));
+        when(internalCardService.findExpiryCards(any(LocalDate.class), any(Pageable.class)))
+                .thenReturn(page);
+        doNothing().when(cardService).hardDelete(card.getId());
+
+        schedulerService.removeExpiryCards();
+
+        String masked = CardMaskUtils.maskCardNumber(card.getNumber());
+        assertThat(masked).isEqualTo("**** **** **** 3456");
     }
 
     @Test
@@ -183,13 +198,35 @@ class CardSchedulerServiceImplTest {
     }
 
     @Test
+    @DisplayName("Should continue processing next cards when one update fails")
+    void shouldContinueProcessingWhenOneUpdateFails() {
+        Card card2 = new Card();
+        card2.setId("test-id-2");
+        card2.setNumber("9876543210123456");
+        card2.setStatus(CardStatus.ACTIVE);
+        card2.setDateExpiry(LocalDate.now().minusYears(3));
+
+        Page<Card> page = new PageImpl<>(List.of(card, card2));
+        when(internalCardService.findExpiryActiveCards(any(LocalDate.class), any(Pageable.class)))
+                .thenReturn(page);
+        doThrow(new RuntimeException("Update failed")).when(cardService).updateStatus(card.getNumber(), CardStatus.EXPIRED);
+        when(cardService.updateStatus(card2.getNumber(), CardStatus.EXPIRED))
+                .thenReturn(mock(CardResponse.class));
+
+        schedulerService.updateStatusExpiryCards();
+
+        verify(cardService, times(1)).updateStatus(card.getNumber(), CardStatus.EXPIRED);
+        verify(cardService, times(1)).updateStatus(card2.getNumber(), CardStatus.EXPIRED);
+    }
+
+    @Test
     @DisplayName("Should refresh spending limit for all active cards")
     void shouldRefreshSpendingLimit() {
         Page<Card> page = new PageImpl<>(List.of(card));
         when(internalCardService.findAllActiveCard(any(Pageable.class)))
                 .thenReturn(page);
         when(cardService.refreshSpendingLimit(card.getId(), card.getType()))
-                .thenReturn(any(CardResponse.class));
+                .thenReturn(mock(CardResponse.class));
 
         schedulerService.refreshSpendingLimit();
 
@@ -228,11 +265,35 @@ class CardSchedulerServiceImplTest {
                 .thenReturn(page);
         doThrow(new RuntimeException("Refresh failed")).when(cardService).refreshSpendingLimit(card.getId(), card.getType());
         when(cardService.refreshSpendingLimit(card2.getId(), card2.getType()))
-                .thenReturn(any(CardResponse.class));
+                .thenReturn(mock(CardResponse.class));
 
         schedulerService.refreshSpendingLimit();
 
         verify(cardService, times(1)).refreshSpendingLimit(card.getId(), card.getType());
         verify(cardService, times(1)).refreshSpendingLimit(card2.getId(), card2.getType());
+    }
+
+    @Test
+    @DisplayName("Should use CardMaskUtils for logging masked card numbers")
+    void shouldUseCardMaskUtilsForLogging() {
+        String number = "1234567890123456";
+        String masked = CardMaskUtils.maskCardNumber(number);
+
+        assertThat(masked).isEqualTo("**** **** **** 3456");
+        assertThat(masked).doesNotContain("123456789012");
+    }
+
+    @Test
+    @DisplayName("Should handle null card number in CardMaskUtils")
+    void shouldHandleNullCardNumberInMaskUtils() {
+        String masked = CardMaskUtils.maskCardNumber(null);
+        assertThat(masked).isNull();
+    }
+
+    @Test
+    @DisplayName("Should handle short card number in CardMaskUtils")
+    void shouldHandleShortCardNumberInMaskUtils() {
+        String masked = CardMaskUtils.maskCardNumber("123");
+        assertThat(masked).isEqualTo("123");
     }
 }
