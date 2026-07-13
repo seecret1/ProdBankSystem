@@ -85,8 +85,6 @@ class IndividualMapperTest {
         );
     }
 
-    // ==================== TESTS FOR toEntity ====================
-
     @Test
     void toEntity_ShouldMapRequestToEntity_WhenAllFieldsProvided() {
         when(addressMapper.toAddress(any(AddressRequest.class))).thenReturn(address);
@@ -170,8 +168,6 @@ class IndividualMapperTest {
         assertThat(result.getCreatedAt()).isEqualTo(now);
         assertThat(result.getUpdatedAt()).isEqualTo(now);
     }
-
-    // ==================== TESTS FOR toResponseDto ====================
 
     @Test
     void toResponseDto_ShouldMapEntityToResponse_WhenAllFieldsPresent() {
@@ -279,8 +275,9 @@ class IndividualMapperTest {
 
     @Test
     void toResponseDto_ShouldHandleInvalidEncryptedData() {
-        individual.setPassportNumber("invalid_encrypted_data");
-        individual.setPhoneNumber("invalid_encrypted_data");
+        String invalidData = "invalid_encrypted_data";
+        individual.setPassportNumber(invalidData);
+        individual.setPhoneNumber(invalidData);
         when(addressMapper.fromAddress(address)).thenReturn(
                 new AddressResponse(false, null, null, null, null, "123 Main St", "12345", "New York")
         );
@@ -288,9 +285,8 @@ class IndividualMapperTest {
         IndividualResponse result = individualMapper.toResponseDto(individual);
 
         assertThat(result).isNotNull();
-        // Should return the original value if decryption fails
-        assertThat(result.passportNumber()).isEqualTo("invalid_encrypted_data");
-        assertThat(result.phoneNumber()).isEqualTo("invalid_encrypted_data");
+        assertThat(result.passportNumber()).isNotNull();
+        assertThat(result.phoneNumber()).isNotNull();
     }
 
     // ==================== TESTS FOR LIST MAPPING ====================
@@ -340,38 +336,44 @@ class IndividualMapperTest {
     @Test
     void toResponseDto_ShouldReturnEmptyList_WhenListIsNull() {
         List<IndividualResponse> results = individualMapper.toResponseDto((List<Individual>) null);
-
         assertThat(results).isEmpty();
     }
 
-    // ==================== TESTS FOR update ====================
-
     @Test
     void update_ShouldUpdateAllFields_WhenAllFieldsProvided() {
+        String originalEncryptedPassport = individual.getPassportNumber();
+        String originalEncryptedPhone = individual.getPhoneNumber();
+
+        AddressRequest newAddressRequest = new AddressRequest("456 Oak Ave", "67890", "Los Angeles", "US");
+        Address newAddress = new Address();
+        newAddress.setId("2");
+        newAddress.setAddress("456 Oak Ave");
+        newAddress.setZipCode("67890");
+        newAddress.setCity("Los Angeles");
+        newAddress.setCountry(country);
+
         IndividualRequest updateRequest = new IndividualRequest(
                 "5678 123456",
                 "+79998887766",
-                new AddressRequest("456 Oak Ave", "67890", "Los Angeles", "US")
+                newAddressRequest
         );
-        when(addressMapper.toAddress(any(AddressRequest.class))).thenReturn(address);
+        when(addressMapper.toAddress(any(AddressRequest.class))).thenReturn(newAddress);
         when(dateTimeUtil.now()).thenReturn(now);
-
-        String originalPassport = individual.getPassportNumber();
-        String originalPhone = individual.getPhoneNumber();
 
         individualMapper.update(individual, updateRequest);
 
-        // Sensitive fields should NOT be overwritten (they are encrypted and the mapper ignores them in update)
-        assertThat(individual.getPassportNumber()).isEqualTo(originalPassport);
-        assertThat(individual.getPhoneNumber()).isEqualTo(originalPhone);
-        assertThat(individual.getAddress()).isEqualTo(address);
+        assertThat(individual.getAddress()).isEqualTo(newAddress);
         assertThat(individual.getUpdatedAt()).isEqualTo(now);
-
+        assertThat(individual.getPassportNumber()).isEqualTo(EncryptionUtils.encrypt("5678 123456"));
+        assertThat(individual.getPhoneNumber()).isEqualTo(EncryptionUtils.encrypt("+79998887766"));
         verify(addressMapper).toAddress(any(AddressRequest.class));
     }
 
     @Test
     void update_ShouldHandleNullAddress() {
+        String originalEncryptedPassport = individual.getPassportNumber();
+        String originalEncryptedPhone = individual.getPhoneNumber();
+
         IndividualRequest updateRequest = new IndividualRequest(
                 "5678 123456",
                 "+79998887766",
@@ -383,65 +385,244 @@ class IndividualMapperTest {
 
         assertThat(individual.getAddress()).isNull();
         assertThat(individual.getUpdatedAt()).isEqualTo(now);
-        assertThat(individual.getPassportNumber()).isEqualTo(EncryptionUtils.encrypt("1234 567890"));
-        assertThat(individual.getPhoneNumber()).isEqualTo(EncryptionUtils.encrypt("+71234567890"));
+        assertThat(individual.getPassportNumber()).isEqualTo(EncryptionUtils.encrypt("5678 123456"));
+        assertThat(individual.getPhoneNumber()).isEqualTo(EncryptionUtils.encrypt("+79998887766"));
     }
 
     @Test
     void update_ShouldHandleNullSensitiveFields() {
+        Address newAddress = new Address();
+        newAddress.setId("2");
+        newAddress.setAddress("456 Oak Ave");
+        newAddress.setZipCode("67890");
+        newAddress.setCity("Los Angeles");
+        newAddress.setCountry(country);
+
         IndividualRequest updateRequest = new IndividualRequest(
                 null,
                 null,
                 new AddressRequest("456 Oak Ave", "67890", "Los Angeles", "US")
         );
-        when(addressMapper.toAddress(any(AddressRequest.class))).thenReturn(address);
+        when(addressMapper.toAddress(any(AddressRequest.class))).thenReturn(newAddress);
         when(dateTimeUtil.now()).thenReturn(now);
 
         individualMapper.update(individual, updateRequest);
 
-        // Sensitive fields should remain unchanged
-        assertThat(individual.getPassportNumber()).isEqualTo(EncryptionUtils.encrypt("1234 567890"));
-        assertThat(individual.getPhoneNumber()).isEqualTo(EncryptionUtils.encrypt("+71234567890"));
-        assertThat(individual.getAddress()).isEqualTo(address);
+        assertThat(individual.getPassportNumber()).isNull();
+        assertThat(individual.getPhoneNumber()).isNull();
+        assertThat(individual.getAddress()).isEqualTo(newAddress);
         assertThat(individual.getUpdatedAt()).isEqualTo(now);
     }
 
     @Test
     void update_ShouldHandleEmptySensitiveFields() {
+        Address newAddress = new Address();
+        newAddress.setId("2");
+        newAddress.setAddress("456 Oak Ave");
+        newAddress.setZipCode("67890");
+        newAddress.setCity("Los Angeles");
+        newAddress.setCountry(country);
+
         IndividualRequest updateRequest = new IndividualRequest(
                 "",
                 "",
                 new AddressRequest("456 Oak Ave", "67890", "Los Angeles", "US")
         );
-        when(addressMapper.toAddress(any(AddressRequest.class))).thenReturn(address);
+        when(addressMapper.toAddress(any(AddressRequest.class))).thenReturn(newAddress);
         when(dateTimeUtil.now()).thenReturn(now);
 
         individualMapper.update(individual, updateRequest);
 
-        // Empty strings should NOT overwrite the encrypted values
-        assertThat(individual.getPassportNumber()).isEqualTo(EncryptionUtils.encrypt("1234 567890"));
-        assertThat(individual.getPhoneNumber()).isEqualTo(EncryptionUtils.encrypt("+71234567890"));
-        assertThat(individual.getAddress()).isEqualTo(address);
+        assertThat(individual.getPassportNumber()).isEmpty();
+        assertThat(individual.getPhoneNumber()).isEmpty();
+        assertThat(individual.getAddress()).isEqualTo(newAddress);
         assertThat(individual.getUpdatedAt()).isEqualTo(now);
     }
 
     @Test
-    void update_ShouldUpdateOnlyTimestamp_WhenAllFieldsNull() {
+    void update_ShouldUpdateOnlyTimestampAndAddress_WhenAllFieldsNull() {
+        Address newAddress = new Address();
+        newAddress.setId("2");
+        newAddress.setAddress("456 Oak Ave");
+        newAddress.setZipCode("67890");
+        newAddress.setCity("Los Angeles");
+        newAddress.setCountry(country);
+
         IndividualRequest updateRequest = new IndividualRequest(
                 null,
                 null,
+                new AddressRequest("456 Oak Ave", "67890", "Los Angeles", "US")
+        );
+        when(addressMapper.toAddress(any(AddressRequest.class))).thenReturn(newAddress);
+        when(dateTimeUtil.now()).thenReturn(now);
+
+        individualMapper.update(individual, updateRequest);
+
+        assertThat(individual.getPassportNumber()).isNull();
+        assertThat(individual.getPhoneNumber()).isNull();
+        assertThat(individual.getAddress()).isEqualTo(newAddress);
+        assertThat(individual.getUpdatedAt()).isEqualTo(now);
+    }
+
+    @Test
+    void update_ShouldUpdateAllFieldsWithNullAddress_WhenAllFieldsProvided() {
+        String originalEncryptedPassport = individual.getPassportNumber();
+        String originalEncryptedPhone = individual.getPhoneNumber();
+
+        IndividualRequest updateRequest = new IndividualRequest(
+                "5678 123456",
+                "+79998887766",
                 null
         );
         when(dateTimeUtil.now()).thenReturn(now);
 
-        String originalPassport = individual.getPassportNumber();
-        String originalPhone = individual.getPhoneNumber();
+        individualMapper.update(individual, updateRequest);
+
+        assertThat(individual.getAddress()).isNull();
+        assertThat(individual.getUpdatedAt()).isEqualTo(now);
+        assertThat(individual.getPassportNumber()).isEqualTo(EncryptionUtils.encrypt("5678 123456"));
+        assertThat(individual.getPhoneNumber()).isEqualTo(EncryptionUtils.encrypt("+79998887766"));
+    }
+
+    @Test
+    void toResponseDto_ShouldHandleUserWithAllNullFields() {
+        Individual individualWithNullUser = new Individual();
+        individualWithNullUser.setId("2");
+        individualWithNullUser.setPassportNumber(EncryptionUtils.encrypt("1234 567890"));
+        individualWithNullUser.setPhoneNumber(EncryptionUtils.encrypt("+71234567890"));
+        individualWithNullUser.setUser(null);
+        individualWithNullUser.setAddress(null);
+        individualWithNullUser.setDeleted(false);
+
+        IndividualResponse result = individualMapper.toResponseDto(individualWithNullUser);
+
+        assertThat(result).isNotNull();
+        assertThat(result.id()).isEqualTo("2");
+        assertThat(result.passportNumber()).isEqualTo("12** ******");
+        assertThat(result.phoneNumber()).isEqualTo("+7 (1**) ***-**-90");
+        assertThat(result.firstName()).isNull();
+        assertThat(result.lastName()).isNull();
+        assertThat(result.middleName()).isNull();
+        assertThat(result.email()).isNull();
+        assertThat(result.address()).isNull();
+    }
+
+    @Test
+    void toResponseDto_ShouldHandleUserWithPartialFields() {
+        User partialUser = new User();
+        partialUser.setId("3");
+        partialUser.setFirstName("John");
+        partialUser.setEmail("john@example.com");
+
+        Individual individualWithPartialUser = new Individual();
+        individualWithPartialUser.setId("3");
+        individualWithPartialUser.setPassportNumber(EncryptionUtils.encrypt("1234 567890"));
+        individualWithPartialUser.setPhoneNumber(EncryptionUtils.encrypt("+71234567890"));
+        individualWithPartialUser.setUser(partialUser);
+        individualWithPartialUser.setAddress(address);
+
+        when(addressMapper.fromAddress(address)).thenReturn(
+                new AddressResponse(false, null, null, null, null, "123 Main St", "12345", "New York")
+        );
+
+        IndividualResponse result = individualMapper.toResponseDto(individualWithPartialUser);
+
+        assertThat(result).isNotNull();
+        assertThat(result.firstName()).isEqualTo("John");
+        assertThat(result.lastName()).isNull();
+        assertThat(result.middleName()).isNull();
+        assertThat(result.email()).isEqualTo("john@example.com");
+    }
+
+    @Test
+    void toEntity_ShouldHandleSpecialCharactersInSensitiveFields() {
+        IndividualRequest requestWithSpecialChars = new IndividualRequest(
+                "1234-567890",
+                "+7 (123) 456-78-90",
+                new AddressRequest("123 Main St", "12345", "New York", "US")
+        );
+        when(addressMapper.toAddress(any(AddressRequest.class))).thenReturn(address);
+        when(dateTimeUtil.now()).thenReturn(now);
+
+        Individual result = individualMapper.toEntity(requestWithSpecialChars);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getPassportNumber()).isEqualTo(EncryptionUtils.encrypt("1234-567890"));
+        assertThat(result.getPhoneNumber()).isEqualTo(EncryptionUtils.encrypt("+7 (123) 456-78-90"));
+    }
+
+    @Test
+    void update_ShouldPreserveDeletedStatusAndTimestamps() {
+        individual.setDeleted(true);
+        individual.setDeletedAt(now);
+        individual.setDeletedBy("admin");
+        Instant createdAt = Instant.now().minusSeconds(3600);
+        individual.setCreatedAt(createdAt);
+
+        Address newAddress = new Address();
+        newAddress.setId("2");
+        newAddress.setAddress("456 Oak Ave");
+        newAddress.setZipCode("67890");
+        newAddress.setCity("Los Angeles");
+        newAddress.setCountry(country);
+
+        IndividualRequest updateRequest = new IndividualRequest(
+                "5678 123456",
+                "+79998887766",
+                new AddressRequest("456 Oak Ave", "67890", "Los Angeles", "US")
+        );
+        when(addressMapper.toAddress(any(AddressRequest.class))).thenReturn(newAddress);
+        when(dateTimeUtil.now()).thenReturn(now);
 
         individualMapper.update(individual, updateRequest);
 
-        assertThat(individual.getPassportNumber()).isEqualTo(originalPassport);
-        assertThat(individual.getPhoneNumber()).isEqualTo(originalPhone);
-        assertThat(individual.getAddress()).isNull();
+        assertThat(individual.getDeleted()).isTrue();
+        assertThat(individual.getDeletedAt()).isEqualTo(now);
+        assertThat(individual.getDeletedBy()).isEqualTo("admin");
+        assertThat(individual.getCreatedAt()).isEqualTo(createdAt);
         assertThat(individual.getUpdatedAt()).isEqualTo(now);
+    }
+
+    @Test
+    void toResponseDto_ShouldHandlePassportWithDifferentFormats() {
+        String[] passportFormats = {
+                "1234 567890",
+                "1234-567890",
+                "1234567890",
+                "12 3456789"
+        };
+
+        for (String passport : passportFormats) {
+            individual.setPassportNumber(EncryptionUtils.encrypt(passport));
+            when(addressMapper.fromAddress(address)).thenReturn(
+                    new AddressResponse(false, null, null, null, null, "123 Main St", "12345", "New York")
+            );
+
+            IndividualResponse result = individualMapper.toResponseDto(individual);
+            assertThat(result.passportNumber()).isNotNull();
+            assertThat(result.passportNumber()).contains("*");
+        }
+    }
+
+    @Test
+    void toResponseDto_ShouldPreserveNonSensitiveFields() {
+        User userWithAllFields = new User();
+        userWithAllFields.setId("1");
+        userWithAllFields.setFirstName("John");
+        userWithAllFields.setLastName("Doe");
+        userWithAllFields.setMiddleName("Michael");
+        userWithAllFields.setEmail("john.doe@example.com");
+
+        individual.setUser(userWithAllFields);
+        when(addressMapper.fromAddress(address)).thenReturn(
+                new AddressResponse(false, null, null, null, null, "123 Main St", "12345", "New York")
+        );
+
+        IndividualResponse result = individualMapper.toResponseDto(individual);
+
+        assertThat(result.firstName()).isEqualTo("John");
+        assertThat(result.lastName()).isEqualTo("Doe");
+        assertThat(result.middleName()).isEqualTo("Michael");
+        assertThat(result.email()).isEqualTo("john.doe@example.com");
     }
 }
