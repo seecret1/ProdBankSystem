@@ -1,7 +1,7 @@
 package com.github.seecret1.cardservice.kafka.listener;
 
+import com.github.seecret1.cardservice.kafka.service.ProducerSenderDlt;
 import com.github.seecret1.cardservice.order.OrderStatus;
-import com.github.seecret1.cardservice.order.message.OrderCardResponse;
 import com.github.seecret1.cardservice.order.message.OrderMessage;
 import com.github.seecret1.cardservice.service.CardService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +22,8 @@ public class OrderListener {
 
     private final CardService service;
 
+    private final ProducerSenderDlt kafkaSenderDlt;
+
     @KafkaListener(
             topics = "${app.kafka.response-topic}",
             groupId = "${app.kafka.groupId}",
@@ -39,12 +41,57 @@ public class OrderListener {
         log.info("Key: {}; Partition: {}; Topic: {}; Timestamp: {}",
                 key, partition, topic, Instant.ofEpochMilli(timestamp));
 
-        // TODO: временная обработка
-        if (order.getStatus() == OrderStatus.SUCCESS) {
-            String cardId = order.getProductId();
-            service.activateCard(cardId);
+        try {
+            orderProcessing(order);
+        } catch (Exception e) {
+            log.error("Error processing order: traceId={}, orderId={}, error={}",
+                    order.getTraceId(), order.getOrderId(), e.getMessage(), e);
+            kafkaSenderDlt.sendMessageInDlt(order);
         }
 
         log.debug("Response order body: {}", order);
+    }
+
+    public void orderProcessing(OrderMessage order) {
+        String cardId = order.getProductId();
+        OrderStatus status = order.getStatus();
+
+        log.info("Processing order with status: {} for card: {}", status, cardId);
+
+        switch (status) {
+            case SUCCESS:
+                service.activateCard(cardId);
+                sendNotification();
+                break;
+
+            case PENDING:
+                // TODO: Добавить работу с retry топиком
+                sendNotification();
+                break;
+
+            case CANCELLED:
+                sendNotification();
+                break;
+
+            case REJECTED:
+                sendNotification();
+                break;
+
+            case ERROR:
+                kafkaSenderDlt.sendMessageInDlt(order);
+                sendNotification();
+                break;
+
+            default:
+                log.warn("Unknown order status: {} for order: {}", status, order.getOrderId());
+                break;
+        }
+    }
+
+    private void sendNotification() {
+        //TODO: Добавить обработку 1, затем заменить на 2:
+        // 1) Отправить сообщение по email (SMTP)
+        // 2) Добавить работу с notification-service
+        log.info("Send message to person");
     }
 }

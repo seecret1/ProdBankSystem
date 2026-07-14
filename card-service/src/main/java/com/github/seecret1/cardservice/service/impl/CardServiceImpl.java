@@ -179,7 +179,6 @@ public class CardServiceImpl implements CardService {
     public CardResponse activateCard(String id) {
         log.info("Activate card by id: {}", id);
 
-        // TODO: добавить проверки
         var card = findCardByIdUseLock(id);
 
         if (card.getStatus() == CardStatus.PENDING) {
@@ -215,18 +214,7 @@ public class CardServiceImpl implements CardService {
         if (user == null) throw new EntityNotFoundException("User not found by id " + userId);
 
         var card = cardRepository.findByNumberHash(CardHashUtils.hash(request.number()));
-
-        if (card.isPresent()) {
-            throw new CardExistsException(
-                    "Card with number " + CardMaskUtils.maskCardNumber(request.number()) + " already exists!"
-            );
-        }
-
-        if (request.dateExpiry().isBefore(LocalDate.now())) {
-            throw new CardExpiryDateException(
-                    "Date expiry is before now!"
-            );
-        }
+        CardValidateUtils.checkValidateOnCreated(card, request);
 
         log.info("Init order created card");
         var orderCard = cardMapper.toEntity(request, user.id());
