@@ -1,6 +1,6 @@
 package com.github.seecret1.cardservice.client;
 
-import com.github.seecret1.cardservice.config.FeignConfig;
+import com.github.seecret1.cardservice.config.feign.FeignConfig;
 import com.github.seecret1.cardservice.dto.user.UserResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;

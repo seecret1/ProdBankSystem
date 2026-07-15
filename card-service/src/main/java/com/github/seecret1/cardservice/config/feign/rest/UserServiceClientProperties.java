@@ -1,4 +1,4 @@
-package com.github.seecret1.cardservice.config;
+package com.github.seecret1.cardservice.config.feign.rest;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -1,7 +1,6 @@
-package com.github.seecret1.cardservice.config;
+package com.github.seecret1.cardservice.config.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.seecret1.cardservice.order.message.OrderCardResponse;
 import com.github.seecret1.cardservice.order.message.OrderCardDto;
 import com.github.seecret1.cardservice.order.message.OrderMessage;
 import org.apache.kafka.clients.admin.NewTopic;

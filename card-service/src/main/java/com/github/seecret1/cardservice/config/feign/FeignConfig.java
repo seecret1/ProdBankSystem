@@ -1,5 +1,6 @@
-package com.github.seecret1.cardservice.config;
+package com.github.seecret1.cardservice.config.feign;
 
+import com.github.seecret1.cardservice.config.feign.rest.UserServiceClientProperties;
 import feign.RequestInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
