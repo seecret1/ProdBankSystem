@@ -61,7 +61,7 @@ public class IndividualServiceImpl implements IndividualService {
     }
 
     @Override
-    @Cacheable(value = "${app.cache.cache-names.individualByCriterial}", key = "#id")
+    @Cacheable(value = "${app.cache.cache-names.individualById}", key = "#id")
     @Transactional(readOnly = true)
     public IndividualResponse findById(String id) {
         var individual = findIndividual(id);
@@ -70,7 +70,7 @@ public class IndividualServiceImpl implements IndividualService {
     }
 
     @Override
-    @Cacheable(value = "${app.cache.cache-names.individualByCriterial}", key = "#phoneNumber")
+    @Cacheable(value = "${app.cache.cache-names.individualByPhoneNumber}", key = "#phoneNumber")
     @Transactional(readOnly = true)
     public IndividualResponse findByPhoneNumber(String phoneNumber) {
         String phoneEncrypt = EncryptionUtils.encrypt(phoneNumber);
@@ -86,10 +86,14 @@ public class IndividualServiceImpl implements IndividualService {
     @CacheEvict(
             value = {
                     "${app.cache.cache-names.individualAll}",
-                    "${app.cache.cache-names.individualByCriterial}",
+                    "${app.cache.cache-names.individualById}",
+                    "${app.cache.cache-names.individualByPhoneNumber}",
                     "${app.cache.cache-names.userAll}",
-                    "${app.cache.cache-names.userByCriterial}",
-                    "${app.cache.cache-names.userFilter}"
+                    "${app.cache.cache-names.userActiveAll}",
+                    "${app.cache.cache-names.userFilter}",
+                    "${app.cache.cache-names.userById}",
+                    "${app.cache.cache-names.userByEmail}",
+                    "${app.cache.cache-names.userByUsername}"
             },
             allEntries = true
     )
@@ -112,12 +116,17 @@ public class IndividualServiceImpl implements IndividualService {
         loggingIndividualInfo(request);
 
         log.info("IN - recordPersonalData: individual for user [{}] created", user.getEmail());
-        return individualMapper.toResponseDto(individual);
+        return individualMapper.toResponseYourDto(individual);
     }
 
     @Override
-    @CacheEvict(value = "${app.cache.cache-names.individualAll}", allEntries = true)
-    @CachePut(value = "${app.cache.cache-names.individualByCriterial}", key = "#id")
+    @CacheEvict(
+            value = {
+                    "${app.cache.cache-names.individualAll}",
+                    "${app.cache.cache-names.individualByPhoneNumber}"
+            }, allEntries = true
+    )
+    @CachePut(value = "${app.cache.cache-names.individualById}", key = "#id")
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public IndividualResponse update(String id, IndividualRequest request) {
         var individual = findIndividual(id);
@@ -129,10 +138,10 @@ public class IndividualServiceImpl implements IndividualService {
     @CacheEvict(
             value = {
                     "${app.cache.cache-names.individualAll}",
-                    "${app.cache.cache-names.individualByCriterial}"
-            },
-            allEntries = true
+                    "${app.cache.cache-names.individualByPhoneNumber}"
+            }, allEntries = true
     )
+    @CachePut(value = "${app.cache.cache-names.individualById}", key = "#result.id()")
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public IndividualResponse updateYour(String userId, IndividualRequest request) {
         var user = userRepository.findById(userId)
@@ -147,8 +156,11 @@ public class IndividualServiceImpl implements IndividualService {
 
     @Override
     @CacheEvict(
-            value = {"${app.cache.cache-names.individualAll}",
-                    "${app.cache.cache-names.individualByCriterial}"},
+            value = {
+                    "${app.cache.cache-names.individualAll}",
+                    "${app.cache.cache-names.individualById}",
+                    "${app.cache.cache-names.individualByPhoneNumber}"
+            },
             allEntries = true
     )
     @Transactional
@@ -159,8 +171,11 @@ public class IndividualServiceImpl implements IndividualService {
 
     @Override
     @CacheEvict(
-            value = {"${app.cache.cache-names.individualAll}",
-                    "${app.cache.cache-names.individualByCriterial}"},
+            value = {
+                    "${app.cache.cache-names.individualAll}",
+                    "${app.cache.cache-names.individualById}",
+                    "${app.cache.cache-names.individualByPhoneNumber}"
+            },
             allEntries = true
     )
     @Transactional

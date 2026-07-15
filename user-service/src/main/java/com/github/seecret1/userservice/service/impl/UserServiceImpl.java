@@ -65,7 +65,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
     }
 
     @Override
-    @Cacheable(value = "${app.cache.cache-names.userAll}", key = "#pageModel.toString()")
+    @Cacheable(value = "${app.cache.cache-names.userActiveAll}", key = "#pageModel.toString()")
     @Transactional(readOnly = true)
     public PageResponse<UserResponse> findAllActiveUsers(PageModel pageModel) {
         log.info("Find all active users");
@@ -147,6 +147,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
     @CacheEvict(
             value = {
                     "${app.cache.cache-names.userAll}",
+                    "${app.cache.cache-names.userActiveAll}",
                     "${app.cache.cache-names.userFilter}",
                     "${app.cache.cache-names.userById}",
                     "${app.cache.cache-names.userByEmail}",
@@ -181,6 +182,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
     @CacheEvict(
             value = {
                     "${app.cache.cache-names.userAll}",
+                    "${app.cache.cache-names.userActiveAll}",
                     "${app.cache.cache-names.userFilter}",
                     "${app.cache.cache-names.userByEmail}",
                     "${app.cache.cache-names.userByUsername}"
@@ -214,6 +216,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
     @CacheEvict(
             value = {
                     "${app.cache.cache-names.userAll}",
+                    "${app.cache.cache-names.userActiveAll}",
                     "${app.cache.cache-names.userFilter}",
                     "${app.cache.cache-names.userByEmail}",
                     "${app.cache.cache-names.userByUsername}"
@@ -247,6 +250,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
     @CacheEvict(
             value = {
                     "${app.cache.cache-names.userAll}",
+                    "${app.cache.cache-names.userActiveAll}",
                     "${app.cache.cache-names.userFilter}",
                     "${app.cache.cache-names.userById}",
                     "${app.cache.cache-names.userByEmail}",

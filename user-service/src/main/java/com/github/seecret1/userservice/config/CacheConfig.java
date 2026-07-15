@@ -1,7 +1,6 @@
-package com.github.seecret1.common.config;
+package com.github.seecret1.userservice.config;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import com.github.seecret1.common.config.ApplicationCacheProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -20,8 +19,6 @@ import java.util.Map;
 
 @Configuration
 @EnableCaching
-@ConditionalOnClass(RedisConnectionFactory.class)
-@ConditionalOnBean(RedisConnectionFactory.class)
 @EnableConfigurationProperties(ApplicationCacheProperties.class)
 public class CacheConfig {
 
