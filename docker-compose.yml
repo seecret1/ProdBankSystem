@@ -427,18 +427,9 @@ services:
 
   redis:
     image: redis:8.2.1
-    container_name: bank_redis_db
-    restart: on-failure
     ports:
       - "${REDIS_PORT}:${REDIS_PORT}"
-    command: redis-server --appendonly yes
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+
 
   user-service:
     build:
