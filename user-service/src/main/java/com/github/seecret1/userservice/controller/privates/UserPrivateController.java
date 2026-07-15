@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 @Validated
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/users")
+@RequestMapping("/api/v1/private/users")
 @Tag(name = "User Management", description = "API for managing users")
 @SecurityRequirement(name = "bearerAuth")
 public class UserPrivateController {
