@@ -214,6 +214,7 @@ services:
   nexus:
     image: sonatype/nexus3:3.76.0
     container_name: nexus
+    restart: unless-stopped
     ports:
       - "${NEXUS_PORT}:${NEXUS_PORT}"
     environment:
