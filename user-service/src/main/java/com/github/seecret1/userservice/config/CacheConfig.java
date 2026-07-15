@@ -1,6 +1,5 @@
 package com.github.seecret1.userservice.config;
 
-import com.github.seecret1.common.config.ApplicationCacheProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
