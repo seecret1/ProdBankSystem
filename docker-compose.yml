@@ -429,6 +429,9 @@ services:
     image: redis:8.2.1
     ports:
       - "${REDIS_PORT}:${REDIS_PORT}"
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    command: redis-server --requirepass ${REDIS_PASSWORD}
 
 
   user-service:
