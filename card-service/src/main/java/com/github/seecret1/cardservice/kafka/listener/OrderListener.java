@@ -69,10 +69,6 @@ public class OrderListener {
                 sendNotification();
                 break;
 
-            case CANCELLED:
-                sendNotification();
-                break;
-
             case REJECTED:
                 sendNotification();
                 break;
