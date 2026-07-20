@@ -105,6 +105,7 @@ public class IndividualServiceImpl implements IndividualService {
             throw new PersonException("Individual profile already exists for user id=[%s]", userId);
         }
 
+        checkPassportAndPhone(request);
         AuthUtil.userRecordPersonalData(user);
 
         Individual individual = individualMapper.toEntity(request);
@@ -193,31 +194,56 @@ public class IndividualServiceImpl implements IndividualService {
     }
 
     private IndividualResponse updateIndividual(Individual individual, IndividualRequest request) {
-        String newPassport = request.passportNumber();
-        String newPhone = request.phoneNumber();
-        String currentPassport = individual.getPassportNumber();
-        String currentPhone = individual.getPhoneNumber();
-
-        if (!newPassport.equals(currentPassport)) {
-            if (individualRepository.existsIndividualByPassportNumber(newPassport)) {
-                throw new IndividualDataExistsException(
-                        "Passport number already exists for another user"
-                );
-            }
-            individual.setPassportNumber(newPassport);
-        }
-        if (!newPhone.equals(currentPhone)) {
-            if (individualRepository.existsIndividualByPhoneNumber(newPhone)) {
-                throw new IndividualDataExistsException(
-                        "Phone number already exists for another user"
-                );
-            }
-            individual.setPhoneNumber(newPhone);
-        }
+        checkPassportAndPhone(individual, request);
 
         individualMapper.update(individual, request);
         individualRepository.save(individual);
         return individualMapper.toResponseDto(individual);
+    }
+
+    private void checkPassportAndPhone(Individual individual, IndividualRequest request) {
+        String newPassportNumber = request.passportNumber();
+        if (newPassportNumber != null && !newPassportNumber.isEmpty()) {
+            String newPassportEncrypted = EncryptionUtils.encrypt(newPassportNumber);
+            String currentPassportEncrypted = individual.getPassportNumber();
+            if (!newPassportEncrypted.equals(currentPassportEncrypted)) {
+                if (individualRepository.existsIndividualByPassportNumber(newPassportEncrypted)) {
+                    throw new IndividualDataExistsException(
+                            "Passport number already exists"
+                    );
+                }
+            }
+        }
+
+        String newPhoneNumber = request.phoneNumber();
+        if (newPhoneNumber != null && !newPhoneNumber.isEmpty()) {
+            String newPhoneEncrypted = EncryptionUtils.encrypt(newPhoneNumber);
+            String currentPhoneEncrypted = individual.getPhoneNumber();
+            if (!newPhoneEncrypted.equals(currentPhoneEncrypted)) {
+                if (individualRepository.existsIndividualByPhoneNumber(newPhoneEncrypted)) {
+                    throw new IndividualDataExistsException(
+                            "Phone number already exists"
+                    );
+                }
+            }
+        }
+    }
+
+    private void checkPassportAndPhone(IndividualRequest request) {
+        String passportNumber = request.passportNumber();
+        if (passportNumber != null && !passportNumber.isEmpty()) {
+            String passportEncrypted = EncryptionUtils.encrypt(passportNumber);
+            if (individualRepository.existsIndividualByPassportNumber(passportEncrypted)) {
+                throw new IndividualDataExistsException("Passport number already exists");
+            }
+        }
+        String phoneNumber = request.phoneNumber();
+        if (phoneNumber != null && !phoneNumber.isEmpty()) {
+            String phoneEncrypted = EncryptionUtils.encrypt(phoneNumber);
+            if (individualRepository.existsIndividualByPhoneNumber(phoneEncrypted)) {
+                throw new IndividualDataExistsException("Phone number already exists");
+            }
+        }
     }
 
     private static void loggingIndividualInfo(IndividualRequest request) {
