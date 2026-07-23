@@ -66,8 +66,8 @@ public class CardSchedulerServiceImpl implements CardSchedulerService {
                 if (page.isLast()) break;
 
                 pageNumber++;
-                log.info("Scheduler completed. Total remove expired cards: {}", totalDeleted);
             }
+            log.info("Scheduler completed. Total remove expired cards: {}", totalDeleted);
         } catch (Exception e) {
             log.error("Error during scheduled cleanup: {}", e.getMessage(), e);
         }
@@ -102,8 +102,8 @@ public class CardSchedulerServiceImpl implements CardSchedulerService {
                 if (page.isLast()) break;
 
                 pageNumber++;
-                log.info("Scheduler completed. Total remove deleted cards: {}", totalDeleted);
             }
+            log.info("Scheduler completed. Total remove deleted cards: {}", totalDeleted);
         } catch (Exception e) {
             log.error("Error during scheduled cleanup: {}", e.getMessage(), e);
         }
@@ -136,8 +136,8 @@ public class CardSchedulerServiceImpl implements CardSchedulerService {
                 if (page.isLast()) break;
 
                 pageNumber++;
-                log.info("Scheduler completed. Total updated expired cards: {}", totalUpdated);
             }
+            log.info("Scheduler completed. Total updated expired cards: {}", totalUpdated);
         } catch (Exception e) {
             log.error("Error during scheduled updated: {}", e.getMessage(), e);
         }
@@ -167,8 +167,8 @@ public class CardSchedulerServiceImpl implements CardSchedulerService {
                 if (page.isLast()) break;
 
                 pageNumber++;
-                log.info("Scheduler completed. Total updated active cards: {}", totalUpdated);
             }
+            log.info("Scheduler completed. Total updated active cards: {}", totalUpdated);
         } catch (Exception e) {
             log.error("Error during scheduled updated: {}", e.getMessage(), e);
         }
