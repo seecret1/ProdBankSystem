@@ -433,6 +433,20 @@ services:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
     command: redis-server --requirepass ${REDIS_PASSWORD}
 
+  wiremock:
+    image: wiremock/wiremock:latest
+    container_name: wiremock
+    ports:
+      - "${WIREMOCK_PORT}:8080"
+    volumes:
+      - ./wiremock/mappings:/home/wiremock/mappings
+      - ./wiremock/__files:/home/wiremock/__files
+    command: --global-response-templating --verbose
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/__admin/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   user-service:
     build:
