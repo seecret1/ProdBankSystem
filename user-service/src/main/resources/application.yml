@@ -112,5 +112,13 @@ app:
       individualByPhoneNumber:
         expiry: 10m
 
+  scheduler:
+    passport-validity:
+      upcoming:
+        cron: "0 0 22 * * *"
+      missed:
+        cron: "0 0 20 * * *"
+    pageSize: 100
+
 services:
   api-key: ${INTERNAL_API_KEY:your-internal-api-key}
