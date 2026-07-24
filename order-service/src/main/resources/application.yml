@@ -59,9 +59,9 @@ user-service:
   jwt:
     secret: ${SECRET_KEY:MyVeryLongAndSecureSecretKeyForJWTTokenSigningThatIsAtLeast64CharactersLongToMeetHS512Requirements123456789}
   client:
-    base-url: http://localhost:8091
+    base-url: ${USER_CLIENT_BASE_URL:http://localhost:8091}
     api-key: ${INTERNAL_API_KEY:your-internal-api-key}
-    x-internal-key: X-Internal-Api-Key
+    x-internal-key: ${INTERNAL_KEY:X-Internal-Api-Key}
 
 springdoc:
   api-docs:
