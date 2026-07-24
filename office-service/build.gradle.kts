@@ -62,6 +62,9 @@ dependencies {
 	testCompileOnly("org.projectlombok:lombok")
 	testAnnotationProcessor("org.projectlombok:lombok")
 
+	compileOnly("org.mapstruct:mapstruct:${versions["mapstructVersion"]}")
+	annotationProcessor("org.mapstruct:mapstruct-processor:${versions["mapstructVersion"]}")
+
 	implementation("org.postgresql:postgresql")
 	implementation("org.flywaydb:flyway-database-postgresql")
 	implementation("org.hibernate.orm:hibernate-core:${versions["hibernateVersion"]}")

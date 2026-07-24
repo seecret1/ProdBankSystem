@@ -1,5 +1,5 @@
 server:
-  port: 8093
+  port: 8094
 
 spring:
   application:
@@ -71,13 +71,13 @@ springdoc:
     try-it-out-enabled: true
     filter: true
   show-actuator: true
-  packages-to-scan: com.github.seecret1.cardservice.controller
+  packages-to-scan: com.github.seecret1.office_service.controller
   paths-to-match: /api/v1/**
 
 logging:
   config: "classpath:logback.xml"
   level:
-    com.github.seecret1.cardservice: DEBUG
+    com.github.seecret1.office_service: DEBUG
 
 management:
   endpoints:
