@@ -38,9 +38,9 @@ spring:
     bootstrap-servers: ${HOST:localhost}:${KAFKA1_PORT:9092}, ${HOST:localhost}:${KAFKA2_PORT:9093}, ${HOST:localhost}:${KAFKA3_PORT:9094}
     ssl:
       enabled: ${KAFKA_SSL_ENABLED:false}
-      trust-store-location: ${KAFKA_TRUSTSTORE_LOCATION:file:./kafka.truststore.jks}
+      trust-store-location: ${KAFKA_TRUSTSTORE_LOCATION:classpath:kafka.truststore.jks}
       trust-store-password: ${KAFKA_TRUSTSTORE_PASSWORD:changeit}
-      key-store-location: ${KAFKA_KEYSTORE_LOCATION:file:./kafka.keystore.jks}
+      key-store-location: ${KAFKA_KEYSTORE_LOCATION:classpath:kafka.keystore.jks}
       key-store-password: ${KAFKA_KEYSTORE_PASSWORD:changeit}
       key-password: ${KAFKA_KEY_PASSWORD:changeit}
       protocol: ${KAFKA_SSL_PROTOCOL:SSL}
