@@ -61,7 +61,7 @@ public class IndividualServiceImpl implements IndividualService {
     }
 
     @Override
-    @Cacheable(value = "${app.cache.cache-names.individualByCriterial}", key = "#id")
+    @Cacheable(value = "${app.cache.cache-names.individualById}", key = "#id")
     @Transactional(readOnly = true)
     public IndividualResponse findById(String id) {
         var individual = findIndividual(id);
@@ -70,7 +70,7 @@ public class IndividualServiceImpl implements IndividualService {
     }
 
     @Override
-    @Cacheable(value = "${app.cache.cache-names.individualByCriterial}", key = "#phoneNumber")
+    @Cacheable(value = "${app.cache.cache-names.individualByPhoneNumber}", key = "#phoneNumber")
     @Transactional(readOnly = true)
     public IndividualResponse findByPhoneNumber(String phoneNumber) {
         String phoneEncrypt = EncryptionUtils.encrypt(phoneNumber);
@@ -86,10 +86,14 @@ public class IndividualServiceImpl implements IndividualService {
     @CacheEvict(
             value = {
                     "${app.cache.cache-names.individualAll}",
-                    "${app.cache.cache-names.individualByCriterial}",
+                    "${app.cache.cache-names.individualById}",
+                    "${app.cache.cache-names.individualByPhoneNumber}",
                     "${app.cache.cache-names.userAll}",
-                    "${app.cache.cache-names.userByCriterial}",
-                    "${app.cache.cache-names.userFilter}"
+                    "${app.cache.cache-names.userActiveAll}",
+                    "${app.cache.cache-names.userFilter}",
+                    "${app.cache.cache-names.userById}",
+                    "${app.cache.cache-names.userByEmail}",
+                    "${app.cache.cache-names.userByUsername}"
             },
             allEntries = true
     )
@@ -101,6 +105,7 @@ public class IndividualServiceImpl implements IndividualService {
             throw new PersonException("Individual profile already exists for user id=[%s]", userId);
         }
 
+        checkPassportAndPhone(request);
         AuthUtil.userRecordPersonalData(user);
 
         Individual individual = individualMapper.toEntity(request);
@@ -112,12 +117,17 @@ public class IndividualServiceImpl implements IndividualService {
         loggingIndividualInfo(request);
 
         log.info("IN - recordPersonalData: individual for user [{}] created", user.getEmail());
-        return individualMapper.toResponseDto(individual);
+        return individualMapper.toResponseYourDto(individual);
     }
 
     @Override
-    @CacheEvict(value = "${app.cache.cache-names.individualAll}", allEntries = true)
-    @CachePut(value = "${app.cache.cache-names.individualByCriterial}", key = "#id")
+    @CacheEvict(
+            value = {
+                    "${app.cache.cache-names.individualAll}",
+                    "${app.cache.cache-names.individualByPhoneNumber}"
+            }, allEntries = true
+    )
+    @CachePut(value = "${app.cache.cache-names.individualById}", key = "#id")
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public IndividualResponse update(String id, IndividualRequest request) {
         var individual = findIndividual(id);
@@ -129,10 +139,10 @@ public class IndividualServiceImpl implements IndividualService {
     @CacheEvict(
             value = {
                     "${app.cache.cache-names.individualAll}",
-                    "${app.cache.cache-names.individualByCriterial}"
-            },
-            allEntries = true
+                    "${app.cache.cache-names.individualByPhoneNumber}"
+            }, allEntries = true
     )
+    @CachePut(value = "${app.cache.cache-names.individualById}", key = "#result.id()")
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public IndividualResponse updateYour(String userId, IndividualRequest request) {
         var user = userRepository.findById(userId)
@@ -147,8 +157,11 @@ public class IndividualServiceImpl implements IndividualService {
 
     @Override
     @CacheEvict(
-            value = {"${app.cache.cache-names.individualAll}",
-                    "${app.cache.cache-names.individualByCriterial}"},
+            value = {
+                    "${app.cache.cache-names.individualAll}",
+                    "${app.cache.cache-names.individualById}",
+                    "${app.cache.cache-names.individualByPhoneNumber}"
+            },
             allEntries = true
     )
     @Transactional
@@ -159,8 +172,11 @@ public class IndividualServiceImpl implements IndividualService {
 
     @Override
     @CacheEvict(
-            value = {"${app.cache.cache-names.individualAll}",
-                    "${app.cache.cache-names.individualByCriterial}"},
+            value = {
+                    "${app.cache.cache-names.individualAll}",
+                    "${app.cache.cache-names.individualById}",
+                    "${app.cache.cache-names.individualByPhoneNumber}"
+            },
             allEntries = true
     )
     @Transactional
@@ -178,31 +194,56 @@ public class IndividualServiceImpl implements IndividualService {
     }
 
     private IndividualResponse updateIndividual(Individual individual, IndividualRequest request) {
-        String newPassport = request.passportNumber();
-        String newPhone = request.phoneNumber();
-        String currentPassport = individual.getPassportNumber();
-        String currentPhone = individual.getPhoneNumber();
-
-        if (!newPassport.equals(currentPassport)) {
-            if (individualRepository.existsIndividualByPassportNumber(newPassport)) {
-                throw new IndividualDataExistsException(
-                        "Passport number already exists for another user"
-                );
-            }
-            individual.setPassportNumber(newPassport);
-        }
-        if (!newPhone.equals(currentPhone)) {
-            if (individualRepository.existsIndividualByPhoneNumber(newPhone)) {
-                throw new IndividualDataExistsException(
-                        "Phone number already exists for another user"
-                );
-            }
-            individual.setPhoneNumber(newPhone);
-        }
+        checkPassportAndPhone(individual, request);
 
         individualMapper.update(individual, request);
         individualRepository.save(individual);
         return individualMapper.toResponseDto(individual);
+    }
+
+    private void checkPassportAndPhone(Individual individual, IndividualRequest request) {
+        String newPassportNumber = request.passportNumber();
+        if (newPassportNumber != null && !newPassportNumber.isEmpty()) {
+            String newPassportEncrypted = EncryptionUtils.encrypt(newPassportNumber);
+            String currentPassportEncrypted = individual.getPassportNumber();
+            if (!newPassportEncrypted.equals(currentPassportEncrypted)) {
+                if (individualRepository.existsIndividualByPassportNumber(newPassportEncrypted)) {
+                    throw new IndividualDataExistsException(
+                            "Passport number already exists"
+                    );
+                }
+            }
+        }
+
+        String newPhoneNumber = request.phoneNumber();
+        if (newPhoneNumber != null && !newPhoneNumber.isEmpty()) {
+            String newPhoneEncrypted = EncryptionUtils.encrypt(newPhoneNumber);
+            String currentPhoneEncrypted = individual.getPhoneNumber();
+            if (!newPhoneEncrypted.equals(currentPhoneEncrypted)) {
+                if (individualRepository.existsIndividualByPhoneNumber(newPhoneEncrypted)) {
+                    throw new IndividualDataExistsException(
+                            "Phone number already exists"
+                    );
+                }
+            }
+        }
+    }
+
+    private void checkPassportAndPhone(IndividualRequest request) {
+        String passportNumber = request.passportNumber();
+        if (passportNumber != null && !passportNumber.isEmpty()) {
+            String passportEncrypted = EncryptionUtils.encrypt(passportNumber);
+            if (individualRepository.existsIndividualByPassportNumber(passportEncrypted)) {
+                throw new IndividualDataExistsException("Passport number already exists");
+            }
+        }
+        String phoneNumber = request.phoneNumber();
+        if (phoneNumber != null && !phoneNumber.isEmpty()) {
+            String phoneEncrypted = EncryptionUtils.encrypt(phoneNumber);
+            if (individualRepository.existsIndividualByPhoneNumber(phoneEncrypted)) {
+                throw new IndividualDataExistsException("Phone number already exists");
+            }
+        }
     }
 
     private static void loggingIndividualInfo(IndividualRequest request) {

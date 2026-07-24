@@ -8,7 +8,5 @@ public enum OrderStatus {
 
     ERROR,
 
-    REJECTED,
-
-    CANCELLED
+    REJECTED
 }

@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 @Validated
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/users")
+@RequestMapping("/api/v1/private/users")
 @Tag(name = "User Management", description = "API for managing users")
 @SecurityRequirement(name = "bearerAuth")
 public class UserPrivateController {
@@ -131,7 +131,7 @@ public class UserPrivateController {
                 .body(userService.create(request));
     }
 
-    @PutMapping("/{criterial}")
+    @PutMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "Full update user", description = "Update all user fields (Admin only)")
     @ApiResponses(value = {
@@ -140,10 +140,10 @@ public class UserPrivateController {
             @ApiResponse(responseCode = "403", description = "Forbidden")
     })
     public ResponseEntity<UserResponse> updateFull(
-            @PathVariable String criterial,
+            @PathVariable String id,
             @Valid @RequestBody CreateUserRequest request
     ) {
-        return ResponseEntity.ok(userService.updateFull(criterial, request));
+        return ResponseEntity.ok(userService.updateFull(id, request));
     }
 
     @DeleteMapping("/{id}")

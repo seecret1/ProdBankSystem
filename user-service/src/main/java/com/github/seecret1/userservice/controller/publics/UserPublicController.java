@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @Validated
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/users")
+@RequestMapping("/api/v1/public/users")
 @Tag(name = "User Management", description = "API for managing users")
 @SecurityRequirement(name = "bearerAuth")
 public class UserPublicController {

@@ -17,7 +17,6 @@ import com.github.seecret1.userservice.exception.PersonException;
 import com.github.seecret1.userservice.mapper.IndividualMapper;
 import com.github.seecret1.userservice.repository.IndividualRepository;
 import com.github.seecret1.userservice.repository.UserRepository;
-import com.github.seecret1.userservice.service.InternalUserService;
 import com.github.seecret1.userservice.service.impl.IndividualServiceImpl;
 import com.github.seecret1.userservice.utils.AuthUtil;
 import jakarta.persistence.EntityNotFoundException;
@@ -173,7 +172,7 @@ class IndividualServiceTest {
                 "test@example.com", "AB1234567",
                 "+1234567890", null
         );
-        when(individualMapper.toResponseDto(any(Individual.class))).thenReturn(mockResponse);
+        when(individualMapper.toResponseYourDto(any(Individual.class))).thenReturn(mockResponse);
 
         try (MockedStatic<AuthUtil> authUtil = mockStatic(AuthUtil.class)) {
             IndividualResponse result = individualService.recordPersonalData("1", individualRequest);

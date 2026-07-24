@@ -25,7 +25,7 @@ public interface UserService {
 
     UserResponse create(CreateUserRequest request);
 
-    UserResponse updateFull(String criterial, CreateUserRequest request);
+    UserResponse updateFull(String id, CreateUserRequest request);
 
     UserResponse updateYour(String userId, UpdateUserRequest request);
 

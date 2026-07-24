@@ -27,5 +27,7 @@ public class OrderCard extends BaseOrderEntity {
     @Column(name = "spending_limit", nullable = false)
     BigDecimal spendingLimit;
 
+    // TODO: добавить тип получения карты
+
     //TODO: добавить работу с delivery-service
 }

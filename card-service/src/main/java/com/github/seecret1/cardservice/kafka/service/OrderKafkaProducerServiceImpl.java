@@ -1,8 +1,6 @@
 package com.github.seecret1.cardservice.kafka.service;
 
-import com.github.seecret1.cardservice.entity.Card;
 import com.github.seecret1.cardservice.order.message.OrderCardDto;
-import com.github.seecret1.cardservice.order.message.OrderDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,7 +8,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 @Slf4j

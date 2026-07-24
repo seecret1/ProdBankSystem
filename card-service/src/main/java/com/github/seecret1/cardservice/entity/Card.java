@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -22,7 +23,7 @@ import java.time.LocalDate;
 @Table(name = "cards", schema = "card_bank")
 @AllArgsConstructor
 @NoArgsConstructor
-public class Card extends BaseEntity {
+public class Card extends BaseEntity implements Serializable {
 
     @Convert(converter = CardNumberConverter.class)
     @Column(columnDefinition = "TEXT", unique = true, nullable = false)

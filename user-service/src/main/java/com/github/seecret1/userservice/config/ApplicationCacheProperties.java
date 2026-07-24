@@ -1,4 +1,4 @@
-package com.github.seecret1.common.config;
+package com.github.seecret1.userservice.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

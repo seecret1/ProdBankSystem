@@ -39,15 +39,6 @@ public class OrderCardListener {
         log.info("Key: {}; Partition: {}; Topic: {}; Timestamp: {}",
                 key, partition, topic, Instant.ofEpochMilli(timestamp));
 
-        try {
-            if (order.getOrderType() == OrderType.CARD) {
-                order.validate();
-                orderCardService.createOrder(order);
-            }
-            log.debug("Order body: {}", order);
-        } catch (Exception ex) {
-            log.error("Order not validate or creation error", ex);
-            throw new OrderCardCreationException("Order not validate or creation error");
-        }
+        orderCardService.createOrder(order);
     }
 }

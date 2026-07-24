@@ -50,6 +50,13 @@ public abstract class IndividualMapper {
     @Mapping(target = "passportNumber", source = "passportNumber", qualifiedByName = "decryptAndMaskPassport")
     public abstract IndividualResponse toResponseDto(Individual individual);
 
+    @Mapping(target = "firstName", source = "user.firstName")
+    @Mapping(target = "lastName", source = "user.lastName")
+    @Mapping(target = "middleName", source = "user.middleName")
+    @Mapping(target = "email", source = "user.email")
+    @Mapping(target = "address", source = "address", qualifiedByName = "fromAddress")
+    public abstract IndividualResponse toResponseYourDto(Individual individual);
+
     public List<IndividualResponse> toResponseDto(List<Individual> individuals) {
         return isEmpty(individuals)
                 ? Collections.emptyList()

@@ -47,7 +47,6 @@ dependencies {
 	implementation("org.springframework.kafka:spring-kafka")
 
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
-	implementation("org.apache.commons:commons-pool2")
 
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -69,9 +68,17 @@ dependencies {
 	implementation("org.hibernate.orm:hibernate-envers:${versions["hibernateVersion"]}")
 
 	implementation("jakarta.persistence:jakarta.persistence-api:3.2.0")
+	implementation("com.fasterxml.jackson.core:jackson-databind")
+	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+	testImplementation("org.springframework.cloud:spring-cloud-starter-openfeign")
+	testImplementation("org.wiremock:wiremock-standalone:3.0.1")
+	testImplementation("org.wiremock.integrations.testcontainers:wiremock-testcontainers-module:1.0-alpha-13")
+	testImplementation("org.testcontainers:testcontainers:1.19.3")
+	testImplementation("org.testcontainers:junit-jupiter:1.19.3")
 }
 
 tasks.withType<Test> {

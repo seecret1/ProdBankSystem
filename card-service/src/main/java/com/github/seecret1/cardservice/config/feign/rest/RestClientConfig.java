@@ -1,4 +1,4 @@
-package com.github.seecret1.cardservice.config;
+package com.github.seecret1.cardservice.config.feign.rest;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
