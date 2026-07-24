@@ -2,9 +2,9 @@ user-service:
   jwt:
     secret: test-secret-key
   client:
-    base-url: http://localhost:8091
-    api-key: test-api-key
-    x-internal-key: X-Internal-Api-Key
+    base-url: ${USER_CLIENT_BASE_URL:http://localhost:8091}
+    api-key: ${TEST_API_KEY:test-api-key}
+    x-internal-key: ${INTERNAL_KEY:X-Internal-Api-Key}
 
 logging:
   level:
