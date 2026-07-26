@@ -1,4 +1,4 @@
-package com.github.seecret1.office_service.dto;
+package com.github.seecret1.office_service.dto.response;
 
 import java.time.Instant;
 

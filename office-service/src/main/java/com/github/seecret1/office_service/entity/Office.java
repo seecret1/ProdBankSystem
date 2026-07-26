@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Setter
 @Getter
 @Entity
@@ -19,7 +21,7 @@ public class Office extends BaseEntity {
 
     // TODO: заменить на мапу с графиком работы (раб. день/выходной, время работы)
     @Column(name = "schedule_json", columnDefinition = "jsonb")
-    private String scheduleJson;
+    private List<String> scheduleJson;
 
     @Column(name = "active")
     private Boolean active = true;

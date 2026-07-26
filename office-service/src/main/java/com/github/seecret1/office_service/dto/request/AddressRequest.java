@@ -1,4 +1,4 @@
-package com.github.seecret1.office_service.dto;
+package com.github.seecret1.office_service.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 

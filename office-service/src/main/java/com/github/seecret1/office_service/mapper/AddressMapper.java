@@ -1,7 +1,7 @@
 package com.github.seecret1.office_service.mapper;
 
-import com.github.seecret1.office_service.dto.AddressRequest;
-import com.github.seecret1.office_service.dto.AddressResponse;
+import com.github.seecret1.office_service.dto.request.AddressRequest;
+import com.github.seecret1.office_service.dto.response.AddressResponse;
 import com.github.seecret1.office_service.entity.Address;
 import com.github.seecret1.office_service.entity.Country;
 import com.github.seecret1.office_service.exception.OfficeException;
