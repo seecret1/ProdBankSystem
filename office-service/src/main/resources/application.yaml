@@ -55,10 +55,6 @@ spring:
           identification:
             algorithm: ${KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM:https}
 
-user-service:
-  jwt:
-    secret: ${SECRET_KEY:MyVeryLongAndSecureSecretKeyForJWTTokenSigningThatIsAtLeast64CharactersLongToMeetHS512Requirements123456789}
-
 springdoc:
   api-docs:
     path: /api-docs
@@ -106,20 +102,5 @@ otel:
   metrics:
     exporter: none
 
-app:
-  kafka:
-    bootstrap-servers: ${spring.kafka.bootstrap-servers}
-    topic: orders
-    response-topic: response-orders
-    groupId: order-group-id
-    dlt-topic: orders.DLT
-    dlt-group-id: order-group-id.dlt
-    max-pull-records: 10
-    partitions: 3
-    replicas: 3
-
-  retry:
-    max-attempts: 3
-    delay: 1000
-    multiplier: 2
-    max-interval: 10000
+services:
+  api-key: ${INTERNAL_API_KEY:your-internal-api-key}
