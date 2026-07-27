@@ -55,10 +55,11 @@ CREATE TABLE office_bank_history.offices_history
     deleted_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
     deleted_by VARCHAR(255),
     name VARCHAR(64) NOT NULL,
-    contact_phone VARCHAR(64) NOT NULL,
+    contact_phone VARCHAR(64) NOT NULL UNIQUE,
     schedule_json JSONB NOT NULL,
     active boolean NOT NULL DEFAULT TRUE,
     address_id VARCHAR NOT NULL REFERENCES office_bank.addresses (id),
+    owner_id VARCHAR(64) NOT NULL,
 
     CONSTRAINT pk_offices_history PRIMARY KEY (id, rev),
     CONSTRAINT fk_offices_history_rev FOREIGN KEY (rev) REFERENCES office_bank_history.revinfo (rev)

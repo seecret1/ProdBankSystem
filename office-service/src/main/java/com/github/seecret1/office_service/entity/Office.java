@@ -22,7 +22,7 @@ public class Office extends BaseEntity implements Serializable {
     @Column(name = "contact_phone", unique = true)
     private String contactPhone;
 
-    // TODO: заменить на мапу с графиком работы (раб. день/выходной, время работы)
+    // TODO: заменить на мапу с сущностью графиком работы (раб. день/выходной, время работы)
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "schedule_json", columnDefinition = "jsonb")
     private String scheduleJson;
@@ -34,7 +34,8 @@ public class Office extends BaseEntity implements Serializable {
     @JoinColumn(name = "address_id", nullable = false)
     private Address address;
 
-    //TODO: добавить организатора (связать с user`ом)
+    @Column(name = "owner_id", nullable = false)
+    private String ownerId;
 
     public void softDelete(String author) {
         setActive(false);

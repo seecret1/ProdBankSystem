@@ -16,4 +16,11 @@ public interface OfficeRepository extends JpaRepository<Office, String> {
         WHERE LOWER(o.address.city) LIKE LOWER(CONCAT('%', :city, '%'))
     """)
     Page<Office> findOfficeByCity(String city, Pageable pageable);
+
+    @Query("""
+        SELECT CASE WHEN COUNT(o) > 0 THEN true ELSE false END
+        FROM Office o
+        WHERE o.contactPhone = :contactPhone
+    """)
+    boolean checkExistsContactPhone(String contactPhone);
 }
