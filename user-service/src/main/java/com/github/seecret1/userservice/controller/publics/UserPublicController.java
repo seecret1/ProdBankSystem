@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 @SecurityRequirement(name = "bearerAuth")
 public class UserPublicController {
 
+    // TODO: вынести
     private static final String X_INTERNAL_API_KEY = "X-Internal-Api-Key";
 
     private final UserService userService;
