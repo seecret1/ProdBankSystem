@@ -33,7 +33,7 @@ CREATE TABLE office_bank.offices
     deleted_by VARCHAR(255),
     name VARCHAR(64) NOT NULL,
     contact_phone VARCHAR(64) NOT NULL,
-    schedule_json VARCHAR(1024) NOT NULL,
+    schedule_json JSONB NOT NULL,
     active boolean NOT NULL DEFAULT TRUE,
     address_id VARCHAR NOT NULL REFERENCES office_bank.addresses (id)
 );

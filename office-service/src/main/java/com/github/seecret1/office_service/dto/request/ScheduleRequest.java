@@ -6,6 +6,8 @@ public record ScheduleRequest(
 
         String day,
 
-        LocalTime time
+        LocalTime openingTime,
+
+        LocalTime closingTime
 
 ) { }

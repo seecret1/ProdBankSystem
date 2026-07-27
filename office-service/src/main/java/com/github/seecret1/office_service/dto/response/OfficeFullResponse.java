@@ -1,6 +1,8 @@
 package com.github.seecret1.office_service.dto.response;
 
-public record OfficeResponse(
+public record OfficeFullResponse(
+
+        String id,
 
         String name,
 

@@ -56,9 +56,9 @@ CREATE TABLE office_bank_history.offices_history
     deleted_by VARCHAR(255),
     name VARCHAR(64) NOT NULL,
     contact_phone VARCHAR(64) NOT NULL,
-    schedule_json VARCHAR(1024) NOT NULL,
+    schedule_json JSONB NOT NULL,
     active boolean NOT NULL DEFAULT TRUE,
-    address_id VARCHAR NOT NULL REFERENCES office_bank.addresses (id)
+    address_id VARCHAR NOT NULL REFERENCES office_bank.addresses (id),
 
     CONSTRAINT pk_offices_history PRIMARY KEY (id, rev),
     CONSTRAINT fk_offices_history_rev FOREIGN KEY (rev) REFERENCES office_bank_history.revinfo (rev)

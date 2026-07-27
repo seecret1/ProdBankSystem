@@ -1,5 +1,5 @@
 INSERT
-INTO person_bank.countries (name, code)
+INTO office_bank.countries (name, code)
 VALUES ('Afghanistan', 'AFG'),
        ('Albania', 'ALB'),
        ('Algeria', 'DZA'),

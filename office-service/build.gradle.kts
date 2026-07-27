@@ -43,7 +43,6 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -55,7 +54,6 @@ dependencies {
 
 	implementation("ch.qos.logback:logback-classic:${versions["logbackClassicVersion"]}")
 	implementation("org.springframework.kafka:spring-kafka")
-	testImplementation("org.springframework.kafka:spring-kafka-test")
 
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
