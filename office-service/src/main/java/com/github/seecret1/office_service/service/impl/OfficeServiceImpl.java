@@ -11,7 +11,6 @@ import com.github.seecret1.office_service.feign.UserServiceFeignClient;
 import com.github.seecret1.office_service.mapper.OfficeMapper;
 import com.github.seecret1.office_service.repository.OfficeRepository;
 import com.github.seecret1.office_service.service.OfficeService;
-import com.github.seecret1.office_service.utils.PhoneUtils;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -86,9 +85,6 @@ public class OfficeServiceImpl implements OfficeService {
     public OfficeFullResponse create(String userId, OfficeCreateRequest request) {
         log.info("Create office by request: {}", request);
 
-        officeRepository.checkExistsContactPhone(
-                PhoneUtils.formatInternationalPhone(request.contactPhone())
-        );
         var office = officeMapper.toEntity(request);
         office.setOwnerId(userId);
         officeRepository.save(office);
