@@ -69,9 +69,10 @@ public class OfficePrivateController {
             @ApiResponse(responseCode = "403", description = "Forbidden")
     })
     public ResponseEntity<OfficeFullResponse> createOffice(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid @RequestBody OfficeCreateRequest request
     ) {
-        return ResponseEntity.ok(officeService.create(request));
+        return ResponseEntity.ok(officeService.create(userPrincipal.getUserId(), request));
     }
 
     @PutMapping("/{id}")
@@ -116,8 +117,7 @@ public class OfficePrivateController {
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable String id
     ) {
-        String userId = userPrincipal.getUserId();
-        officeService.delete(userId, id);
+        officeService.delete(userPrincipal.getUserId(), id);
         return ResponseEntity.noContent().build();
     }
 }

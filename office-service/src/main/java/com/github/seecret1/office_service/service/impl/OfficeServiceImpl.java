@@ -83,13 +83,14 @@ public class OfficeServiceImpl implements OfficeService {
     //  также работать с *_OWNER (владельцем)
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
-    public OfficeFullResponse create(OfficeCreateRequest request) {
+    public OfficeFullResponse create(String userId, OfficeCreateRequest request) {
         log.info("Create office by request: {}", request);
 
         officeRepository.checkExistsContactPhone(
                 PhoneUtils.formatInternationalPhone(request.contactPhone())
         );
         var office = officeMapper.toEntity(request);
+        office.setOwnerId(userId);
         officeRepository.save(office);
         log.debug("Office successfully created");
         return officeMapper.toFullDto(office);
