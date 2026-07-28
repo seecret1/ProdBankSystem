@@ -20,8 +20,12 @@ CREATE TABLE office_bank.addresses
     country_id INTEGER NOT NULL REFERENCES office_bank.countries (id),
     address VARCHAR(128) NOT NULL,
     zip_code VARCHAR(32) NOT NULL,
-    city VARCHAR(64) NOT NULL
+    city VARCHAR(64) NOT NULL,
+
+    CONSTRAINT uk_address_city_country UNIQUE (city, address, country_id)
 );
+
+CREATE INDEX idx_addresses_city_country ON office_bank.addresses (city, country_id);
 
 CREATE TABLE office_bank.offices
 (
