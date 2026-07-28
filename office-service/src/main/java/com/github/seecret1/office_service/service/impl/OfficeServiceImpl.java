@@ -67,15 +67,15 @@ public class OfficeServiceImpl implements OfficeService {
         if (!internalApiKey.equals(apiKey)) {
             throw new SecurityException("Invalid internal API key");
         }
-        log.info("Find offices by city name: {}", city);
-        var page = officeRepository.findOfficeByCity(city, pageModel.toPageRequest());
-        log.debug("Page offices by city: totalElements: {}, totalPages: {}",
-                page.getTotalElements(), page.getTotalPages());
-        return new PageResponse<>(
-                page.getTotalElements(),
-                page.getTotalPages(),
-                officeMapper.toDto(page.getContent())
-        );
+        return findByCity(city, pageModel);
+    }
+
+    @Override
+    public PageResponse<OfficeResponse> findOfficesByCity(
+            String city,
+            PageModel pageModel
+    ) {
+        return findByCity(city, pageModel);
     }
 
     // TODO: заменить на работу с Kafka и работой с order-service
@@ -135,6 +135,21 @@ public class OfficeServiceImpl implements OfficeService {
         officeRepository.save(office);
         log.debug("Office successfully deleted: ID={}, deletedBy={}",
                 office.getId(), office.getDeletedBy());
+    }
+
+    private PageResponse<OfficeResponse> findByCity(
+            String city,
+            PageModel pageModel
+    ) {
+        log.info("Find offices by city name: {}", city);
+        var page = officeRepository.findOfficeByCity(city, pageModel.toPageRequest());
+        log.debug("Page offices by city: totalElements: {}, totalPages: {}",
+                page.getTotalElements(), page.getTotalPages());
+        return new PageResponse<>(
+                page.getTotalElements(),
+                page.getTotalPages(),
+                officeMapper.toDto(page.getContent())
+        );
     }
 
     private Office findOfficeEntityById(String id) {

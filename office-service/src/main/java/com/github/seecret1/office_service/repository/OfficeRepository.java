@@ -14,6 +14,7 @@ public interface OfficeRepository extends JpaRepository<Office, String> {
     @Query("""
         SELECT o FROM Office o
         WHERE LOWER(o.address.city) LIKE LOWER(CONCAT('%', :city, '%'))
+            AND o.active = true AND o.deleted = false
     """)
     Page<Office> findOfficeByCity(String city, Pageable pageable);
 }

@@ -15,6 +15,8 @@ public interface OfficeService {
 
     PageResponse<OfficeResponse> findOfficesByCity(String city, PageModel pageModel, String apiKey);
 
+    PageResponse<OfficeResponse> findOfficesByCity(String city, PageModel pageModel);
+
     OfficeFullResponse create(String userId, OfficeCreateRequest request);
 
     OfficeResponse updateOffice(String id, OfficeUpdateRequest request);

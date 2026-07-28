@@ -60,6 +60,22 @@ public class OfficePrivateController {
         return ResponseEntity.ok(officeService.findById(id));
     }
 
+    @GetMapping("/findByCity/{city}")
+    @PreAuthorize("hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN')")
+    @Operation(summary = "Find office by City", description = "Find office by City")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success find office"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "Not Found")
+    })
+    public ResponseEntity<PageResponse<OfficeResponse>> findByCity(
+            @PathVariable String city,
+            @Valid PageModel pageModel
+    ) {
+        return ResponseEntity.ok(officeService.findOfficesByCity(city, pageModel));
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "Create office", description = "Create office in city")
