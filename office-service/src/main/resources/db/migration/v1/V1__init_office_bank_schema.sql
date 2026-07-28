@@ -4,7 +4,7 @@ CREATE TABLE office_bank.countries
     deleted boolean NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc'),
     updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
-    deleted_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
+    deleted_at TIMESTAMP WITHOUT TIME ZONE,
     name VARCHAR(128) NOT NULL,
     code VARCHAR(3) NOT NULL
 );
@@ -15,7 +15,7 @@ CREATE TABLE office_bank.addresses
     deleted boolean NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc'),
     updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
-    deleted_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
+    deleted_at TIMESTAMP WITHOUT TIME ZONE,
     deleted_by VARCHAR(128),
     country_id INTEGER NOT NULL REFERENCES office_bank.countries (id),
     address VARCHAR(128) NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE office_bank.offices
     deleted boolean NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc'),
     updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
-    deleted_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
+    deleted_at TIMESTAMP WITHOUT TIME ZONE,
     deleted_by VARCHAR(255),
     name VARCHAR(64) NOT NULL,
     contact_phone VARCHAR(64) NOT NULL UNIQUE,
