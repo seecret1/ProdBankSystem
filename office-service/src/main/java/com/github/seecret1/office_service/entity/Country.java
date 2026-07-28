@@ -23,9 +23,8 @@ public class Country implements Serializable {
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @ColumnDefault("true")
     @Column(name = "deleted", nullable = false)
-    private Boolean deleted;
+    private Boolean deleted = false;
 
     @ColumnDefault("(now) AT TIME ZONE 'utc'::text")
     @Column(name = "created_at", nullable = false)
@@ -35,8 +34,7 @@ public class Country implements Serializable {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    @ColumnDefault("(now) AT TIME ZONE 'utc'::text")
-    @Column(name = "deleted_at", nullable = false)
+    @Column(name = "deleted_at")
     private Instant deletedAt;
 
     @Size(max = 128)

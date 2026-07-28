@@ -14,7 +14,16 @@ import java.io.Serializable;
 @Getter
 @Setter
 @Entity
-@Table(name = "addresses", schema = "office_bank")
+@Table(
+        name = "addresses",
+        schema = "office_bank",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_address_city_country",
+                        columnNames = {"city", "address", "country_id"}
+                )
+        }
+)
 public class Address extends BaseEntity implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
