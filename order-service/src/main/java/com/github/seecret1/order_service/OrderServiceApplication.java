@@ -1,6 +1,6 @@
 package com.github.seecret1.order_service;
 
-import com.github.seecret1.order_service.feign.UserServiceClient;
+import com.github.seecret1.order_service.feign.OfficeServiceFeignClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -14,7 +14,7 @@ import org.springframework.context.annotation.ComponentScan;
 		"com.github.seecret1.jwt_common.security",
 		"com.github.seecret1.order_service"
 })
-@EnableFeignClients(basePackageClasses = {UserServiceClient.class})
+@EnableFeignClients(basePackageClasses = {OfficeServiceFeignClient.class})
 public class OrderServiceApplication {
 
 	public static void main(String[] args) {

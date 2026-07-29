@@ -1,7 +1,8 @@
-package com.github.seecret1.cardservice.order.message;
+package com.github.seecret1.cardservice.dto.order.message;
 
 import com.github.seecret1.cardservice.entity.enums.CardType;
-import com.github.seecret1.cardservice.order.OrderStatus;
+import com.github.seecret1.cardservice.dto.order.CardReceivingMethod;
+import com.github.seecret1.cardservice.dto.order.OrderStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -20,4 +21,6 @@ public class OrderCardResponse {
     BigDecimal spendingLimit;
 
     Instant createdAt;
+
+    CardReceivingMethod cardReceivingMethod;
 }

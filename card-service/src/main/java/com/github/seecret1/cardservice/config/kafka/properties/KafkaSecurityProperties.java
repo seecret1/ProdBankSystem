@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class KafkaSecurityProperties {
 
-    private String securityProtocol = "SSL";
+    private String securityProtocol = "PLAINTEXT";
 
     private String endpointIdentificationAlgorithm = "https";
 }

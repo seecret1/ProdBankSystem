@@ -4,7 +4,7 @@ import com.github.seecret1.order_service.dto.OrderMessage;
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
 import com.github.seecret1.order_service.dto.card.OrderCardResponse;
 import com.github.seecret1.order_service.entity.OrderCard;
-import com.github.seecret1.order_service.entity.OrderStatus;
+import com.github.seecret1.order_service.entity.enums.OrderStatus;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -18,6 +18,7 @@ public class OrderCardManualMapper {
                 .spendingLimit(event.getSpendingLimit())
                 .cardType(event.getCardType())
                 .status(OrderStatus.SUCCESS)
+                .cardReceivingMethod(event.getCardReceivingMethod())
                 .comment(event.getComment())
                 .requestTimestamp(event.getCreatedAt())
                 .deleted(false)
@@ -28,6 +29,7 @@ public class OrderCardManualMapper {
         return OrderCardResponse.builder()
                 .cardType(order.getCardType())
                 .spendingLimit(order.getSpendingLimit())
+                .cardReceivingMethod(order.getCardReceivingMethod())
                 .createdAt(order.getCreatedAt())
                 .build();
     }

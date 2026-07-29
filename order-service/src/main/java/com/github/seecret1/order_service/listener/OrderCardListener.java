@@ -1,8 +1,6 @@
 package com.github.seecret1.order_service.listener;
 
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
-import com.github.seecret1.order_service.entity.OrderType;
-import com.github.seecret1.order_service.exception.OrderCardCreationException;
 import com.github.seecret1.order_service.service.OrderCardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,6 +1,6 @@
 package com.github.seecret1.cardservice.kafka.service;
 
-import com.github.seecret1.cardservice.order.message.OrderMessage;
+import com.github.seecret1.cardservice.dto.order.message.OrderMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

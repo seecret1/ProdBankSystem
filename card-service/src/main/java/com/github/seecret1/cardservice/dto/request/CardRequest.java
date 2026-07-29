@@ -1,5 +1,6 @@
 package com.github.seecret1.cardservice.dto.request;
 
+import com.github.seecret1.cardservice.dto.order.CardReceivingMethod;
 import com.github.seecret1.cardservice.entity.enums.CardType;
 import jakarta.validation.constraints.*;
 
@@ -26,6 +27,9 @@ public record CardRequest (
 
     @Positive(message = "spending limit must only positive value!")
     BigDecimal spendingLimit,
+
+    @NotNull(message = "Receiving method must be set!")
+    CardReceivingMethod receivingMethod,
 
     @Size(max = 255, message = "Max size message in {max} symbols")
     String comment

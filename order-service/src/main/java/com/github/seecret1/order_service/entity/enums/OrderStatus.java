@@ -1,4 +1,4 @@
-package com.github.seecret1.cardservice.order;
+package com.github.seecret1.order_service.entity.enums;
 
 public enum OrderStatus {
 

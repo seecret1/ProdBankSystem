@@ -1,6 +1,6 @@
 package com.github.seecret1.order_service.dto;
 
-import com.github.seecret1.order_service.entity.OrderStatus;
+import com.github.seecret1.order_service.entity.enums.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

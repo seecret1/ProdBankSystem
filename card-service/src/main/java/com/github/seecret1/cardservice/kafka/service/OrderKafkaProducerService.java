@@ -1,6 +1,6 @@
 package com.github.seecret1.cardservice.kafka.service;
 
-import com.github.seecret1.cardservice.order.message.OrderCardDto;
+import com.github.seecret1.cardservice.dto.order.message.OrderCardDto;
 
 public interface OrderKafkaProducerService {
 

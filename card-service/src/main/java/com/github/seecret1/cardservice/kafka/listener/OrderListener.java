@@ -1,8 +1,8 @@
 package com.github.seecret1.cardservice.kafka.listener;
 
 import com.github.seecret1.cardservice.kafka.service.ProducerSenderDlt;
-import com.github.seecret1.cardservice.order.OrderStatus;
-import com.github.seecret1.cardservice.order.message.OrderMessage;
+import com.github.seecret1.cardservice.dto.order.OrderStatus;
+import com.github.seecret1.cardservice.dto.order.message.OrderMessage;
 import com.github.seecret1.cardservice.service.CardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

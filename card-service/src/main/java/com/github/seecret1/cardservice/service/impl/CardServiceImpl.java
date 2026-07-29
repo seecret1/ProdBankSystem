@@ -222,7 +222,7 @@ public class CardServiceImpl implements CardService {
         cardRepository.save(orderCard);
 
         orderKafkaProducerService.sendNoWait(
-                cardMapper.toOrderCardDto(orderCard, request.comment(), userId)
+                cardMapper.toOrderCardDto(orderCard, request.receivingMethod(), request.comment(), userId)
         );
 
         log.info("Save card with status PENDING");

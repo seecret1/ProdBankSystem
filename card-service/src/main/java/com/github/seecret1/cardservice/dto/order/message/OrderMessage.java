@@ -1,6 +1,6 @@
-package com.github.seecret1.cardservice.order.message;
+package com.github.seecret1.cardservice.dto.order.message;
 
-import com.github.seecret1.cardservice.order.OrderStatus;
+import com.github.seecret1.cardservice.dto.order.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

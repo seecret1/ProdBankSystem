@@ -1,5 +1,7 @@
 package com.github.seecret1.order_service.entity;
 
+import com.github.seecret1.order_service.entity.enums.CardReceivingMethod;
+import com.github.seecret1.order_service.entity.enums.CardType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -20,14 +22,16 @@ public class OrderCard extends BaseOrderEntity {
     @Column(name = "card_id", nullable = false)
     String cardId;
 
-    @Column(name = "card_type", nullable = false, length = 10)
+    @Column(name = "card_type", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
     CardType cardType;
 
     @Column(name = "spending_limit", nullable = false)
     BigDecimal spendingLimit;
 
-    // TODO: добавить тип получения карты
+    @Column(name = "card_receiving_method", nullable = false, length = 20)
+    @Enumerated(EnumType.STRING)
+    CardReceivingMethod cardReceivingMethod;
 
     //TODO: добавить работу с delivery-service
 }

@@ -1,11 +1,12 @@
 package com.github.seecret1.cardservice.mapper;
 
+import com.github.seecret1.cardservice.dto.order.CardReceivingMethod;
 import com.github.seecret1.cardservice.dto.request.CardRequest;
 import com.github.seecret1.cardservice.dto.response.CardResponse;
 import com.github.seecret1.cardservice.entity.Card;
 import com.github.seecret1.cardservice.entity.enums.CardStatus;
-import com.github.seecret1.cardservice.order.message.OrderCardDto;
-import com.github.seecret1.cardservice.order.message.OrderDto;
+import com.github.seecret1.cardservice.dto.order.message.OrderCardDto;
+import com.github.seecret1.cardservice.dto.order.message.OrderDto;
 import com.github.seecret1.cardservice.utils.CardHashUtils;
 import com.github.seecret1.cardservice.utils.CardMaskUtils;
 import org.springframework.stereotype.Component;
@@ -79,7 +80,12 @@ public final class CardMapper {
                 .build();
     }
 
-    public OrderCardDto toOrderCardDto(Card card, String comment, String userId) {
+    public OrderCardDto toOrderCardDto(
+            Card card,
+            CardReceivingMethod receivingMethod,
+            String comment,
+            String userId
+    ) {
         String traceId = UUID.randomUUID().toString();
         OrderCardDto dto = new OrderCardDto();
         dto.setTraceId(traceId);
@@ -88,6 +94,7 @@ public final class CardMapper {
         dto.setCardId(card.getId());
         dto.setCardType(card.getType());
         dto.setSpendingLimit(card.getSpendingLimit());
+        dto.setCardReceivingMethod(receivingMethod);
         dto.setComment(comment);
         dto.setCreatedAt(Instant.now());
         return dto;

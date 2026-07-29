@@ -1,5 +1,6 @@
 package com.github.seecret1.order_service.entity;
 
+import com.github.seecret1.order_service.entity.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;

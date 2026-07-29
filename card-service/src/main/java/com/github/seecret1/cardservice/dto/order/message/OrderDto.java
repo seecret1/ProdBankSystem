@@ -1,4 +1,4 @@
-package com.github.seecret1.cardservice.order.message;
+package com.github.seecret1.cardservice.dto.order.message;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
