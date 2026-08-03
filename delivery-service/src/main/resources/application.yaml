@@ -1,0 +1,80 @@
+server:
+  port: 8099
+
+spring:
+  application:
+    name: ${SERVICE_NAME:delivery-service}
+
+  datasource:
+    url: ${DELIVERY_DB_LOCAL_URL:jdbc:postgresql://${HOST:localhost}:${DELIVERY_DB_PORT:5441}/${DELIVERY_DB_NAME:delivery_db}}
+    username: ${DELIVERY_DB_USERNAME:postgres}
+    password: ${DELIVERY_DB_PASSWORD:postgres}
+
+  jpa:
+    generate-ddl: false
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      org.hibernate.envers.audit_table_suffix: _history
+      org.hibernate.envers.audit_table_prefix:
+      org.hibernate.envers.default_schema: delivery_bank_history
+
+  flyway:
+    enabled: true
+
+  data:
+    redis:
+      host: ${HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:secret}
+
+springdoc:
+  api-docs:
+    path: /api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operationsSorter: method
+    tagsSorter: alpha
+    try-it-out-enabled: true
+    filter: true
+  show-actuator: true
+  packages-to-scan: com.github.seecret1.delivery_service.controller
+  paths-to-match: /api/v1/**
+
+logging:
+  config: "classpath:logback.xml"
+  level:
+    com.github.seecret1.delivery_service: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    prometheus:
+      access: read_only
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+
+otel:
+  exporter:
+    otlp:
+      endpoint: ${OTLP_EXPORTER_ENDPOINT:http://localhost:4318}
+      protocol: http/protobuf
+  logs:
+    exporter: none
+  metrics:
+    exporter: none
+
+services:
+  api-key: ${INTERNAL_API_KEY:your-internal-api-key}
