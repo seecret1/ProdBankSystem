@@ -153,6 +153,25 @@ services:
       timeout: 5s
       retries: 20
 
+  delivery-postgres:
+    image: postgres:17
+    container_name: delivery-postgres
+    environment:
+      POSTGRES_USER: ${DELIVERY_DB_USERNAME}
+      POSTGRES_PASSWORD: ${DELIVERY_DB_PASSWORD}
+      POSTGRES_DB: ${DELIVERY_DB_NAME}
+    restart: on-failure
+    volumes:
+      - delivery_postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/databases/bank:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${DELIVERY_DB_PORT}:${POSTGRES_DB_PORT}"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DELIVERY_DB_USERNAME} -p ${POSTGRES_DB_PORT}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
   user-postgres-exporter:
     image: prometheuscommunity/postgres-exporter:latest
     container_name: user-postgres-exporter
@@ -240,6 +259,17 @@ services:
       DATA_SOURCE_NAME: postgresql://${OFFICE_DB_USERNAME}:${OFFICE_DB_PASSWORD}@${OFFICE_HOST}:${POSTGRES_DB_PORT}/${OFFICE_DB_USERNAME}?sslmode=disable
     ports:
       - "${OFFICE_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
+
+  delivery-postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: delivery-postgres-exporter
+    depends_on:
+      notification-postgres:
+        condition: service_healthy
+    environment:
+      DATA_SOURCE_NAME: postgresql://${DELIVERY_DB_USERNAME}:${DELIVERY_DB_PASSWORD}@${DELIVERY_HOST}:${POSTGRES_DB_PORT}/${DELIVERY_DB_NAME}?sslmode=disable
+    ports:
+      - "${DELIVERY_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
 
   nexus:
     image: sonatype/nexus3:3.76.0
@@ -547,6 +577,7 @@ volumes:
   invoice_postgres_data:
   notification_postgres_data:
   office_postgres_data:
+  delivery_postgres_data:
 
   zookeeper_data:
   zookeeper_log:
