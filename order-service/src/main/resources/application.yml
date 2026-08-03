@@ -56,10 +56,14 @@ spring:
             algorithm: ${KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM:https}
 
 office-service:
-  jwt:
-    secret: ${SECRET_KEY:MyVeryLongAndSecureSecretKeyForJWTTokenSigningThatIsAtLeast64CharactersLongToMeetHS512Requirements123456789}
   client:
-    base-url: ${OFFICE_CLIENT_BASE_URL:http://localhost:8094}
+    base-url: ${OFFICE_CLIENT_BASE_URL:http://localhost:8094/api/v1/public/offices}
+    api-key: ${INTERNAL_API_KEY:your-internal-api-key}
+    x-internal-key: ${INTERNAL_KEY:X-Internal-Api-Key}
+
+user-service:
+  client:
+    base-url: ${USER_CLIENT_BASE_URL:http://localhost:8091/api/v1/public/person}
     api-key: ${INTERNAL_API_KEY:your-internal-api-key}
     x-internal-key: ${INTERNAL_KEY:X-Internal-Api-Key}
 

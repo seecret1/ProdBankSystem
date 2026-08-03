@@ -5,7 +5,7 @@ import com.github.seecret1.order_service.dto.card.OrderCardDto;
 
 public interface OrderKafkaProducerService {
 
-    void sendNoWait(OrderCardDto event, OrderMessage message);
+    void sendNoWait(OrderMessage message);
 
-    void sendWithWait(OrderCardDto event, OrderMessage message);
+    void sendWithWait(OrderMessage message);
 }

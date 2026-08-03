@@ -6,11 +6,19 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
 
 @Configuration
-@EnableConfigurationProperties(OfficeServiceClientProperties.class)
+@EnableConfigurationProperties({OfficeServiceClientProperties.class, UserServiceClientProperties.class})
 public class RestClientConfig {
 
     @Bean
-    public RestClient userServiceRestClient(OfficeServiceClientProperties properties) {
+    public RestClient userServiceRestClient(UserServiceClientProperties properties) {
+        return RestClient.builder()
+                .baseUrl(properties.getBaseUrl())
+                .defaultHeader(properties.getXInternalKey(), properties.getApiKey())
+                .build();
+    }
+
+    @Bean
+    public RestClient officeServiceRestClient(OfficeServiceClientProperties properties) {
         return RestClient.builder()
                 .baseUrl(properties.getBaseUrl())
                 .defaultHeader(properties.getXInternalKey(), properties.getApiKey())

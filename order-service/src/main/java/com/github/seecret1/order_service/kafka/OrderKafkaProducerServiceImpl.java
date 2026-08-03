@@ -24,17 +24,17 @@ public class OrderKafkaProducerServiceImpl implements OrderKafkaProducerService 
     private final KafkaTemplate<String, OrderMessage> kafkaTemplate;
 
     @Override
-    public void sendNoWait(OrderCardDto event, OrderMessage message) {
-        kafkaTemplate.send(responseTopic, event.getTraceId(), message);
+    public void sendNoWait(OrderMessage message) {
+        kafkaTemplate.send(responseTopic, message.getTraceId(), message);
     }
 
     @Override
-    public void sendWithWait(OrderCardDto event, OrderMessage message) {
+    public void sendWithWait(OrderMessage message) {
         kafkaRetryTemplate.execute(context -> {
             try {
                 kafkaTemplate.send(
                         responseTopic,
-                        event.getTraceId(),
+                        message.getTraceId(),
                         message
                 ).get();
 

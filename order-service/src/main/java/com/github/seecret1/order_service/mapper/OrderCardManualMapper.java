@@ -10,14 +10,14 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class OrderCardManualMapper {
 
-    public static OrderCard toEntity(OrderCardDto event) {
+    public static OrderCard toEntity(OrderCardDto event, OrderStatus status) {
         return OrderCard.builder()
                 .traceId(event.getTraceId())
                 .userId(event.getUserId())
                 .cardId(event.getCardId())
                 .spendingLimit(event.getSpendingLimit())
                 .cardType(event.getCardType())
-                .status(OrderStatus.SUCCESS)
+                .status(status)
                 .cardReceivingMethod(event.getCardReceivingMethod())
                 .comment(event.getComment())
                 .requestTimestamp(event.getCreatedAt())
