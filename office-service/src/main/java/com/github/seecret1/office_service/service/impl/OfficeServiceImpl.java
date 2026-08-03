@@ -20,6 +20,8 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -58,16 +60,15 @@ public class OfficeServiceImpl implements OfficeService {
     }
 
     @Override
-    public PageResponse<OfficeResponse> findOfficesByCity(
+    public List<OfficeResponse> findOfficesByCity(
             String city,
-            PageModel pageModel,
             String apiKey
     ) {
         log.info("Check api key with internal api key");
         if (!internalApiKey.equals(apiKey)) {
             throw new SecurityException("Invalid internal API key");
         }
-        return findByCity(city, pageModel);
+        return officeMapper.toDto(officeRepository.findOfficeByCity(city));
     }
 
     @Override

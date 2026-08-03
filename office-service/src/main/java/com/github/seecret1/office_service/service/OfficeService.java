@@ -7,13 +7,15 @@ import com.github.seecret1.office_service.dto.request.OfficeUpdateRequest;
 import com.github.seecret1.office_service.dto.response.OfficeFullResponse;
 import com.github.seecret1.office_service.dto.response.OfficeResponse;
 
+import java.util.List;
+
 public interface OfficeService {
 
     PageResponse<OfficeFullResponse> findAll(PageModel pageModel);
 
     OfficeResponse findById(String id);
 
-    PageResponse<OfficeResponse> findOfficesByCity(String city, PageModel pageModel, String apiKey);
+    List<OfficeResponse> findOfficesByCity(String city, String apiKey);
 
     PageResponse<OfficeResponse> findOfficesByCity(String city, PageModel pageModel);
 

@@ -11,6 +11,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/public/offices")
@@ -22,7 +24,7 @@ public class OfficePublicController {
 
     private final OfficeService officeService;
 
-    @GetMapping("/services/find-by-city/{city}")
+    @GetMapping("/services/{city}")
     @Operation(summary = "Find offices by city", description = "Find offices by city")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success find offices"),
@@ -30,11 +32,10 @@ public class OfficePublicController {
             @ApiResponse(responseCode = "403", description = "Forbidden"),
             @ApiResponse(responseCode = "404", description = "Not Found")
     })
-    public PageResponse<OfficeResponse> findOfficesByCity(
+    public List<OfficeResponse> findOfficesByCity(
             @PathVariable String city,
-            @RequestParam PageModel pageModel,
             @RequestHeader(value = X_INTERNAL_API_KEY, required = false) String apiKey
     ) {
-        return officeService.findOfficesByCity(city, pageModel, apiKey);
+        return officeService.findOfficesByCity(city, apiKey);
     }
 }
