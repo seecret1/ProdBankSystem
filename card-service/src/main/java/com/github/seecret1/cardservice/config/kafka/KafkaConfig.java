@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.seecret1.cardservice.config.kafka.properties.KafkaProperties;
 import com.github.seecret1.cardservice.config.kafka.properties.RetryProperties;
 import com.github.seecret1.cardservice.dto.order.message.OrderCardDto;
-import com.github.seecret1.cardservice.dto.order.message.OrderMessage;
+import com.github.seecret1.cardservice.dto.order.message.BaseMessage;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -43,15 +43,15 @@ public class KafkaConfig {
     private final ObjectMapper objectMapper;
 
     @Bean
-    public NewTopic responsesTopic() {
-        return TopicBuilder.name(kafkaProperties.getResponseTopic())
+    public NewTopic cardsTopic() {
+        return TopicBuilder.name(kafkaProperties.getCardsTopic())
                 .partitions(kafkaProperties.getPartitions())
                 .replicas(kafkaProperties.getReplicas())
                 .build();
     }
 
     @Bean
-    public NewTopic orderDltTopic() {
+    public NewTopic cardsDltTopic() {
         return TopicBuilder.name(kafkaProperties.getDltTopic())
                 .partitions(kafkaProperties.getPartitions())
                 .replicas(kafkaProperties.getReplicas())
@@ -59,7 +59,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ProducerFactory<String, OrderMessage> orderProducerFactory() {
+    public ProducerFactory<String, BaseMessage> orderProducerFactory() {
         return new DefaultKafkaProducerFactory<>(
                 getBaseProducerConfig(),
                 new StringSerializer(),
@@ -95,8 +95,8 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, OrderMessage> orderCardKafkaTemplate(
-            ProducerFactory<String, OrderMessage> producerFactory
+    public KafkaTemplate<String, BaseMessage> orderCardKafkaTemplate(
+            ProducerFactory<String, BaseMessage> producerFactory
     ) {
         return new KafkaTemplate<>(producerFactory);
     }
@@ -109,9 +109,9 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, OrderMessage> consumerFactory() {
+    public ConsumerFactory<String, BaseMessage> consumerFactory() {
         Map<String, Object> config = getBaseConsumerConfig(kafkaProperties.getGroupId());
-        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, OrderMessage.class.getName());
+        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, BaseMessage.class.getName());
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
 
         return new DefaultKafkaConsumerFactory<>(
@@ -122,11 +122,11 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, OrderMessage> responseCardKafkaListenerContainerFactory(
-            ConsumerFactory<String, OrderMessage> consumerFactory,
-            KafkaTemplate<String, OrderMessage> orderCreateKafkaTemplate
+    public ConcurrentKafkaListenerContainerFactory<String, BaseMessage> responseCardKafkaListenerContainerFactory(
+            ConsumerFactory<String, BaseMessage> consumerFactory,
+            KafkaTemplate<String, BaseMessage> orderCreateKafkaTemplate
     ) {
-        ConcurrentKafkaListenerContainerFactory<String, OrderMessage> factory =
+        ConcurrentKafkaListenerContainerFactory<String, BaseMessage> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
 

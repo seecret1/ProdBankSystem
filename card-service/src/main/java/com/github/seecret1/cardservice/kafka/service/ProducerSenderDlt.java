@@ -1,6 +1,6 @@
 package com.github.seecret1.cardservice.kafka.service;
 
-import com.github.seecret1.cardservice.dto.order.message.OrderMessage;
+import com.github.seecret1.cardservice.dto.order.message.BaseMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,9 +20,9 @@ public class ProducerSenderDlt {
 
     private final RetryTemplate kafkaRetryTemplate;
 
-    private final KafkaTemplate<String, OrderMessage> kafkaTemplate;
+    private final KafkaTemplate<String, BaseMessage> kafkaTemplate;
 
-    public void sendMessageInDlt(OrderMessage message) {
+    public void sendMessageInDlt(BaseMessage message) {
         kafkaRetryTemplate.execute(context -> {
             try {
                 kafkaTemplate.send(

@@ -109,10 +109,10 @@ app:
   kafka:
     bootstrap-servers: ${spring.kafka.bootstrap-servers}
     topic: orders
-    response-topic: response-orders
-    groupId: order-group-id
-    dlt-topic: orders.DLT
-    dlt-group-id: order-group-id.dlt
+    cards-topic: cards-orders
+    groupId: cards-group-id
+    dlt-topic: cards.DLT
+    dlt-group-id: cards-group-id.dlt
     max-pull-records: 10
     partitions: 3
     replicas: 3

@@ -12,7 +12,7 @@ import java.time.Instant;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderMessage {
+public class BaseMessage {
 
     private String traceId;
 

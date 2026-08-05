@@ -2,7 +2,7 @@ package com.github.seecret1.cardservice.kafka.listener;
 
 import com.github.seecret1.cardservice.kafka.service.ProducerSenderDlt;
 import com.github.seecret1.cardservice.dto.order.OrderStatus;
-import com.github.seecret1.cardservice.dto.order.message.OrderMessage;
+import com.github.seecret1.cardservice.dto.order.message.BaseMessage;
 import com.github.seecret1.cardservice.service.CardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,7 @@ public class OrderListener {
             containerFactory = "responseCardKafkaListenerContainerFactory"
     )
     public void listenOrderCardResponses(
-            @Payload OrderMessage order,
+            @Payload BaseMessage order,
             @Header(value = KafkaHeaders.RECEIVED_KEY, required = false) UUID key,
             @Header(value = KafkaHeaders.RECEIVED_TOPIC) String topic,
             @Header(value = KafkaHeaders.RECEIVED_PARTITION) Integer partition,
@@ -52,7 +52,7 @@ public class OrderListener {
         log.debug("Response order body: {}", order);
     }
 
-    public void orderProcessing(OrderMessage order) {
+    public void orderProcessing(BaseMessage order) {
         String cardId = order.getProductId();
         OrderStatus status = order.getStatus();
 
