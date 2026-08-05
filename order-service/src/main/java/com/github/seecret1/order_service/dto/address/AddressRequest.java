@@ -1,4 +1,4 @@
-package com.github.seecret1.delivery_service.dto.request;
+package com.github.seecret1.order_service.dto.address;
 
 import jakarta.validation.constraints.NotBlank;
 

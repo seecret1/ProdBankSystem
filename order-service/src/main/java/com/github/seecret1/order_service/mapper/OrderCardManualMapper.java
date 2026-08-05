@@ -1,6 +1,6 @@
 package com.github.seecret1.order_service.mapper;
 
-import com.github.seecret1.order_service.dto.OrderMessage;
+import com.github.seecret1.order_service.dto.BaseMessage;
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
 import com.github.seecret1.order_service.dto.card.OrderCardResponse;
 import com.github.seecret1.order_service.entity.OrderCard;
@@ -34,8 +34,8 @@ public class OrderCardManualMapper {
                 .build();
     }
 
-    public static OrderMessage toMessage(OrderCard order) {
-        OrderMessage message = new OrderMessage();
+    public static BaseMessage toMessage(OrderCard order) {
+        BaseMessage message = new BaseMessage();
         message.setTraceId(order.getTraceId());
         message.setUserId(order.getUserId());
         message.setOrderId(order.getId());

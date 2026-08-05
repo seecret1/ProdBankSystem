@@ -1,6 +1,6 @@
 package com.github.seecret1.order_service.service.impl;
 
-import com.github.seecret1.order_service.dto.OrderMessage;
+import com.github.seecret1.order_service.dto.BaseMessage;
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
 import com.github.seecret1.order_service.dto.office.OfficeResponse;
 import com.github.seecret1.order_service.dto.user.PersonInfo;
@@ -39,7 +39,7 @@ public class OrderCardServiceImpl implements OrderCardService {
 
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public OrderMessage createOrder(OrderCardDto event) {
+    public BaseMessage createOrder(OrderCardDto event) {
 
         // TODO: добавить отправку сообщения через notification-service
         try {
@@ -169,7 +169,7 @@ public class OrderCardServiceImpl implements OrderCardService {
         return order;
     }
 
-    private OrderMessage sendMessage(OrderCard order) {
+    private BaseMessage sendMessage(OrderCard order) {
         log.info("Response sent to Kafka: order ID={}", order.getId());
         var message = OrderCardManualMapper.toMessage(order);
         orderKafkaProducerService.sendWithWait(message);

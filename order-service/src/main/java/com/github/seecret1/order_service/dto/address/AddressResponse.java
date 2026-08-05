@@ -1,4 +1,4 @@
-package com.github.seecret1.order_service.dto.office;
+package com.github.seecret1.order_service.dto.address;
 
 import java.time.Instant;
 

@@ -4,5 +4,7 @@ public enum OrderType {
 
     CARD,
 
-    CREDIT
+    CREDIT,
+
+    DELIVERY
 }

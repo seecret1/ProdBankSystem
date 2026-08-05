@@ -3,7 +3,7 @@ package com.github.seecret1.order_service.config.kafka;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.seecret1.order_service.config.kafka.properties.KafkaProperties;
 import com.github.seecret1.order_service.config.kafka.properties.RetryProperties;
-import com.github.seecret1.order_service.dto.OrderMessage;
+import com.github.seecret1.order_service.dto.BaseMessage;
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -59,7 +59,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ProducerFactory<String, OrderMessage> orderProducerFactory() {
+    public ProducerFactory<String, BaseMessage> orderProducerFactory() {
         return new DefaultKafkaProducerFactory<>(
                 getBaseProducerConfig(),
                 new StringSerializer(),
@@ -104,8 +104,8 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, OrderMessage> orderCardKafkaTemplate(
-            ProducerFactory<String, OrderMessage> producerFactory
+    public KafkaTemplate<String, BaseMessage> orderCardKafkaTemplate(
+            ProducerFactory<String, BaseMessage> producerFactory
     ) {
         return new KafkaTemplate<>(producerFactory);
     }
@@ -122,6 +122,19 @@ public class KafkaConfig {
             ProducerFactory<String, Object> producerFactory
     ) {
         return new KafkaTemplate<>(producerFactory);
+    }
+
+    @Bean
+    public ConsumerFactory<String, OrderCardDto> consumerFactory() {
+        Map<String, Object> config = getBaseConsumerConfig(kafkaProperties.getGroupId());
+        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, OrderCardDto.class.getName());
+        config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+
+        return new DefaultKafkaConsumerFactory<>(
+                config,
+                new StringDeserializer(),
+                new JsonDeserializer<>(objectMapper)
+        );
     }
 
     @Bean
