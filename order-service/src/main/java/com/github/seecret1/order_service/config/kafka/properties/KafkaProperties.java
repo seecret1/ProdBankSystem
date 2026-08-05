@@ -17,6 +17,8 @@ public class KafkaProperties {
 
     private String retryTopic;
 
+    private String cardsTopic;
+
     private String groupId;
 
     private String dltTopic;
