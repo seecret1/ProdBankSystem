@@ -5,6 +5,7 @@ import com.github.seecret1.order_service.config.kafka.properties.KafkaProperties
 import com.github.seecret1.order_service.config.kafka.properties.RetryProperties;
 import com.github.seecret1.order_service.dto.BaseMessage;
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
+import com.github.seecret1.order_service.dto.delivery.OrderDeliveryDto;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -77,6 +78,15 @@ public class KafkaConfig {
     }
 
     @Bean
+    public ProducerFactory<String, OrderDeliveryDto> deliveryProducerFactory() {
+        return new DefaultKafkaProducerFactory<>(
+                getBaseProducerConfig(),
+                new StringSerializer(),
+                new JsonSerializer<>(objectMapper)
+        );
+    }
+
+    @Bean
     public ProducerFactory<String, Object> orderDltProducerFactory() {
         return new DefaultKafkaProducerFactory<>(
                 getBaseProducerConfig(),
@@ -104,8 +114,15 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, BaseMessage> orderCardKafkaTemplate(
+    public KafkaTemplate<String, BaseMessage> orderKafkaTemplate(
             ProducerFactory<String, BaseMessage> producerFactory
+    ) {
+        return new KafkaTemplate<>(producerFactory);
+    }
+
+    @Bean
+    public KafkaTemplate<String, OrderDeliveryDto> deliveryKafkaTemplate(
+            ProducerFactory<String, OrderDeliveryDto> producerFactory
     ) {
         return new KafkaTemplate<>(producerFactory);
     }
@@ -125,9 +142,9 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, OrderCardDto> consumerFactory() {
+    public ConsumerFactory<String, BaseMessage> consumerBaseMessageFactory() {
         Map<String, Object> config = getBaseConsumerConfig(kafkaProperties.getGroupId());
-        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, OrderCardDto.class.getName());
+        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, BaseMessage.class.getName());
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
 
         return new DefaultKafkaConsumerFactory<>(
