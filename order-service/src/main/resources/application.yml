@@ -113,7 +113,7 @@ app:
   kafka:
     bootstrap-servers: ${spring.kafka.bootstrap-servers}
     topic: orders
-    response-topic: response-orders
+    retry-topic: retry-orders
     groupId: order-group-id
     dlt-topic: orders.DLT
     dlt-group-id: order-group-id.dlt

@@ -52,6 +52,14 @@ public class KafkaConfig {
     }
 
     @Bean
+    public NewTopic retryTopic() {
+        return TopicBuilder.name(kafkaProperties.getRetryTopic())
+                .partitions(kafkaProperties.getPartitions())
+                .replicas(kafkaProperties.getReplicas())
+                .build();
+    }
+
+    @Bean
     public NewTopic orderDltTopic() {
         return TopicBuilder.name(kafkaProperties.getDltTopic())
                 .partitions(kafkaProperties.getPartitions())
