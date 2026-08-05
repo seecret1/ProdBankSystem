@@ -108,8 +108,9 @@ otel:
 app:
   kafka:
     bootstrap-servers: ${spring.kafka.bootstrap-servers}
-    topic: orders
-    cards-topic: cards-orders
+    topic: cards
+    retry-topic: cards-retry
+    orders-topic: orders
     groupId: cards-group-id
     dlt-topic: cards.DLT
     dlt-group-id: cards-group-id.dlt

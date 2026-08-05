@@ -1,9 +1,9 @@
 package com.github.seecret1.cardservice.kafka.service;
 
+import com.github.seecret1.cardservice.config.kafka.properties.KafkaProperties;
 import com.github.seecret1.cardservice.dto.order.message.OrderCardDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Service;
@@ -15,8 +15,7 @@ import java.util.concurrent.ExecutionException;
 @RequiredArgsConstructor
 public class OrderKafkaProducerServiceImpl implements OrderKafkaProducerService {
 
-    @Value("${app.kafka.topic}")
-    private String ordersTopic;
+    private final KafkaProperties kafkaProperties;
 
     private final RetryTemplate kafkaRetryTemplate;
 
@@ -25,7 +24,7 @@ public class OrderKafkaProducerServiceImpl implements OrderKafkaProducerService 
     @Override
     public void sendNoWait(OrderCardDto message) {
         loggingMessage(message);
-        kafkaTemplate.send(ordersTopic, message.getTraceId(), message);
+        kafkaTemplate.send(kafkaProperties.getOrdersTopic(), message.getTraceId(), message);
     }
 
     @Override
@@ -36,7 +35,7 @@ public class OrderKafkaProducerServiceImpl implements OrderKafkaProducerService 
         kafkaRetryTemplate.execute(context -> {
             try {
                 kafkaTemplate.send(
-                        ordersTopic,
+                        kafkaProperties.getOrdersTopic(),
                         message.getTraceId(),
                         message
                 ).get();

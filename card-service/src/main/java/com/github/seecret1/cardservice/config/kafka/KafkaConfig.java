@@ -44,7 +44,15 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic cardsTopic() {
-        return TopicBuilder.name(kafkaProperties.getCardsTopic())
+        return TopicBuilder.name(kafkaProperties.getTopic())
+                .partitions(kafkaProperties.getPartitions())
+                .replicas(kafkaProperties.getReplicas())
+                .build();
+    }
+
+    @Bean
+    public NewTopic retryTopic() {
+        return TopicBuilder.name(kafkaProperties.getRetryTopic())
                 .partitions(kafkaProperties.getPartitions())
                 .replicas(kafkaProperties.getReplicas())
                 .build();
