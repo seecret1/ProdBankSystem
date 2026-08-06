@@ -24,8 +24,7 @@ public class DltListener {
             @Header(value = KafkaHeaders.OFFSET) long offset,
             @Header(value = KafkaHeaders.DLT_EXCEPTION_MESSAGE, required = false) String exception
     ) {
-        log.error("Message in DLT - Order: {}; Original Topic: {}; Offset: {}", event, topic, offset);
-        log.error("Original exception: {}", exception);
+        logging(event, topic, offset, exception);
     }
 
     @KafkaListener(
@@ -39,7 +38,11 @@ public class DltListener {
             @Header(value = KafkaHeaders.OFFSET) long offset,
             @Header(value = KafkaHeaders.DLT_EXCEPTION_MESSAGE, required = false) String exception
     ) {
+        logging(event, topic, offset, exception);
+    }
+
+    private static void logging(Object event, String topic, long offset, String ex) {
         log.error("Message in DLT - Order: {}; Original Topic: {}; Offset: {}", event, topic, offset);
-        log.error("Original exception: {}", exception);
+        log.error("Original exception: {}", ex);
     }
 }

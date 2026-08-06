@@ -23,11 +23,13 @@ public class OrderKafkaProducerServiceImpl implements OrderKafkaProducerService 
 
     @Override
     public void sendNoWait(BaseMessage message) {
+        logging(message);
         kafkaTemplate.send(kafkaProperties.getCardsTopic(), message.getTraceId(), message);
     }
 
     @Override
     public void sendWithWait(BaseMessage message) {
+        logging(message);
         kafkaRetryTemplate.execute(context -> {
             try {
                 kafkaTemplate.send(
@@ -43,5 +45,11 @@ public class OrderKafkaProducerServiceImpl implements OrderKafkaProducerService 
                 throw new RuntimeException("Kafka send failed", e);
             }
         });
+    }
+
+    private static void logging(BaseMessage message) {
+        log.info("Response sent to Kafka: traceId={}, orderId={}, deliveryId={}, status={}, timestamp={}",
+                message.getTraceId(), message.getOrderId(), message.getProductId(),
+                message.getStatus(), message.getTimestamp());
     }
 }

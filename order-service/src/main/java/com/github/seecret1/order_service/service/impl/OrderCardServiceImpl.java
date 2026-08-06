@@ -170,7 +170,6 @@ public class OrderCardServiceImpl implements OrderCardService {
     }
 
     private BaseMessage sendMessage(OrderCard order) {
-        log.info("Response sent to Kafka: order ID={}", order.getId());
         var message = OrderCardManualMapper.toMessage(order);
         orderKafkaProducerService.sendWithWait(message);
         return message;
