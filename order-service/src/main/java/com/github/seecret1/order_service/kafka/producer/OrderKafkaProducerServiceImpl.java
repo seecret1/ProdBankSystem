@@ -1,4 +1,4 @@
-package com.github.seecret1.order_service.kafka;
+package com.github.seecret1.order_service.kafka.producer;
 
 import com.github.seecret1.order_service.config.kafka.properties.KafkaProperties;
 import com.github.seecret1.order_service.dto.BaseMessage;

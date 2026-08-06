@@ -1,4 +1,4 @@
-package com.github.seecret1.order_service.listener;
+package com.github.seecret1.order_service.kafka.listener;
 
 import com.github.seecret1.order_service.dto.BaseMessage;
 import com.github.seecret1.order_service.dto.card.OrderCardDto;

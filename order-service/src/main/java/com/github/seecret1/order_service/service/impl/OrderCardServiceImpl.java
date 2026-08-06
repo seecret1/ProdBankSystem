@@ -11,7 +11,7 @@ import com.github.seecret1.order_service.entity.enums.OrderType;
 import com.github.seecret1.order_service.exception.OrderTypeException;
 import com.github.seecret1.order_service.feign.OfficeServiceFeignClient;
 import com.github.seecret1.order_service.feign.UserServiceFeignClient;
-import com.github.seecret1.order_service.kafka.OrderKafkaProducerService;
+import com.github.seecret1.order_service.kafka.producer.OrderKafkaProducerService;
 import com.github.seecret1.order_service.mapper.OrderCardManualMapper;
 import com.github.seecret1.order_service.repository.OrderCardRepository;
 import com.github.seecret1.order_service.service.OrderCardService;
