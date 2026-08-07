@@ -1,7 +1,6 @@
 package com.github.seecret1.cardservice.kafka.listener;
 
 import com.github.seecret1.cardservice.dto.order.message.BaseMessage;
-import com.github.seecret1.cardservice.kafka.service.OrderKafkaProducerService;
 import com.github.seecret1.cardservice.service.OrderProcessingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,16 +16,14 @@ import java.util.UUID;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class OrderListener {
+public class RetryListener {
 
     private final OrderProcessingService orderProcessingService;
 
-    private final OrderKafkaProducerService orderKafkaProducerService;
-
     @KafkaListener(
-            topics = "${app.kafka.response-topic}",
-            groupId = "${app.kafka.groupId}",
-            containerFactory = "responseCardKafkaListenerContainerFactory"
+            topics = "${app.kafka.retry-topic}",
+            groupId = "${app.kafka.retry-group-id}",
+            containerFactory = "retryCardKafkaListenerContainerFactory"
     )
     public void listenOrderCardResponses(
             @Payload BaseMessage order,
@@ -46,7 +43,7 @@ public class OrderListener {
         } catch (Exception e) {
             log.error("Error processing order: traceId={}, orderId={}, error={}",
                     order.getTraceId(), order.getOrderId(), e.getMessage(), e);
-            orderKafkaProducerService.sendToRetry(order, e, 1);
+            throw e;
         }
     }
 }

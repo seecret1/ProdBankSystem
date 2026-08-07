@@ -111,7 +111,8 @@ app:
     topic: cards
     retry-topic: cards-retry
     orders-topic: orders
-    groupId: cards-group-id
+    group-id: cards-group-id
+    retry-group-id: cards-retry-group-id
     dlt-topic: cards.DLT
     dlt-group-id: cards-group-id.dlt
     max-pull-records: 10
@@ -123,6 +124,7 @@ app:
     delay: 1000
     multiplier: 2
     max-interval: 10000
+    timout: 5
 
   cache:
     cache-names:

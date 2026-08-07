@@ -51,7 +51,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public NewTopic retryTopic() {
+    public NewTopic retryCardsTopic() {
         return TopicBuilder.name(kafkaProperties.getRetryTopic())
                 .partitions(kafkaProperties.getPartitions())
                 .replicas(kafkaProperties.getReplicas())
@@ -117,6 +117,13 @@ public class KafkaConfig {
     }
 
     @Bean
+    public KafkaTemplate<String, Object> kafkaTemplate(
+            ProducerFactory<String, Object> producerFactory
+    ) {
+        return new KafkaTemplate<>(producerFactory);
+    }
+
+    @Bean
     public ConsumerFactory<String, BaseMessage> consumerFactory() {
         Map<String, Object> config = getBaseConsumerConfig(kafkaProperties.getGroupId());
         config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, BaseMessage.class.getName());
@@ -130,7 +137,44 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, BaseMessage> responseCardKafkaListenerContainerFactory(
+    public ConsumerFactory<String, BaseMessage> retryConsumerFactory() {
+        Map<String, Object> config = getBaseConsumerConfig(kafkaProperties.getRetryGroupId());
+        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, BaseMessage.class.getName());
+        config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+
+        return new DefaultKafkaConsumerFactory<>(
+                config,
+                new StringDeserializer(),
+                new JsonDeserializer<>(objectMapper)
+        );
+    }
+
+    @Bean
+    public ConsumerFactory<String, Object> dltConsumerFactory() {
+        Map<String, Object> config = getBaseConsumerConfig(kafkaProperties.getDltGroupId());
+        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class.getName());
+        config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+
+        return new DefaultKafkaConsumerFactory<>(
+                config,
+                new StringDeserializer(),
+                new JsonDeserializer<>(objectMapper)
+        );
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, BaseMessage> cardKafkaListenerContainerFactory(
+            ConsumerFactory<String, BaseMessage> consumerFactory
+    ) {
+        ConcurrentKafkaListenerContainerFactory<String, BaseMessage> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory);
+
+        return factory;
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, BaseMessage> retryCardKafkaListenerContainerFactory(
             ConsumerFactory<String, BaseMessage> consumerFactory,
             KafkaTemplate<String, BaseMessage> orderCreateKafkaTemplate
     ) {
@@ -155,6 +199,18 @@ public class KafkaConfig {
         factory.setCommonErrorHandler(errorHandler);
         return factory;
     }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, BaseMessage> dltCardsKafkaListenerContainerFactory(
+            ConsumerFactory<String, BaseMessage> consumerFactory
+    ) {
+        ConcurrentKafkaListenerContainerFactory<String, BaseMessage> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory);
+
+        return factory;
+    }
+
 
     private Map<String, Object> getBaseProducerConfig() {
         Map<String, Object> config = new HashMap<>();

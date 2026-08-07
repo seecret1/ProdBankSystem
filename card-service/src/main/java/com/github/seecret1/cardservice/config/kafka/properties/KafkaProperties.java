@@ -21,6 +21,8 @@ public class KafkaProperties {
 
     private String groupId;
 
+    private String retryGroupId;
+
     private String dltTopic;
 
     private String dltGroupId;
