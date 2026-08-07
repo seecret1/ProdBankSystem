@@ -116,3 +116,4 @@ app:
     delay: 1000
     multiplier: 2
     max-interval: 10000
+    timeout: 5

@@ -6,17 +6,22 @@ import com.github.seecret1.delivery_service.dto.order.OrderDeliveryDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class DeliveryKafkaProducerServiceImpl implements DeliveryKafkaProducerService {
+
+    @Value("${app.retry.timeout}")
+    private int retryTimeout;
 
     private final KafkaProperties kafkaProperties;
 
@@ -61,8 +66,17 @@ public class DeliveryKafkaProducerServiceImpl implements DeliveryKafkaProducerSe
                 .add("error-message", getErrorMessage(error))
                 .add("error-type", error.getClass().getSimpleName().getBytes(StandardCharsets.UTF_8));
 
-        log.error("[traceId={}][topic={}]Message sent to DLT", event.getTraceId(), kafkaProperties.getDltTopic());
-        kafkaTemplate.send(record);
+        kafkaRetryTemplate.execute(context -> {
+            try {
+                kafkaTemplate.send(record).get(retryTimeout, TimeUnit.SECONDS);
+                log.debug("[traceId={}][topic={}]Message sent to DLT", event.getTraceId(), record.topic());
+                return null;
+
+            } catch (Exception ex) {
+                log.error("[traceId={}][topic={}]Failed send to DLT: {}", event.getTraceId(), record.topic(), ex.getMessage());
+                throw new RuntimeException("Failed to send to retry", ex);
+            }
+        });
     }
 
     @Override
@@ -74,8 +88,17 @@ public class DeliveryKafkaProducerServiceImpl implements DeliveryKafkaProducerSe
                 .add("error-type", error.getClass().getSimpleName().getBytes(StandardCharsets.UTF_8))
                 .add("retry-count", String.valueOf(attempt).getBytes(StandardCharsets.UTF_8));
 
-        log.warn("[traceId={}][topic={}]Message sent to retry: attempt={}", event.getTraceId(), retryTopic, attempt);
-        kafkaTemplate.send(record);
+        kafkaRetryTemplate.execute(context -> {
+            try {
+                kafkaTemplate.send(record).get(retryTimeout, TimeUnit.SECONDS);
+                log.debug("[traceId={}][attempt={}]Message sent to retry", event.getTraceId(), attempt);
+                return null;
+
+            } catch (Exception ex) {
+                log.warn("[traceId={}][attempt={}]Failed to send to retry: {}", event.getTraceId(), attempt, ex.getMessage());
+                throw new RuntimeException("Failed to send to retry", ex);
+            }
+        });
     }
 
     private ProducerRecord<String, Object> getRecord(String topic, OrderDeliveryDto event) {
