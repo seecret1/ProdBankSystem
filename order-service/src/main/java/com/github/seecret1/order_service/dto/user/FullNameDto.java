@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class FullNameRequest {
+public class FullNameDto {
 
     private String firstName;
 

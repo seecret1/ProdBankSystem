@@ -2,7 +2,8 @@ package com.github.seecret1.order_service.dto.delivery;
 
 import com.github.seecret1.order_service.dto.OrderDto;
 import com.github.seecret1.order_service.dto.address.AddressRequest;
-import com.github.seecret1.order_service.dto.user.FullNameRequest;
+import com.github.seecret1.order_service.dto.user.FullNameDto;
+import com.github.seecret1.order_service.entity.enums.PersonType;
 import jakarta.validation.ValidationException;
 import lombok.*;
 
@@ -12,7 +13,11 @@ import lombok.*;
 @NoArgsConstructor
 public class OrderDeliveryDto extends OrderDto {
 
-    private FullNameRequest fullName;
+    private String orderId;
+
+    private String officeId;
+
+    private FullNameDto fullName;
 
     private String contactPhone;
 
@@ -20,12 +25,14 @@ public class OrderDeliveryDto extends OrderDto {
 
     private AddressRequest destinationAddress;
 
+    private PersonType personType;
+
     @Override
     public void validate() {
-        if (userId == null || traceId == null) {
+        if (orderId == null || userId == null || traceId == null) {
             throw new ValidationException("Ids must not be null");
         }
-        if (userId.isBlank() || traceId.isBlank()) {
+        if (orderId.isBlank() || userId.isBlank() || traceId.isBlank()) {
             throw new ValidationException("Ids must not be blank");
         }
         if (fullName == null || orderType == null ||
