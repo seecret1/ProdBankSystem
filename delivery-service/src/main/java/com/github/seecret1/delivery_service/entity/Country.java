@@ -15,7 +15,7 @@ import java.time.Instant;
 @Setter
 @Getter
 @Entity
-@Table(name = "countries", schema = "office_bank")
+@Table(name = "countries", schema = "delivery_bank")
 public class Country implements Serializable {
 
     @Id
@@ -36,6 +36,9 @@ public class Country implements Serializable {
 
     @Column(name = "deleted_at")
     private Instant deletedAt;
+
+    @Column(name = "deleted_by")
+    private String deletedBy;
 
     @Size(max = 128)
     @Column(name = "name", nullable = false, length = 128)

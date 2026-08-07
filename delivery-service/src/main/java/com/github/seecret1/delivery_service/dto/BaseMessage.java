@@ -1,10 +1,7 @@
-package com.github.seecret1.order_service.dto;
+package com.github.seecret1.delivery_service.dto;
 
-import com.github.seecret1.order_service.entity.enums.OrderStatus;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.github.seecret1.delivery_service.entity.enums.OrderStatus;
+import lombok.*;
 
 import java.time.Instant;
 
@@ -12,7 +9,7 @@ import java.time.Instant;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderMessage {
+public class BaseMessage {
 
     private String traceId;
 

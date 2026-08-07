@@ -1,7 +1,7 @@
 package com.github.seecret1.delivery_service.mapper;
 
-import com.github.seecret1.delivery_service.dto.request.AddressRequest;
-import com.github.seecret1.delivery_service.dto.response.AddressResponse;
+import com.github.seecret1.delivery_service.dto.address.AddressRequest;
+import com.github.seecret1.delivery_service.dto.address.AddressResponse;
 import com.github.seecret1.delivery_service.entity.Address;
 import com.github.seecret1.delivery_service.entity.Country;
 import com.github.seecret1.delivery_service.exception.DeliveryException;

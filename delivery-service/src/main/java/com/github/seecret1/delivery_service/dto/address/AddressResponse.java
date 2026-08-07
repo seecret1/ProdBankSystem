@@ -1,4 +1,4 @@
-package com.github.seecret1.delivery_service.dto.response;
+package com.github.seecret1.delivery_service.dto.address;
 
 import java.time.Instant;
 

@@ -1,6 +1,5 @@
-package com.github.seecret1.delivery_service.entity;
+package com.github.seecret1.delivery_service.dto.user;
 
-import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,10 +7,9 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@Embeddable
 @AllArgsConstructor
 @NoArgsConstructor
-public class FullName {
+public class FullNameDto {
 
     private String firstName;
 

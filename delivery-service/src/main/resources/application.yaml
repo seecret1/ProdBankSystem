@@ -29,6 +29,27 @@ spring:
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:secret}
 
+  kafka:
+    bootstrap-servers: ${HOST:localhost}:${KAFKA1_PORT:9092}, ${HOST:localhost}:${KAFKA2_PORT:9093}, ${HOST:localhost}:${KAFKA3_PORT:9094}
+    ssl:
+      enabled: ${KAFKA_SSL_ENABLED:false}
+      trust-store-location: ${KAFKA_TRUSTSTORE_LOCATION:file:./kafka.truststore.jks}
+      trust-store-password: ${KAFKA_TRUSTSTORE_PASSWORD:changeit}
+      key-store-location: ${KAFKA_KEYSTORE_LOCATION:file:./kafka.keystore.jks}
+      key-store-password: ${KAFKA_KEYSTORE_PASSWORD:changeit}
+      key-password: ${KAFKA_KEY_PASSWORD:changeit}
+      protocol: ${KAFKA_SSL_PROTOCOL:SSL}
+      enabled-protocols: TLSv1.2,TLSv1.3
+
+    # Security properties
+    properties:
+      security:
+        protocol: ${KAFKA_SECURITY_PROTOCOL:PLAINTEXT}
+      ssl:
+        endpoint:
+          identification:
+            algorithm: ${KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM:https}
+
 springdoc:
   api-docs:
     path: /api-docs
@@ -76,5 +97,22 @@ otel:
   metrics:
     exporter: none
 
-services:
-  api-key: ${INTERNAL_API_KEY:your-internal-api-key}
+app:
+  kafka:
+    bootstrap-servers: ${spring.kafka.bootstrap-servers}
+    topic: delivery
+    retry-topic: delivery-retry
+    orders-topic: orders
+    group-id: delivery-group-id
+    retry-group-id: delivery-retry-group-id
+    dlt-topic: delivery.DLT
+    dlt-group-id: delivery-group-id.dlt
+    max-pull-records: 10
+    partitions: 3
+    replicas: 3
+
+  retry:
+    max-attempts: 3
+    delay: 1000
+    multiplier: 2
+    max-interval: 10000

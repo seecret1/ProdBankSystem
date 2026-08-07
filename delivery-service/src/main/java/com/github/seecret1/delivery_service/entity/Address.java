@@ -14,7 +14,7 @@ import java.io.Serializable;
 @Getter
 @Setter
 @Entity
-@Table(name = "addresses", schema = "office_bank")
+@Table(name = "addresses", schema = "delivery_bank")
 public class Address extends BaseEntity implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

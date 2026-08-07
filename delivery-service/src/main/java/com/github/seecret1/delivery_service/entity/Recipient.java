@@ -1,6 +1,7 @@
 package com.github.seecret1.delivery_service.entity;
 
 import com.github.seecret1.common.entity.BaseEntity;
+import com.github.seecret1.delivery_service.entity.enums.PersonType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,9 +32,7 @@ public class Recipient extends BaseEntity implements Serializable {
     @Column(name = "office_id")
     private String officeId;
 
-    @Column(name = "physical_person")
-    private Boolean physicalPerson;
-
-    @Column(name = "legal_person")
-    private Boolean legalPerson;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "person_type")
+    private PersonType personType;
 }
