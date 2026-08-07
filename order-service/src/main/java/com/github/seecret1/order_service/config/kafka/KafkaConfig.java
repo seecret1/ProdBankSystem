@@ -155,11 +155,7 @@ public class KafkaConfig {
         config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, BaseMessage.class.getName());
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
 
-        return new DefaultKafkaConsumerFactory<>(
-                config,
-                new StringDeserializer(),
-                new JsonDeserializer<>(objectMapper)
-        );
+        return getDefaultKafkaConsumerFactory(config);
     }
 
     @Bean
@@ -168,11 +164,16 @@ public class KafkaConfig {
         config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, OrderCardDto.class.getName());
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
 
-        return new DefaultKafkaConsumerFactory<>(
-                config,
-                new StringDeserializer(),
-                new JsonDeserializer<>(objectMapper)
-        );
+        return getDefaultKafkaConsumerFactory(config);
+    }
+
+    @Bean
+    public ConsumerFactory<String, OrderCardDto> consumerRetryFactory() {
+        Map<String, Object> config = getBaseConsumerConfig(kafkaProperties.getRetryGroupId());
+        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, OrderCardDto.class.getName());
+        config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+
+        return getDefaultKafkaConsumerFactory(config);
     }
 
     @Bean
@@ -181,15 +182,21 @@ public class KafkaConfig {
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
         config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class.getName());
 
-        return new DefaultKafkaConsumerFactory<>(
-                config,
-                new StringDeserializer(),
-                new JsonDeserializer<>(objectMapper)
-        );
+        return getDefaultKafkaConsumerFactory(config);
     }
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, OrderCardDto> orderCardKafkaListenerContainerFactory(
+            ConsumerFactory<String, OrderCardDto> consumerFactory
+    ) {
+        ConcurrentKafkaListenerContainerFactory<String, OrderCardDto> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory);
+        return factory;
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, OrderCardDto> retryOrderKafkaListenerContainerFactory(
             ConsumerFactory<String, OrderCardDto> consumerFactory,
             KafkaTemplate<String, OrderCardDto> orderCreateKafkaTemplate
     ) {
@@ -247,5 +254,13 @@ public class KafkaConfig {
         config.putAll(kafkaSslConfig.getSslConfigs());
 
         return config;
+    }
+
+    private <T>DefaultKafkaConsumerFactory<String, T> getDefaultKafkaConsumerFactory(Map<String, Object> config) {
+        return new DefaultKafkaConsumerFactory<>(
+                config,
+                new StringDeserializer(),
+                new JsonDeserializer<>(objectMapper)
+        );
     }
 }

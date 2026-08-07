@@ -1,6 +1,5 @@
 package com.github.seecret1.order_service.kafka.listener;
 
-import com.github.seecret1.order_service.dto.BaseMessage;
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -18,31 +17,13 @@ public class DltListener {
             groupId = "${app.kafka.dlt-group-id}",
             containerFactory = "dltKafkaListenerContainerFactory"
     )
-    public void dltListen(
+    public void listenDlt(
             @Payload OrderCardDto event,
             @Header(value = KafkaHeaders.RECEIVED_TOPIC) String topic,
             @Header(value = KafkaHeaders.OFFSET) long offset,
             @Header(value = KafkaHeaders.DLT_EXCEPTION_MESSAGE, required = false) String exception
     ) {
-        logging(event, topic, offset, exception);
-    }
-
-    @KafkaListener(
-            topics = "${app.kafka.dlt-topic}",
-            groupId = "${app.kafka.dlt-group-id}",
-            containerFactory = "dltKafkaListenerContainerFactory"
-    )
-    public void dltListen(
-            @Payload BaseMessage event,
-            @Header(value = KafkaHeaders.RECEIVED_TOPIC) String topic,
-            @Header(value = KafkaHeaders.OFFSET) long offset,
-            @Header(value = KafkaHeaders.DLT_EXCEPTION_MESSAGE, required = false) String exception
-    ) {
-        logging(event, topic, offset, exception);
-    }
-
-    private static void logging(Object event, String topic, long offset, String ex) {
         log.error("Message in DLT - Order: {}; Original Topic: {}; Offset: {}", event, topic, offset);
-        log.error("Original exception: {}", ex);
+        log.error("Original exception: {}", exception);
     }
 }

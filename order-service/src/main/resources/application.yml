@@ -115,7 +115,8 @@ app:
     topic: orders
     cards-topic: cards
     retry-topic: retry-orders
-    groupId: order-group-id
+    group-id: order-group-id
+    retry-group-id: order-retry-group-id
     dlt-topic: orders.DLT
     dlt-group-id: order-group-id.dlt
     max-pull-records: 10
@@ -127,3 +128,4 @@ app:
     delay: 1000
     multiplier: 2
     max-interval: 10000
+    timeout: 5

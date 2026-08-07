@@ -1,6 +1,7 @@
 package com.github.seecret1.order_service.kafka.listener;
 
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
+import com.github.seecret1.order_service.kafka.producer.OrderKafkaProducerService;
 import com.github.seecret1.order_service.service.OrderCardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,8 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 public class OrderCardListener {
+
+    private final OrderKafkaProducerService orderKafkaProducerService;
 
     private final OrderCardService orderCardService;
 
@@ -37,6 +40,12 @@ public class OrderCardListener {
         log.info("Key: {}; Partition: {}; Topic: {}; Timestamp: {}",
                 key, partition, topic, Instant.ofEpochMilli(timestamp));
 
-        orderCardService.createOrder(order);
+        try {
+            orderCardService.createOrder(order);
+            log.debug("[topic: {}][traceId: {}]Processing card order successfully", topic, order.getTraceId());
+        } catch (Exception ex) {
+            orderKafkaProducerService.sendToRetry(order, ex,1);
+            log.error("Error while creating order", ex);
+        }
     }
 }
