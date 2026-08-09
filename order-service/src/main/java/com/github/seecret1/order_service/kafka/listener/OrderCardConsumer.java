@@ -5,6 +5,7 @@ import com.github.seecret1.order_service.kafka.producer.OrderKafkaProducerServic
 import com.github.seecret1.order_service.service.OrderCardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
@@ -17,7 +18,7 @@ import java.util.UUID;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class OrderCardListener {
+public class OrderCardConsumer {
 
     private final OrderKafkaProducerService orderKafkaProducerService;
 
@@ -29,22 +30,19 @@ public class OrderCardListener {
             containerFactory = "orderCardKafkaListenerContainerFactory"
     )
     public void listenOrderCard(
-            @Payload OrderCardDto order,
-            @Header(value = KafkaHeaders.RECEIVED_KEY, required = false) UUID key,
-            @Header(value = KafkaHeaders.RECEIVED_TOPIC) String topic,
-            @Header(value = KafkaHeaders.RECEIVED_PARTITION) Integer partition,
-            @Header(value = KafkaHeaders.RECEIVED_TIMESTAMP) Long timestamp
+            ConsumerRecord<String, OrderCardDto> order
     ) {
+        OrderCardDto dto = order.value();
         log.info("Order received: traceId={}, userId={}, cardId={}, createdAt={}",
-                order.getTraceId(), order.getUserId(), order.getCardId(), order.getCreatedAt());
+                dto.getTraceId(), dto.getUserId(), dto.getCardId(), dto.getCreatedAt());
         log.info("Key: {}; Partition: {}; Topic: {}; Timestamp: {}",
-                key, partition, topic, Instant.ofEpochMilli(timestamp));
+                order.key(), order.partition(), order.topic(), order.timestamp());
 
         try {
-            orderCardService.createOrder(order);
-            log.debug("[topic: {}][traceId: {}]Processing card order successfully", topic, order.getTraceId());
+            orderCardService.createOrder(dto);
+            log.debug("[topic: {}][traceId: {}]Processing card order successfully", order.topic(), dto.getTraceId());
         } catch (Exception ex) {
-            orderKafkaProducerService.sendToRetry(order, ex,1);
+            orderKafkaProducerService.sendToRetry(dto, ex,1);
             log.error("Error while creating order", ex);
         }
     }

@@ -5,19 +5,14 @@ import com.github.seecret1.cardservice.kafka.service.OrderKafkaProducerService;
 import com.github.seecret1.cardservice.service.OrderProcessingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.support.KafkaHeaders;
-import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
-
-import java.time.Instant;
-import java.util.UUID;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class OrderListener {
+public class OrderConsumer {
 
     private final OrderProcessingService orderProcessingService;
 
@@ -29,24 +24,21 @@ public class OrderListener {
             containerFactory = "responseCardKafkaListenerContainerFactory"
     )
     public void listenOrderCardResponses(
-            @Payload BaseMessage order,
-            @Header(value = KafkaHeaders.RECEIVED_KEY, required = false) UUID key,
-            @Header(value = KafkaHeaders.RECEIVED_TOPIC) String topic,
-            @Header(value = KafkaHeaders.RECEIVED_PARTITION) Integer partition,
-            @Header(value = KafkaHeaders.RECEIVED_TIMESTAMP) Long timestamp
+            ConsumerRecord<String, BaseMessage> order
     ) {
+        BaseMessage message = order.value();
         log.info("Response order received: traceId={} orderId={}, userId={}, cardData={}, createdAt={}",
-                order.getTraceId(), order.getOrderId(), order.getUserId(), order.getProductId(), order.getTimestamp());
+                message.getTraceId(), message.getOrderId(), message.getUserId(), message.getProductId(), message.getTimestamp());
         log.info("Key: {}; Partition: {}; Topic: {}; Timestamp: {}",
-                key, partition, topic, Instant.ofEpochMilli(timestamp));
+                order.key(), order.partition(), order.topic(), order.timestamp());
 
         try {
-            orderProcessingService.orderProcessing(order);
+            orderProcessingService.orderProcessing(message);
             log.debug("Received response order body: {}", order);
         } catch (Exception e) {
             log.error("Error processing order: traceId={}, orderId={}, error={}",
-                    order.getTraceId(), order.getOrderId(), e.getMessage(), e);
-            orderKafkaProducerService.sendToRetry(order, e, 1);
+                    message.getTraceId(), message.getOrderId(), e.getMessage(), e);
+            orderKafkaProducerService.sendToRetry(message, e, 1);
         }
     }
 }
