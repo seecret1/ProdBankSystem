@@ -26,7 +26,7 @@ public class DeliveryRetryConsumer {
             @Header(value = "retry-count", required = false) Integer retryCount
     ) {
         OrderDeliveryDto dto = event.value();
-        int currentRetry = retryCount != null ? retryCount : 1;
+        int currentRetry = retryCount != null ? retryCount : 1; //TODO: проверить работу без @Header
         log.info("Retry delivery received traceId={}, retryCount={}, originalTopic={}",
                 dto.getTraceId(), event.headers().headers("retry-count"), event.topic());
         try {

@@ -31,7 +31,8 @@ public class RetryConsumer {
 
         try {
             orderProcessingService.orderProcessing(message);
-            log.debug("Received response order body: {}", order);
+            log.debug("Received response order body: {}, retryCounter: {}",
+                    order, order.headers().headers("retry-count")); //TODO: проверить работу без @Header
         } catch (Exception e) {
             log.error("Error processing order: traceId={}, orderId={}, error={}",
                     message.getTraceId(), message.getOrderId(), e.getMessage(), e);

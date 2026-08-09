@@ -25,7 +25,7 @@ public class RetryConsumer {
             ConsumerRecord<String, OrderCardDto> event,
             @Header(value = "retry-count", required = false) Integer retryCount
     ) {
-        int currentRetry = retryCount != null ? retryCount : 1;
+        int currentRetry = retryCount != null ? retryCount : 1; //TODO: проверить работу без @Header
         log.info("Retry delivery received traceId={}, retryCount={}, originalTopic={}",
                 event.value().getTraceId(), event.headers().headers("retry-count"), event.topic());
         try {
