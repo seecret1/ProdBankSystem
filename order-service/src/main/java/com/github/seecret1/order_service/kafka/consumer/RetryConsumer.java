@@ -33,6 +33,7 @@ public class RetryConsumer {
             log.info("Retry processed successfully traceId={}", event.value().getTraceId());
         } catch (Exception ex) {
             log.error("Retry processing failed for traceId={}", event.value().getTraceId(), ex);
+            throw ex;
         }
     }
 }
