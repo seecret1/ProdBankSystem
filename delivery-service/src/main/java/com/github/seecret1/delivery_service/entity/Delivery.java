@@ -47,7 +47,7 @@ public class Delivery extends BaseEntity implements Serializable {
     @Column(name = "status", nullable = false)
     private DeliveryStatus status;
 
-    @Column(name = "delivery_duration")
+    @Column(name = "delivery_duration", columnDefinition = "INTERVAL")
     private Duration deliveryDuration;
 
     @Column(name = "pickup_date")

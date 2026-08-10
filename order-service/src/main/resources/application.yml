@@ -52,7 +52,7 @@ spring:
 
 office-service:
   client:
-    base-url: ${OFFICE_CLIENT_BASE_URL:http://localhost:8094/api/v1/public/offices}
+    base-url: ${OFFICE_CLIENT_BASE_URL:http://localhost:8098/api/v1/public/offices}
     api-key: ${INTERNAL_API_KEY:your-internal-api-key}
     x-internal-key: ${INTERNAL_KEY:X-Internal-Api-Key}
 

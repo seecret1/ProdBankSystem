@@ -1,4 +1,4 @@
-package com.github.seecret1.order_service.kafka.listener;
+package com.github.seecret1.order_service.kafka.consumer;
 
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
 import com.github.seecret1.order_service.kafka.producer.OrderKafkaProducerService;
@@ -7,13 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.support.KafkaHeaders;
-import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
-
-import java.time.Instant;
-import java.util.UUID;
 
 @Slf4j
 @Component
@@ -26,7 +20,7 @@ public class OrderCardConsumer {
 
     @KafkaListener(
             topics = "${app.kafka.topic}",
-            groupId = "${app.kafka.groupId}",
+            groupId = "${app.kafka.group-id}",
             containerFactory = "orderCardKafkaListenerContainerFactory"
     )
     public void listenOrderCard(

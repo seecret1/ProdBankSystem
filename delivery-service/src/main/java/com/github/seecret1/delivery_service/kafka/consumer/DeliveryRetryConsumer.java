@@ -1,7 +1,7 @@
-package com.github.seecret1.order_service.kafka.listener;
+package com.github.seecret1.delivery_service.kafka.consumer;
 
-import com.github.seecret1.order_service.dto.card.OrderCardDto;
-import com.github.seecret1.order_service.service.OrderCardService;
+import com.github.seecret1.delivery_service.dto.order.OrderDeliveryDto;
+import com.github.seecret1.delivery_service.service.DeliveryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -12,27 +12,28 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class RetryConsumer {
+public class DeliveryRetryConsumer {
 
-    private final OrderCardService orderCardService;
+    private final DeliveryService deliveryService;
 
     @KafkaListener(
             topics = "${app.kafka.retry-topic}",
             groupId = "${app.kafka.retry-group-id}",
-            containerFactory = "retryOrderKafkaListenerContainerFactory"
+            containerFactory = "retryKafkaListenerContainerFactory"
     )
     public void listenRetry(
-            ConsumerRecord<String, OrderCardDto> event,
+            ConsumerRecord<String, OrderDeliveryDto> event,
             @Header(value = "retry-count", required = false) Integer retryCount
     ) {
+        OrderDeliveryDto dto = event.value();
         int currentRetry = retryCount != null ? retryCount : 1; //TODO: проверить работу без @Header
         log.info("Retry delivery received traceId={}, retryCount={}, originalTopic={}",
-                event.value().getTraceId(), event.headers().headers("retry-count"), event.topic());
+                dto.getTraceId(), event.headers().headers("retry-count"), event.topic());
         try {
-            orderCardService.createOrder(event.value());
-            log.info("Retry processed successfully traceId={}", event.value().getTraceId());
+            deliveryService.create(dto);
+            log.debug("Retry processed successfully traceId={}", dto.getTraceId());
         } catch (Exception ex) {
-            log.error("Retry processing failed for traceId={}", event.value().getTraceId(), ex);
+            log.error("Retry processing failed for traceId={}", dto.getTraceId(), ex);
             throw ex;
         }
     }

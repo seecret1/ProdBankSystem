@@ -85,6 +85,15 @@ public class KafkaConfig {
     }
 
     @Bean
+    public ProducerFactory<String, Object> cardProducerFactory() {
+        return new DefaultKafkaProducerFactory<>(
+                getBaseProducerConfig(),
+                new StringSerializer(),
+                new JsonSerializer<>(objectMapper)
+        );
+    }
+
+    @Bean
     public RetryTemplate kafkaRetryTemplate() {
         RetryTemplate retryTemplate = new RetryTemplate();
 
@@ -118,9 +127,9 @@ public class KafkaConfig {
 
     @Bean
     public KafkaTemplate<String, Object> kafkaTemplate(
-            ProducerFactory<String, Object> producerFactory
+            ProducerFactory<String, Object> cardProducerFactory
     ) {
-        return new KafkaTemplate<>(producerFactory);
+        return new KafkaTemplate<>(cardProducerFactory);
     }
 
     @Bean

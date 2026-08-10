@@ -13,7 +13,7 @@ CREATE TABLE delivery_bank_history.countries_history
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc'),
     updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
     deleted_at TIMESTAMP WITHOUT TIME ZONE,
-    deleted_by VARCHAR(128),
+    deleted_by VARCHAR(255),
     name VARCHAR(128) NOT NULL,
     code VARCHAR(3) NOT NULL,
 
@@ -46,7 +46,7 @@ CREATE INDEX IF NOT EXISTS idx_addresses_history_revision ON delivery_bank_histo
 
 CREATE TABLE delivery_bank_history.recipients_history
 (
-    id VARCHAR PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR NOT NULL,
     rev BIGINT NOT NULL,
     revtype SMALLINT NOT NULL,
     deleted boolean NOT NULL DEFAULT FALSE,
@@ -70,7 +70,7 @@ CREATE INDEX IF NOT EXISTS idx_recipients_history_revision ON delivery_bank_hist
 
 CREATE TABLE delivery_bank_history.deliveries_history
 (
-    id VARCHAR PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR NOT NULL,
     rev BIGINT NOT NULL,
     revtype SMALLINT NOT NULL,
     deleted boolean NOT NULL DEFAULT FALSE,

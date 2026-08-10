@@ -5,6 +5,7 @@ CREATE TABLE delivery_bank.countries
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc'),
     updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
     deleted_at TIMESTAMP WITHOUT TIME ZONE,
+    deleted_by VARCHAR(255),
     name VARCHAR(128) NOT NULL,
     code VARCHAR(3) NOT NULL
 );

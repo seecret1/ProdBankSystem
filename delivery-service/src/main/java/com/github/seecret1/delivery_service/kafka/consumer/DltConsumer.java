@@ -1,6 +1,6 @@
-package com.github.seecret1.cardservice.kafka.listener;
+package com.github.seecret1.delivery_service.kafka.consumer;
 
-import com.github.seecret1.cardservice.dto.order.message.BaseMessage;
+import com.github.seecret1.delivery_service.dto.order.OrderDeliveryDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -15,13 +15,13 @@ public class DltConsumer {
     @KafkaListener(
             topics = "${app.kafka.dlt-topic}",
             groupId = "${app.kafka.dlt-group-id}",
-            containerFactory = "dltCardsKafkaListenerContainerFactory"
+            containerFactory = "dltKafkaListenerContainerFactory"
     )
-    public void listenDlt(
-            ConsumerRecord<String, BaseMessage> message,
+    public void dltListen(
+            ConsumerRecord<String, OrderDeliveryDto> message,
             @Header(value = KafkaHeaders.DLT_EXCEPTION_MESSAGE, required = false) String exception
     ) {
-        log.error("Message in DLT - Order: {}; Original Topic: {}; Offset: {}", message, message.topic(), message.offset());
-        log.error("Original exception: {}", exception);
+        log.error("Message in DLT - OrderDeliveryDto: {}; Original Topic: {}; Offset: {}", message, message.topic(), message.offset());
+        log.error("Original exception in DeliveryDto: {}", exception);
     }
 }

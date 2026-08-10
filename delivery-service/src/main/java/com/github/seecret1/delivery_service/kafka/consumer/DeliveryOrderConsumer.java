@@ -1,4 +1,4 @@
-package com.github.seecret1.delivery_service.kafka.listener;
+package com.github.seecret1.delivery_service.kafka.consumer;
 
 import com.github.seecret1.delivery_service.dto.order.OrderDeliveryDto;
 import com.github.seecret1.delivery_service.kafka.producer.DeliveryKafkaProducerService;
@@ -20,7 +20,7 @@ public class DeliveryOrderConsumer {
 
     @KafkaListener(
             topics = "${app.kafka.topic}",
-            groupId = "${app.kafka.groupId}",
+            groupId = "${app.kafka.group-id}",
             containerFactory = "deliveryKafkaListenerContainerFactory"
     )
     public void listenDeliveryOrder(

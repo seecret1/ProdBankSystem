@@ -1,6 +1,7 @@
-package com.github.seecret1.cardservice.kafka.listener;
+package com.github.seecret1.cardservice.kafka.consumer;
 
 import com.github.seecret1.cardservice.dto.order.message.BaseMessage;
+import com.github.seecret1.cardservice.kafka.service.OrderKafkaProducerService;
 import com.github.seecret1.cardservice.service.OrderProcessingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,14 +12,16 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class RetryConsumer {
+public class OrderConsumer {
 
     private final OrderProcessingService orderProcessingService;
 
+    private final OrderKafkaProducerService orderKafkaProducerService;
+
     @KafkaListener(
-            topics = "${app.kafka.retry-topic}",
-            groupId = "${app.kafka.retry-group-id}",
-            containerFactory = "retryCardKafkaListenerContainerFactory"
+            topics = "${app.kafka.topic}",
+            groupId = "${app.kafka.group-id}",
+            containerFactory = "cardKafkaListenerContainerFactory"
     )
     public void listenOrderCardResponses(
             ConsumerRecord<String, BaseMessage> order
@@ -31,12 +34,11 @@ public class RetryConsumer {
 
         try {
             orderProcessingService.orderProcessing(message);
-            log.debug("Received response order body: {}, retryCounter: {}",
-                    order, order.headers().headers("retry-count")); //TODO: проверить работу без @Header
+            log.debug("Received response order body: {}", order);
         } catch (Exception e) {
             log.error("Error processing order: traceId={}, orderId={}, error={}",
                     message.getTraceId(), message.getOrderId(), e.getMessage(), e);
-            throw e;
+            orderKafkaProducerService.sendToRetry(message, e, 1);
         }
     }
 }
