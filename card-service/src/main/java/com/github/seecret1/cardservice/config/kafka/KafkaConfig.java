@@ -19,6 +19,7 @@ import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
@@ -138,11 +139,7 @@ public class KafkaConfig {
         config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, BaseMessage.class.getName());
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
 
-        return new DefaultKafkaConsumerFactory<>(
-                config,
-                new StringDeserializer(),
-                new JsonDeserializer<>(objectMapper)
-        );
+        return getDefaultKafkaConsumerFactory(config, BaseMessage.class);
     }
 
     @Bean
@@ -151,11 +148,7 @@ public class KafkaConfig {
         config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, BaseMessage.class.getName());
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
 
-        return new DefaultKafkaConsumerFactory<>(
-                config,
-                new StringDeserializer(),
-                new JsonDeserializer<>(objectMapper)
-        );
+        return getDefaultKafkaConsumerFactory(config, BaseMessage.class);
     }
 
     @Bean
@@ -164,20 +157,32 @@ public class KafkaConfig {
         config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class.getName());
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
 
-        return new DefaultKafkaConsumerFactory<>(
-                config,
-                new StringDeserializer(),
-                new JsonDeserializer<>(objectMapper)
-        );
+        return getDefaultKafkaConsumerFactory(config, Object.class);
     }
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, BaseMessage> cardKafkaListenerContainerFactory(
-            ConsumerFactory<String, BaseMessage> consumerFactory
+            ConsumerFactory<String, BaseMessage> consumerFactory,
+            KafkaTemplate<String, BaseMessage> orderCreateKafkaTemplate
     ) {
         ConcurrentKafkaListenerContainerFactory<String, BaseMessage> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
+
+        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(
+                orderCreateKafkaTemplate,
+                (record, exception) -> new org.apache.kafka.common.TopicPartition(
+                        kafkaProperties.getRetryTopic(),
+                        record.partition()
+                )
+        );
+
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(
+                recoverer,
+                new FixedBackOff(retryProperties.getDelay(), retryProperties.getMaxAttempts())
+        );
+
+        factory.setCommonErrorHandler(errorHandler);
 
         return factory;
     }
@@ -243,5 +248,21 @@ public class KafkaConfig {
         config.putAll(kafkaSslConfig.getSslConfigs());
 
         return config;
+    }
+
+    private <T>DefaultKafkaConsumerFactory<String, T> getDefaultKafkaConsumerFactory(Map<String, Object> config, Class<T> clazz) {
+        Map<String, Object> consumerConfig = new HashMap<>(config);
+        consumerConfig.remove(JsonDeserializer.VALUE_DEFAULT_TYPE);
+        consumerConfig.remove(JsonDeserializer.USE_TYPE_INFO_HEADERS);
+        consumerConfig.remove(JsonDeserializer.TRUSTED_PACKAGES);
+
+        JsonDeserializer<T> jsonDeserializer = new JsonDeserializer<>(clazz, objectMapper, false);
+        jsonDeserializer.setUseTypeHeaders(false);
+
+        return new DefaultKafkaConsumerFactory<>(
+                consumerConfig,
+                new StringDeserializer(),
+                new ErrorHandlingDeserializer<>(jsonDeserializer)
+        );
     }
 }

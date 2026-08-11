@@ -1,7 +1,6 @@
 package com.github.seecret1.cardservice.kafka.consumer;
 
 import com.github.seecret1.cardservice.dto.order.message.BaseMessage;
-import com.github.seecret1.cardservice.kafka.service.OrderKafkaProducerService;
 import com.github.seecret1.cardservice.service.OrderProcessingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +14,6 @@ import org.springframework.stereotype.Component;
 public class OrderConsumer {
 
     private final OrderProcessingService orderProcessingService;
-
-    private final OrderKafkaProducerService orderKafkaProducerService;
 
     @KafkaListener(
             topics = "${app.kafka.topic}",
@@ -38,7 +35,7 @@ public class OrderConsumer {
         } catch (Exception e) {
             log.error("Error processing order: traceId={}, orderId={}, error={}",
                     message.getTraceId(), message.getOrderId(), e.getMessage(), e);
-            orderKafkaProducerService.sendToRetry(message, e, 1);
+            throw e;
         }
     }
 }

@@ -121,7 +121,7 @@ app:
 
   retry:
     max-attempts: 3
-    delay: 1000
+    delay: 1500
     multiplier: 2
     max-interval: 10000
     timout: 5

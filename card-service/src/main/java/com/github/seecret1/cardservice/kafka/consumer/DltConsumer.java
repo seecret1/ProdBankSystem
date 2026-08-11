@@ -1,6 +1,5 @@
 package com.github.seecret1.cardservice.kafka.consumer;
 
-import com.github.seecret1.cardservice.dto.order.message.BaseMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -18,7 +17,7 @@ public class DltConsumer {
             containerFactory = "dltCardsKafkaListenerContainerFactory"
     )
     public void listenDlt(
-            ConsumerRecord<String, BaseMessage> message,
+            ConsumerRecord<String, Object> message,
             @Header(value = KafkaHeaders.DLT_EXCEPTION_MESSAGE, required = false) String exception
     ) {
         log.error("Message in DLT - Order: {}; Original Topic: {}; Offset: {}", message, message.topic(), message.offset());
