@@ -20,6 +20,7 @@ import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
@@ -155,7 +156,7 @@ public class KafkaConfig {
         config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, BaseMessage.class.getName());
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
 
-        return getDefaultKafkaConsumerFactory(config);
+        return getDefaultKafkaConsumerFactory(config, BaseMessage.class);
     }
 
     @Bean
@@ -164,7 +165,7 @@ public class KafkaConfig {
         config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, OrderCardDto.class.getName());
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
 
-        return getDefaultKafkaConsumerFactory(config);
+        return getDefaultKafkaConsumerFactory(config, OrderCardDto.class);
     }
 
     @Bean
@@ -173,7 +174,7 @@ public class KafkaConfig {
         config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, OrderCardDto.class.getName());
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
 
-        return getDefaultKafkaConsumerFactory(config);
+        return getDefaultKafkaConsumerFactory(config, OrderCardDto.class);
     }
 
     @Bean
@@ -182,16 +183,33 @@ public class KafkaConfig {
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
         config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class.getName());
 
-        return getDefaultKafkaConsumerFactory(config);
+        return getDefaultKafkaConsumerFactory(config, Object.class);
     }
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, OrderCardDto> orderCardKafkaListenerContainerFactory(
-            ConsumerFactory<String, OrderCardDto> consumerFactory
+            ConsumerFactory<String, OrderCardDto> consumerFactory,
+            KafkaTemplate<String, OrderCardDto> orderCreateKafkaTemplate
     ) {
         ConcurrentKafkaListenerContainerFactory<String, OrderCardDto> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
+
+        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(
+                orderCreateKafkaTemplate,
+                (record, exception) -> new org.apache.kafka.common.TopicPartition(
+                        kafkaProperties.getRetryTopic(),
+                        record.partition()
+                )
+        );
+
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(
+                recoverer,
+                new FixedBackOff(retryProperties.getDelay(), retryProperties.getMaxAttempts())
+        );
+        errorHandler.setRetryListeners();
+
+        factory.setCommonErrorHandler(errorHandler);
         return factory;
     }
 
@@ -247,8 +265,6 @@ public class KafkaConfig {
         Map<String, Object> config = new HashMap<>();
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
         config.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         config.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, kafkaProperties.getMaxPullRecords());
 
         config.putAll(kafkaSslConfig.getSslConfigs());
@@ -256,11 +272,19 @@ public class KafkaConfig {
         return config;
     }
 
-    private <T>DefaultKafkaConsumerFactory<String, T> getDefaultKafkaConsumerFactory(Map<String, Object> config) {
+    private <T>DefaultKafkaConsumerFactory<String, T> getDefaultKafkaConsumerFactory(Map<String, Object> config, Class<T> clazz) {
+        Map<String, Object> consumerConfig = new HashMap<>(config);
+        consumerConfig.remove(JsonDeserializer.VALUE_DEFAULT_TYPE);
+        consumerConfig.remove(JsonDeserializer.USE_TYPE_INFO_HEADERS);
+        consumerConfig.remove(JsonDeserializer.TRUSTED_PACKAGES);
+
+        JsonDeserializer<T> jsonDeserializer = new JsonDeserializer<>(clazz, objectMapper, false);
+        jsonDeserializer.setUseTypeHeaders(false);
+
         return new DefaultKafkaConsumerFactory<>(
-                config,
+                consumerConfig,
                 new StringDeserializer(),
-                new JsonDeserializer<>(objectMapper)
+                new ErrorHandlingDeserializer<>(jsonDeserializer)
         );
     }
 }
