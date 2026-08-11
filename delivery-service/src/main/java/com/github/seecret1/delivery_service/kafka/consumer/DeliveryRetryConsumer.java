@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -22,18 +21,16 @@ public class DeliveryRetryConsumer {
             containerFactory = "retryKafkaListenerContainerFactory"
     )
     public void listenRetry(
-            ConsumerRecord<String, OrderDeliveryDto> event,
-            @Header(value = "retry-count", required = false) Integer retryCount
+            ConsumerRecord<String, OrderDeliveryDto> event
     ) {
         OrderDeliveryDto dto = event.value();
-        int currentRetry = retryCount != null ? retryCount : 1; //TODO: проверить работу без @Header
-        log.info("Retry delivery received traceId={}, retryCount={}, originalTopic={}",
-                dto.getTraceId(), event.headers().headers("retry-count"), event.topic());
+        log.info("Retry delivery received: traceId={}, topic={}, partition={}, offset={}",
+                dto.getTraceId(), event.topic(), event.partition(), event.offset());
         try {
             deliveryService.create(dto);
-            log.debug("Retry processed successfully traceId={}", dto.getTraceId());
+            log.info("Retry processed successfully: traceId={}", dto.getTraceId());
         } catch (Exception ex) {
-            log.error("Retry processing failed for traceId={}", dto.getTraceId(), ex);
+            log.error("Retry processing failed for traceId={}, will be sent to DLT", dto.getTraceId(), ex);
             throw ex;
         }
     }

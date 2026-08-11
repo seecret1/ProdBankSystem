@@ -1,7 +1,6 @@
 package com.github.seecret1.delivery_service.kafka.consumer;
 
 import com.github.seecret1.delivery_service.dto.order.OrderDeliveryDto;
-import com.github.seecret1.delivery_service.kafka.producer.DeliveryKafkaProducerService;
 import com.github.seecret1.delivery_service.service.DeliveryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,8 +15,6 @@ public class DeliveryOrderConsumer {
 
     private final DeliveryService deliveryService;
 
-    private final DeliveryKafkaProducerService deliveryKafkaProducerService;
-
     @KafkaListener(
             topics = "${app.kafka.topic}",
             groupId = "${app.kafka.group-id}",
@@ -29,14 +26,14 @@ public class DeliveryOrderConsumer {
         OrderDeliveryDto dto = event.value();
         log.info("Order delivery received: traceId={}, userId={}, originAddress={}, destinationAddress={}, createdAt={}",
                 dto.getTraceId(), dto.getUserId(), dto.getOriginAddress(), dto.getDestinationAddress(), dto.getCreatedAt());
-        log.info("Key: {}; Partition: {}; Topic: {}; Timestamp: {}",
-                event.key(), event.partition(), event.topic(), event.timestamp());
+        log.debug("Message details: partition={}, offset={}, timestamp={}", 
+                event.partition(), event.offset(), event.timestamp());
         try {
             deliveryService.create(dto);
-            log.debug("Order delivery processed successfully: traceId={}", dto.getTraceId());
+            log.info("Order delivery processed successfully: traceId={}", dto.getTraceId());
         } catch (Exception ex) {
-            deliveryKafkaProducerService.sendToRetry(dto, ex, 1);
-            log.error("Error processing order delivery: traceId={}", dto.getTraceId(), ex);
+            log.error("Order delivery processing failed: traceId={}, sending to retry topic", dto.getTraceId(), ex);
+            throw ex;
         }
     }
 }

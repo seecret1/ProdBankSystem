@@ -1,5 +1,6 @@
 package com.github.seecret1.cardservice.mapper;
 
+import com.github.seecret1.cardservice.dto.order.CardReceivingMethod;
 import com.github.seecret1.cardservice.dto.request.CardRequest;
 import com.github.seecret1.cardservice.dto.response.CardResponse;
 import com.github.seecret1.cardservice.entity.Card;
@@ -52,6 +53,7 @@ class CardMapperTest {
                 LocalDate.now().plusYears(1),
                 BigDecimal.valueOf(1000),
                 BigDecimal.valueOf(100000),
+                CardReceivingMethod.OFFICE,
                 "empty comment"
         );
     }
@@ -190,11 +192,11 @@ class CardMapperTest {
     @DisplayName("Should convert Card to OrderCardDto")
     void shouldConvertToOrderCardDto() {
         String comment = "Test comment";
-        OrderCardDto dto = cardMapper.toOrderCardDto(card, comment, userId);
+        OrderCardDto dto = cardMapper.toOrderCardDto(card, CardReceivingMethod.OFFICE, comment, userId);
 
         assertThat(dto).isNotNull();
         assertThat(dto.getTraceId()).isNotNull();
-        assertThat(dto.getUserId()).isEqualTo(userId);
+        assertThat(dto.getUserData()).isEqualTo(userId);
         assertThat(dto.getOrderType()).isEqualTo(OrderDto.OrderType.CARD);
         assertThat(dto.getCardId()).isEqualTo(card.getId());
         assertThat(dto.getCardType()).isEqualTo(CardType.DEBIT);

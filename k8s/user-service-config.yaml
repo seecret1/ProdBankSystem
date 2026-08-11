@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-service-config
+data:
+  # Для Spring Boot напрямую
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-service:5432/user_db"
+  SPRING_DATASOURCE_USERNAME: "postgres"
+  SPRING_DATASOURCE_PASSWORD: "postgres"
+  SPRING_DATASOURCE_DRIVER_CLASS_NAME: "org.postgresql.Driver"
+  SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+  SPRING_JPA_SHOW_SQL: "true"
+  SPRING_FLYWAY_ENABLED: "true"
+
+  # Ваши кастомные переменные
+  USER_HOST: "postgres-service"
+  USER_DB_NAME: "user_db"
+  USER_DB_USERNAME: "postgres"
+  USER_DB_URL: "jdbc:postgresql://postgres-service:5432/user_db"
+  USER_DB_PORT: "5432"
+
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+  REDIS_DATABASE: "0"
+
+  SPRING_PROFILES_ACTIVE: "k8s"
+  JAVA_OPTS: "-Xmx512m -Xms256m"

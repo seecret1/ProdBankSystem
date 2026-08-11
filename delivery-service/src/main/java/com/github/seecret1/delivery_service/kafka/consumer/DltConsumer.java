@@ -19,9 +19,17 @@ public class DltConsumer {
     )
     public void dltListen(
             ConsumerRecord<String, OrderDeliveryDto> message,
-            @Header(value = KafkaHeaders.DLT_EXCEPTION_MESSAGE, required = false) String exception
+            @Header(value = KafkaHeaders.DLT_EXCEPTION_MESSAGE, required = false) String exception,
+            @Header(value = KafkaHeaders.DLT_ORIGINAL_TOPIC, required = false) String originalTopic,
+            @Header(value = KafkaHeaders.DLT_ORIGINAL_TIMESTAMP, required = false) Long originalTimestamp
     ) {
-        log.error("Message in DLT - OrderDeliveryDto: {}; Original Topic: {}; Offset: {}", message, message.topic(), message.offset());
-        log.error("Original exception in DeliveryDto: {}", exception);
+        OrderDeliveryDto dto = message.value();
+        log.error("Message in Dead Letter Topic (DLT) - Failed after all retry attempts");
+        log.error("Delivery Order: traceId={}, userId={}, originAddress={}, destinationAddress={}",
+                dto.getTraceId(), dto.getUserId(), dto.getOriginAddress(), dto.getDestinationAddress());
+        log.error("DLT Message Info: topic={}, partition={}, offset={}, timestamp={}",
+                message.topic(), message.partition(), message.offset(), message.timestamp());
+        log.error("Original Message Info: topic={}, timestamp={}", originalTopic, originalTimestamp);
+        log.error("Exception that caused DLT: {}", exception);
     }
 }
