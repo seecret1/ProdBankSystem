@@ -45,7 +45,7 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic deliveryTopic() {
-        return TopicBuilder.name(kafkaProperties.getOrdersTopic())
+        return TopicBuilder.name(kafkaProperties.getTopic())
                 .partitions(kafkaProperties.getPartitions())
                 .replicas(kafkaProperties.getReplicas())
                 .build();
@@ -86,15 +86,6 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ProducerFactory<String, Object> genericProducerFactory() {
-        return new DefaultKafkaProducerFactory<>(
-                getBaseProducerConfig(),
-                new StringSerializer(),
-                new JsonSerializer<>(objectMapper)
-        );
-    }
-
-    @Bean
     public RetryTemplate kafkaRetryTemplate() {
         RetryTemplate retryTemplate = new RetryTemplate();
 
@@ -127,13 +118,6 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, Object> genericKafkaTemplate(
-            ProducerFactory<String, Object> producerFactory
-    ) {
-        return new KafkaTemplate<>(producerFactory);
-    }
-
-    @Bean
     public ConsumerFactory<String, OrderDeliveryDto> retryConsumerFactory() {
         Map<String, Object> config = getBaseConsumerConfig(kafkaProperties.getRetryGroupId());
         config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, OrderDeliveryDto.class.getName());
@@ -152,12 +136,12 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, OrderDeliveryDto> consumerDltFactory() {
+    public ConsumerFactory<String, Object> consumerDltFactory() {
         Map<String, Object> config = getBaseConsumerConfig(kafkaProperties.getDltGroupId());
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
-        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, OrderDeliveryDto.class.getName());
+        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class.getName());
 
-        return getDefaultKafkaConsumerFactory(config, OrderDeliveryDto.class);
+        return getDefaultKafkaConsumerFactory(config, Object.class);
     }
 
     @Bean
@@ -178,8 +162,7 @@ public class KafkaConfig {
         );
 
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(
-                recoverer,
-                new FixedBackOff(0, 0)
+                recoverer, new FixedBackOff(0, 0)
         );
         errorHandler.setRetryListeners();
 
@@ -215,10 +198,10 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, OrderDeliveryDto> dltKafkaListenerContainerFactory(
-            ConsumerFactory<String, OrderDeliveryDto> consumerDltFactory
+    public ConcurrentKafkaListenerContainerFactory<String, Object> dltKafkaListenerContainerFactory(
+            ConsumerFactory<String, Object> consumerDltFactory
     ) {
-        ConcurrentKafkaListenerContainerFactory<String, OrderDeliveryDto> factory =
+        ConcurrentKafkaListenerContainerFactory<String, Object> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerDltFactory);
         return factory;
@@ -239,8 +222,6 @@ public class KafkaConfig {
         Map<String, Object> config = new HashMap<>();
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
         config.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         config.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, kafkaProperties.getMaxPullRecords());
 
         config.putAll(kafkaSslConfig.getSslConfigs());

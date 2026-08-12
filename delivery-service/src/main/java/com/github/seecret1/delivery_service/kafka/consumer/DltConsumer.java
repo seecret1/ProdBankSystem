@@ -1,6 +1,5 @@
 package com.github.seecret1.delivery_service.kafka.consumer;
 
-import com.github.seecret1.delivery_service.dto.order.OrderDeliveryDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -18,15 +17,14 @@ public class DltConsumer {
             containerFactory = "dltKafkaListenerContainerFactory"
     )
     public void dltListen(
-            ConsumerRecord<String, OrderDeliveryDto> message,
+            ConsumerRecord<String, Object> message,
             @Header(value = KafkaHeaders.DLT_EXCEPTION_MESSAGE, required = false) String exception,
             @Header(value = KafkaHeaders.DLT_ORIGINAL_TOPIC, required = false) String originalTopic,
             @Header(value = KafkaHeaders.DLT_ORIGINAL_TIMESTAMP, required = false) Long originalTimestamp
     ) {
-        OrderDeliveryDto dto = message.value();
+        var dto = message.value();
         log.error("Message in Dead Letter Topic (DLT) - Failed after all retry attempts");
-        log.error("Delivery Order: traceId={}, userId={}, originAddress={}, destinationAddress={}",
-                dto.getTraceId(), dto.getUserId(), dto.getOriginAddress(), dto.getDestinationAddress());
+        log.error("Delivery Order: {}", dto);
         log.error("DLT Message Info: topic={}, partition={}, offset={}, timestamp={}",
                 message.topic(), message.partition(), message.offset(), message.timestamp());
         log.error("Original Message Info: topic={}, timestamp={}", originalTopic, originalTimestamp);
