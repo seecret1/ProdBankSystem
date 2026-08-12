@@ -136,12 +136,12 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, BaseMessage> dltConsumerFactory() {
+    public ConsumerFactory<String, Object> dltConsumerFactory() {
         Map<String, Object> config = getBaseConsumerConfig(kafkaProperties.getDltGroupId());
-        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, BaseMessage.class.getName());
+        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class.getName());
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
 
-        return getDefaultKafkaConsumerFactory(config, BaseMessage.class);
+        return getDefaultKafkaConsumerFactory(config, Object.class);
     }
 
     @Bean
@@ -198,10 +198,10 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, BaseMessage> dltCardsKafkaListenerContainerFactory(
-            ConsumerFactory<String, BaseMessage> consumerFactory
+    public ConcurrentKafkaListenerContainerFactory<String, Object> dltCardsKafkaListenerContainerFactory(
+            ConsumerFactory<String, Object> consumerFactory
     ) {
-        ConcurrentKafkaListenerContainerFactory<String, BaseMessage> factory =
+        ConcurrentKafkaListenerContainerFactory<String, Object> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
 
