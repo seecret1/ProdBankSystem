@@ -162,8 +162,7 @@ public class KafkaConfig {
         );
 
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(
-                recoverer,
-                new FixedBackOff(retryProperties.getDelay(), retryProperties.getMaxAttempts())
+                recoverer, new FixedBackOff(0, 0)
         );
         errorHandler.setRetryListeners();
 
