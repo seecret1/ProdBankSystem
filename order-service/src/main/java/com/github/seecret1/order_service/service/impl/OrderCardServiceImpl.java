@@ -12,7 +12,7 @@ import com.github.seecret1.order_service.exception.OrderTypeException;
 import com.github.seecret1.order_service.feign.OfficeServiceFeignClient;
 import com.github.seecret1.order_service.feign.UserServiceFeignClient;
 import com.github.seecret1.order_service.kafka.producer.OrderKafkaProducerService;
-import com.github.seecret1.order_service.mapper.OrderCardManualMapper;
+import com.github.seecret1.order_service.mapper.OrderCardMapper;
 import com.github.seecret1.order_service.repository.OrderCardRepository;
 import com.github.seecret1.order_service.service.OrderCardService;
 import com.github.seecret1.order_service.utils.OrderValidateUtils;
@@ -37,6 +37,8 @@ public class OrderCardServiceImpl implements OrderCardService {
 
     private final OfficeServiceFeignClient officeServiceFeignClient;
 
+    private final OrderCardMapper orderCardMapper;
+
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public BaseMessage createOrder(OrderCardDto event) {
@@ -53,7 +55,7 @@ public class OrderCardServiceImpl implements OrderCardService {
             //  Реализовать через invoice-service
 
             var personInfo = userServiceFeignClient.getPersonInfo(event.getUserId());
-            OrderCard order = OrderCardManualMapper.toEntity(event, OrderStatus.PENDING);
+            OrderCard order = orderCardMapper.toEntity(event, OrderStatus.PENDING);
             order = userValidate(order, personInfo, event);
 
             if (order.getStatus() == OrderStatus.REJECTED) {
@@ -65,7 +67,7 @@ public class OrderCardServiceImpl implements OrderCardService {
 
         } catch (Exception ex) {
             log.error("Error creating order: traceId={}, error={}", event.getTraceId(), ex.getMessage(), ex);
-            OrderCard errorOrder = OrderCardManualMapper.toEntity(event, OrderStatus.ERROR);
+            OrderCard errorOrder = orderCardMapper.toEntity(event, OrderStatus.ERROR);
             errorOrder.setComment("Error: " + ex.getMessage());
             errorOrder = orderCardRepository.save(errorOrder);
             return sendMessage(errorOrder);
@@ -170,7 +172,7 @@ public class OrderCardServiceImpl implements OrderCardService {
     }
 
     private BaseMessage sendMessage(OrderCard order) {
-        var message = OrderCardManualMapper.toMessage(order);
+        var message = orderCardMapper.toMessage(order);
         orderKafkaProducerService.sendWithWait(message);
         return message;
     }

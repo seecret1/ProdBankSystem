@@ -53,6 +53,9 @@ dependencies {
 	implementation("io.github.openfeign:feign-micrometer:${versions["feignMicrometerVersion"]}")
 	implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
 
+	compileOnly("org.mapstruct:mapstruct:${versions["mapstructVersion"]}")
+	annotationProcessor("org.mapstruct:mapstruct-processor:${versions["mapstructVersion"]}")
+
 	implementation("ch.qos.logback:logback-classic:${versions["logbackClassicVersion"]}")
 	implementation("org.springframework.kafka:spring-kafka")
 	testImplementation("org.springframework.kafka:spring-kafka-test")

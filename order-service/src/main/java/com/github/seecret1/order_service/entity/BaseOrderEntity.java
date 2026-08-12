@@ -48,6 +48,5 @@ public abstract class BaseOrderEntity {
 
     String deletedBy;
 
-    @Column(name = "comment")
     String comment;
 }
