@@ -1,9 +1,9 @@
 package com.github.seecret1.userservice.service.impl;
 
+import com.github.seecret1.userservice.dto.FullNameDto;
 import com.github.seecret1.userservice.dto.response.PersonInfo;
 import com.github.seecret1.userservice.mapper.AddressMapper;
 import com.github.seecret1.userservice.mapper.PersonMapper;
-import com.github.seecret1.userservice.repository.IndividualRepository;
 import com.github.seecret1.userservice.repository.UserRepository;
 import com.github.seecret1.userservice.service.PersonService;
 import jakarta.persistence.EntityNotFoundException;
@@ -32,12 +32,18 @@ public class PersonServiceImpl implements PersonService {
         if (!internalApiKey.equals(apiKey)) {
             throw new SecurityException("Invalid internal API key");
         }
-        var individual = userRepository.findById(userId)
-                .orElseThrow(EntityNotFoundException::new)
-                .getIndividual();
+        var user = userRepository.findById(userId)
+                .orElseThrow(EntityNotFoundException::new);
+        var individual = user.getIndividual();
         var address = individual.getAddress();
 
         var addressResponse = addressMapper.fromAddress(address);
-        return PersonMapper.toDto(individual.getUser().getId(), addressResponse, address.getCountry().getCode());
+        FullNameDto fullName = new FullNameDto(user.getFirstName(), user.getLastName(), user.getMiddleName());
+        return PersonMapper.toDto(
+                individual.getUser().getId(),
+                fullName,
+                individual.getPhoneNumber(),
+                addressResponse
+        );
     }
 }

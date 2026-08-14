@@ -1,5 +1,6 @@
 package com.github.seecret1.userservice.mapper;
 
+import com.github.seecret1.userservice.dto.FullNameDto;
 import com.github.seecret1.userservice.dto.response.AddressResponse;
 import com.github.seecret1.userservice.dto.response.PersonInfo;
 import lombok.experimental.UtilityClass;
@@ -9,9 +10,10 @@ public class PersonMapper {
 
     public PersonInfo toDto(
             String userId,
-            AddressResponse address,
-            String countryCode
+            FullNameDto fullName,
+            String contactPhone,
+            AddressResponse address
     ) {
-        return new PersonInfo(userId, address, countryCode);
+        return new PersonInfo(userId, fullName, contactPhone, address);
     }
 }
