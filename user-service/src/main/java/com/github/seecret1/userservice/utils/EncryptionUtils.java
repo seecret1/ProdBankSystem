@@ -1,20 +1,19 @@
 package com.github.seecret1.userservice.utils;
 
-import lombok.experimental.UtilityClass;
+import com.github.seecret1.userservice.config.EncryptionProperties;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-@UtilityClass
+@Component
+@RequiredArgsConstructor
 public class EncryptionUtils {
 
-    private static final String ALGORITHM = "AES";
-    private static final String TRANSFORMATION = "AES/ECB/PKCS5Padding";
-
-    // Ключ должен быть 16, 24 или 32 байта для AES-128/192/256
-    private static final String SECRET_KEY = "0123456789abcdef";
+    private final EncryptionProperties encryptionProperties;
 
     /**
      * Шифрует строку
@@ -26,11 +25,11 @@ public class EncryptionUtils {
 
         try {
             SecretKeySpec keySpec = new SecretKeySpec(
-                    SECRET_KEY.getBytes(StandardCharsets.UTF_8),
-                    ALGORITHM
+                    encryptionProperties.getSecretKey().getBytes(StandardCharsets.UTF_8),
+                    encryptionProperties.getAlgorithm()
             );
 
-            Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+            Cipher cipher = Cipher.getInstance(encryptionProperties.getTransformation());
             cipher.init(Cipher.ENCRYPT_MODE, keySpec);
 
             byte[] encrypted = cipher.doFinal(data.getBytes(StandardCharsets.UTF_8));
@@ -50,11 +49,11 @@ public class EncryptionUtils {
 
         try {
             SecretKeySpec keySpec = new SecretKeySpec(
-                    SECRET_KEY.getBytes(StandardCharsets.UTF_8),
-                    ALGORITHM
+                    encryptionProperties.getSecretKey().getBytes(StandardCharsets.UTF_8),
+                    encryptionProperties.getAlgorithm()
             );
 
-            Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+            Cipher cipher = Cipher.getInstance(encryptionProperties.getTransformation());
             cipher.init(Cipher.DECRYPT_MODE, keySpec);
 
             byte[] decrypted = cipher.doFinal(Base64.getDecoder().decode(encryptedData));

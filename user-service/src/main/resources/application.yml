@@ -26,14 +26,16 @@ spring:
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:secret}
 
+  encryption:
+    algorithm: ${ENCRYPTION_ALGORITHM:AES}
+    transformation: ${ENCRYPTION_TRANSFORMATION:AES/ECB/PKCS5Padding}
+    secret-key: ${ENCRYPTION_SECRET_SECRET_KEY:your-strong-secret-key-here-change-in-production}
+
 user-service:
   jwt:
     secret: ${SECRET_KEY:MyVeryLongAndSecureSecretKeyForJWTTokenSigningThatIsAtLeast64CharactersLongToMeetHS512Requirements123456789}
     tokenExpiration: 10m
     refreshTokenExpiration: 60m
-
-encryption:
-  secret: ${ENCRYPTION_SECRET:your-strong-secret-key-here-change-in-production}
 
 springdoc:
   api-docs:
