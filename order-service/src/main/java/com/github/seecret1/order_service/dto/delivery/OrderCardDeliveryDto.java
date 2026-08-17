@@ -1,23 +1,28 @@
-package com.github.seecret1.delivery_service.dto.order;
+package com.github.seecret1.order_service.dto.delivery;
 
-import com.github.seecret1.delivery_service.dto.address.AddressRequest;
-import com.github.seecret1.delivery_service.dto.user.FullNameDto;
-import com.github.seecret1.delivery_service.entity.enums.PersonType;
+import com.github.seecret1.order_service.dto.OrderDto;
+import com.github.seecret1.order_service.dto.address.AddressRequest;
+import com.github.seecret1.order_service.dto.user.FullNameDto;
+import com.github.seecret1.order_service.entity.enums.CardType;
+import com.github.seecret1.order_service.entity.enums.PersonType;
 import jakarta.validation.ValidationException;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
+
+import java.time.Instant;
 
 @Getter
 @Setter
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderDeliveryDto extends OrderDto {
+public class OrderCardDeliveryDto extends OrderDto {
+
+    private Instant plannedDeliveryTime;
 
     private String orderId;
+
+    private CardType cardType;
 
     private String officeId;
 
@@ -42,9 +47,6 @@ public class OrderDeliveryDto extends OrderDto {
         if (fullName == null || orderType == null ||
                 originAddress == null ||  destinationAddress == null) {
             throw new ValidationException("Must not be null fields");
-        }
-        if (fullName.getFirstName() == null || fullName.getLastName() == null) {
-            throw new ValidationException("Must not be null full name fields");
         }
     }
 }

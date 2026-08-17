@@ -1,6 +1,5 @@
 package com.github.seecret1.cardservice.mapper;
 
-import com.github.seecret1.cardservice.dto.order.CardReceivingMethod;
 import com.github.seecret1.cardservice.dto.request.CardRequest;
 import com.github.seecret1.cardservice.dto.response.CardResponse;
 import com.github.seecret1.cardservice.entity.Card;
@@ -82,8 +81,7 @@ public final class CardMapper {
 
     public OrderCardDto toOrderCardDto(
             Card card,
-            CardReceivingMethod receivingMethod,
-            String comment,
+            CardRequest request,
             String userId
     ) {
         String traceId = UUID.randomUUID().toString();
@@ -94,8 +92,9 @@ public final class CardMapper {
         dto.setCardId(card.getId());
         dto.setCardType(card.getType());
         dto.setSpendingLimit(card.getSpendingLimit());
-        dto.setCardReceivingMethod(receivingMethod);
-        dto.setComment(comment);
+        dto.setCardReceivingMethod(request.receivingMethod());
+        dto.setDeliveryRequest(request.cardDeliveryRequest());
+        dto.setComment(request.comment());
         dto.setCreatedAt(Instant.now());
         return dto;
     }

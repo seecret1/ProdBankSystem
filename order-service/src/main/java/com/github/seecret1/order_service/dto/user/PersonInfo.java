@@ -1,14 +1,16 @@
 package com.github.seecret1.order_service.dto.user;
 
-import com.github.seecret1.order_service.dto.address.AddressResponse;
+import com.github.seecret1.order_service.dto.address.AddressBaseResponse;
 
 public record PersonInfo(
 
         String userId,
 
-        AddressResponse address,
+        FullNameDto fullName,
 
-        String countryCode
+        String contactPhone,
+
+        AddressBaseResponse address
 
 ) {
 }

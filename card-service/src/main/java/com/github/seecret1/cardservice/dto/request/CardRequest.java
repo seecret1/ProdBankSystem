@@ -26,10 +26,12 @@ public record CardRequest (
     BigDecimal balance,
 
     @Positive(message = "spending limit must only positive value!")
-    BigDecimal spendingLimit,
+    BigDecimal spendingLimit, //TODO: удалить из request, задавать в сервисе
 
     @NotNull(message = "Receiving method must be set!")
     CardReceivingMethod receivingMethod,
+
+    CardDeliveryRequest cardDeliveryRequest,
 
     @Size(max = 255, message = "Max size message in {max} symbols")
     String comment

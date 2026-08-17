@@ -37,7 +37,7 @@ public class PersonServiceImpl implements PersonService {
         var individual = user.getIndividual();
         var address = individual.getAddress();
 
-        var addressResponse = addressMapper.fromAddress(address);
+        var addressResponse = addressMapper.fromBaseAddress(address);
         FullNameDto fullName = new FullNameDto(user.getFirstName(), user.getLastName(), user.getMiddleName());
         return PersonMapper.toDto(
                 individual.getUser().getId(),

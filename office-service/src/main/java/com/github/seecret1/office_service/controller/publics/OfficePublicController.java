@@ -1,5 +1,6 @@
 package com.github.seecret1.office_service.controller.publics;
 
+import com.github.seecret1.office_service.dto.response.OfficeMainResponse;
 import com.github.seecret1.office_service.dto.response.OfficeResponse;
 import com.github.seecret1.office_service.service.OfficeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,6 +22,20 @@ public class OfficePublicController {
     private static final String X_INTERNAL_API_KEY = "X-Internal-Api-Key";
 
     private final OfficeService officeService;
+
+    @GetMapping("/services/main")
+    @Operation(summary = "Find offices by city", description = "Find offices by city")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success find offices"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "Not Found")
+    })
+    public OfficeMainResponse findMainOfficeNearestByCity(
+            @RequestHeader(value = X_INTERNAL_API_KEY, required = false) String apiKey
+    ) {
+        return officeService.findMainOfficeNearestByCity(apiKey);
+    }
 
     @GetMapping("/services/{city}")
     @Operation(summary = "Find offices by city", description = "Find offices by city")

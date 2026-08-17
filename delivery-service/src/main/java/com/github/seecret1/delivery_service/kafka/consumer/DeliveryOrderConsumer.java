@@ -1,6 +1,6 @@
 package com.github.seecret1.delivery_service.kafka.consumer;
 
-import com.github.seecret1.delivery_service.dto.order.OrderDeliveryDto;
+import com.github.seecret1.delivery_service.dto.order.OrderCardDeliveryDto;
 import com.github.seecret1.delivery_service.service.DeliveryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,11 +21,11 @@ public class DeliveryOrderConsumer {
             containerFactory = "deliveryKafkaListenerContainerFactory"
     )
     public void listenDeliveryOrder(
-            ConsumerRecord<String, OrderDeliveryDto> event
+            ConsumerRecord<String, OrderCardDeliveryDto> event
     ) {
-        OrderDeliveryDto dto = event.value();
-        log.info("Order delivery received: traceId={}, userId={}, originAddress={}, destinationAddress={}, createdAt={}",
-                dto.getTraceId(), dto.getUserId(), dto.getOriginAddress(), dto.getDestinationAddress(), dto.getCreatedAt());
+        OrderCardDeliveryDto dto = event.value();
+        log.info("Order delivery received: traceId={}, orderId={}, userId={}, originAddress={}, destinationAddress={}, createdAt={}",
+                dto.getTraceId(), dto.getOrderId(), dto.getUserId(), dto.getOriginAddress(), dto.getDestinationAddress(), dto.getCreatedAt());
         log.debug("Message details: partition={}, offset={}, timestamp={}", 
                 event.partition(), event.offset(), event.timestamp());
         try {

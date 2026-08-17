@@ -5,7 +5,7 @@ import com.github.seecret1.order_service.config.kafka.properties.KafkaProperties
 import com.github.seecret1.order_service.config.kafka.properties.RetryProperties;
 import com.github.seecret1.order_service.dto.BaseMessage;
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
-import com.github.seecret1.order_service.dto.delivery.OrderDeliveryDto;
+import com.github.seecret1.order_service.dto.delivery.OrderCardDeliveryDto;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -87,7 +87,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ProducerFactory<String, OrderDeliveryDto> deliveryProducerFactory() {
+    public ProducerFactory<String, OrderCardDeliveryDto> deliveryProducerFactory() {
         return new DefaultKafkaProducerFactory<>(
                 getBaseProducerConfig(),
                 new StringSerializer(),
@@ -130,8 +130,8 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, OrderDeliveryDto> deliveryKafkaTemplate(
-            ProducerFactory<String, OrderDeliveryDto> producerFactory
+    public KafkaTemplate<String, OrderCardDeliveryDto> deliveryKafkaTemplate(
+            ProducerFactory<String, OrderCardDeliveryDto> producerFactory
     ) {
         return new KafkaTemplate<>(producerFactory);
     }

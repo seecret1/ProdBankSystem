@@ -29,7 +29,7 @@ spring:
   encryption:
     algorithm: ${ENCRYPTION_ALGORITHM:AES}
     transformation: ${ENCRYPTION_TRANSFORMATION:AES/ECB/PKCS5Padding}
-    secret-key: ${ENCRYPTION_SECRET_SECRET_KEY:your-strong-secret-key-here-change-in-production}
+    secret-key: ${ENCRYPTION_SECRET_SECRET_KEY:your-32-byte-secret-key-here!!!!}
 
 user-service:
   jwt:

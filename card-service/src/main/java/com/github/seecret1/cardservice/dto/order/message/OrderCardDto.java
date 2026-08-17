@@ -1,5 +1,6 @@
 package com.github.seecret1.cardservice.dto.order.message;
 
+import com.github.seecret1.cardservice.dto.request.CardDeliveryRequest;
 import com.github.seecret1.cardservice.entity.enums.CardType;
 import com.github.seecret1.cardservice.dto.order.CardReceivingMethod;
 import jakarta.validation.ValidationException;
@@ -20,6 +21,8 @@ public class OrderCardDto extends OrderDto {
     private BigDecimal spendingLimit;
 
     private CardReceivingMethod cardReceivingMethod;
+
+    private CardDeliveryRequest deliveryRequest;
 
     @Override
     public void validate() {

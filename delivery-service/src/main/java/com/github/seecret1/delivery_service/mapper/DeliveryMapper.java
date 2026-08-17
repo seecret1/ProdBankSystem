@@ -2,10 +2,11 @@ package com.github.seecret1.delivery_service.mapper;
 
 import com.github.seecret1.delivery_service.dto.BaseMessage;
 import com.github.seecret1.delivery_service.dto.DeliveryResponse;
-import com.github.seecret1.delivery_service.dto.order.OrderDeliveryDto;
+import com.github.seecret1.delivery_service.dto.order.OrderCardDeliveryDto;
 import com.github.seecret1.delivery_service.dto.user.FullNameDto;
 import com.github.seecret1.delivery_service.dto.user.RecipientDto;
-import com.github.seecret1.delivery_service.entity.Delivery;
+import com.github.seecret1.delivery_service.entity.Address;
+import com.github.seecret1.delivery_service.entity.CardDelivery;
 import com.github.seecret1.delivery_service.entity.FullName;
 import com.github.seecret1.delivery_service.entity.Recipient;
 import com.github.seecret1.delivery_service.entity.enums.DeliveryStatus;
@@ -21,35 +22,43 @@ public class DeliveryMapper {
 
     private final AddressMapper addressMapper;
 
-    public Delivery toEntity(OrderDeliveryDto dto, RecipientDto recipientDto) {
-        return Delivery.builder()
+    public CardDelivery toEntity(
+            OrderCardDeliveryDto dto,
+            Recipient recipient,
+            Address originalAddress,
+            Address destinationAddress
+    ) {
+        return CardDelivery.builder()
                 .orderId(dto.getOrderId())
-                .recipient(toRecipientEntity(recipientDto))
-                .originAddress(addressMapper.toAddress(dto.getOriginAddress()))
-                .destinationAddress(addressMapper.toAddress(dto.getDestinationAddress()))
-                .status(DeliveryStatus.CREATED)
-                .build();
-    }
-
-    public DeliveryResponse toResponse(Delivery delivery, RecipientDto recipient) {
-        return DeliveryResponse.builder()
-                .courierId(delivery.getCourierId())
                 .recipient(recipient)
-                .courierContactPhone(delivery.getCourierContactPhone())
-                .originAddress(addressMapper.fromAddress(delivery.getOriginAddress()))
-                .destinationAddress(addressMapper.fromAddress(delivery.getDestinationAddress()))
-                .createdAt(delivery.getCreatedAt())
+                .originAddress(originalAddress)
+                .destinationAddress(destinationAddress)
+                .plannedDeliveryTime(dto.getPlannedDeliveryTime())
+                .cardType(dto.getCardType())
+                .status(DeliveryStatus.CREATED)
+                .deleted(false)
                 .build();
     }
 
-    public BaseMessage toMessage(Delivery delivery, String traceId) {
+    public DeliveryResponse toResponse(CardDelivery cardDelivery, RecipientDto recipient) {
+        return DeliveryResponse.builder()
+                .courierId(cardDelivery.getCourierId())
+                .recipient(recipient)
+                .courierContactPhone(cardDelivery.getCourierContactPhone())
+                .originAddress(addressMapper.fromAddress(cardDelivery.getOriginAddress()))
+                .destinationAddress(addressMapper.fromAddress(cardDelivery.getDestinationAddress()))
+                .createdAt(cardDelivery.getCreatedAt())
+                .build();
+    }
+
+    public BaseMessage toMessage(CardDelivery cardDelivery, String traceId) {
         return BaseMessage.builder()
                 .traceId(traceId)
-                .orderId(delivery.getOrderId())
-                .userId(delivery.getRecipient().getUserId())
-                .productId(delivery.getId())
+                .orderId(cardDelivery.getOrderId())
+                .userId(cardDelivery.getRecipient().getUserId())
+                .productId(cardDelivery.getId())
                 .status(OrderStatus.PENDING)
-                .data(toResponse(delivery, toRecipientDto(delivery.getRecipient())))
+                .data(toResponse(cardDelivery, toRecipientDto(cardDelivery.getRecipient())))
                 .message("Delivery request accepted")
                 .timestamp(Instant.now())
                 .build();
