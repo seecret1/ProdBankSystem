@@ -1,7 +1,8 @@
-package com.github.seecret1.delivery_service.service;
+package com.github.seecret1.delivery_service.service.processed;
 
 import com.github.seecret1.delivery_service.dto.address.AddressPair;
 import com.github.seecret1.delivery_service.dto.address.AddressRequest;
+import com.github.seecret1.delivery_service.service.AddressService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
