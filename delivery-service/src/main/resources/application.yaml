@@ -1,0 +1,119 @@
+server:
+  port: 8099
+
+spring:
+  application:
+    name: ${SERVICE_NAME:delivery-service}
+
+  datasource:
+    url: ${DELIVERY_DB_LOCAL_URL:jdbc:postgresql://${HOST:localhost}:${DELIVERY_DB_PORT:5441}/${DELIVERY_DB_NAME:delivery_db}}
+    username: ${DELIVERY_DB_USERNAME:postgres}
+    password: ${DELIVERY_DB_PASSWORD:postgres}
+
+  jpa:
+    generate-ddl: false
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      org.hibernate.envers.audit_table_suffix: _history
+      org.hibernate.envers.audit_table_prefix:
+      org.hibernate.envers.default_schema: delivery_bank_history
+
+  flyway:
+    enabled: true
+
+  data:
+    redis:
+      host: ${HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:secret}
+
+  kafka:
+    bootstrap-servers: ${HOST:localhost}:${KAFKA1_PORT:9092}, ${HOST:localhost}:${KAFKA2_PORT:9093}, ${HOST:localhost}:${KAFKA3_PORT:9094}
+    ssl:
+      enabled: ${KAFKA_SSL_ENABLED:false}
+      trust-store-location: ${KAFKA_TRUSTSTORE_LOCATION:file:./kafka.truststore.jks}
+      trust-store-password: ${KAFKA_TRUSTSTORE_PASSWORD:changeit}
+      key-store-location: ${KAFKA_KEYSTORE_LOCATION:file:./kafka.keystore.jks}
+      key-store-password: ${KAFKA_KEYSTORE_PASSWORD:changeit}
+      key-password: ${KAFKA_KEY_PASSWORD:changeit}
+      protocol: ${KAFKA_SSL_PROTOCOL:SSL}
+      enabled-protocols: TLSv1.2,TLSv1.3
+
+    # Security properties
+    properties:
+      security:
+        protocol: ${KAFKA_SECURITY_PROTOCOL:PLAINTEXT}
+      ssl:
+        endpoint:
+          identification:
+            algorithm: ${KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM:https}
+
+springdoc:
+  api-docs:
+    path: /api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operationsSorter: method
+    tagsSorter: alpha
+    try-it-out-enabled: true
+    filter: true
+  show-actuator: true
+  packages-to-scan: com.github.seecret1.delivery_service.controller
+  paths-to-match: /api/v1/**
+
+logging:
+  config: "classpath:logback.xml"
+  level:
+    com.github.seecret1.delivery_service: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    prometheus:
+      access: read_only
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+
+otel:
+  exporter:
+    otlp:
+      endpoint: ${OTLP_EXPORTER_ENDPOINT:http://localhost:4318}
+      protocol: http/protobuf
+  logs:
+    exporter: none
+  metrics:
+    exporter: none
+
+app:
+  kafka:
+    bootstrap-servers: ${spring.kafka.bootstrap-servers}
+    topic: delivery
+    retry-topic: delivery-retry
+    orders-topic: orders
+    group-id: delivery-group-id
+    retry-group-id: delivery-retry-group-id
+    dlt-topic: delivery.DLT
+    dlt-group-id: delivery-group-id.dlt
+    max-pull-records: 10
+    partitions: 3
+    replicas: 3
+
+  retry:
+    max-attempts: 3
+    delay: 1500
+    multiplier: 2
+    max-interval: 10000
+    timeout: 5

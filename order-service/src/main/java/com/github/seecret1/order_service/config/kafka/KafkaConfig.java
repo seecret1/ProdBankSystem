@@ -3,8 +3,9 @@ package com.github.seecret1.order_service.config.kafka;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.seecret1.order_service.config.kafka.properties.KafkaProperties;
 import com.github.seecret1.order_service.config.kafka.properties.RetryProperties;
-import com.github.seecret1.order_service.dto.OrderMessage;
+import com.github.seecret1.order_service.dto.BaseMessage;
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
+import com.github.seecret1.order_service.dto.delivery.OrderCardDeliveryDto;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -19,6 +20,7 @@ import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
@@ -51,6 +53,14 @@ public class KafkaConfig {
     }
 
     @Bean
+    public NewTopic retryTopic() {
+        return TopicBuilder.name(kafkaProperties.getRetryTopic())
+                .partitions(kafkaProperties.getPartitions())
+                .replicas(kafkaProperties.getReplicas())
+                .build();
+    }
+
+    @Bean
     public NewTopic orderDltTopic() {
         return TopicBuilder.name(kafkaProperties.getDltTopic())
                 .partitions(kafkaProperties.getPartitions())
@@ -59,7 +69,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ProducerFactory<String, OrderMessage> orderProducerFactory() {
+    public ProducerFactory<String, BaseMessage> orderProducerFactory() {
         return new DefaultKafkaProducerFactory<>(
                 getBaseProducerConfig(),
                 new StringSerializer(),
@@ -69,6 +79,15 @@ public class KafkaConfig {
 
     @Bean
     public ProducerFactory<String, OrderCardDto> orderCreateProducerFactory() {
+        return new DefaultKafkaProducerFactory<>(
+                getBaseProducerConfig(),
+                new StringSerializer(),
+                new JsonSerializer<>(objectMapper)
+        );
+    }
+
+    @Bean
+    public ProducerFactory<String, OrderCardDeliveryDto> deliveryProducerFactory() {
         return new DefaultKafkaProducerFactory<>(
                 getBaseProducerConfig(),
                 new StringSerializer(),
@@ -104,8 +123,15 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, OrderMessage> orderCardKafkaTemplate(
-            ProducerFactory<String, OrderMessage> producerFactory
+    public KafkaTemplate<String, BaseMessage> orderKafkaTemplate(
+            ProducerFactory<String, BaseMessage> producerFactory
+    ) {
+        return new KafkaTemplate<>(producerFactory);
+    }
+
+    @Bean
+    public KafkaTemplate<String, OrderCardDeliveryDto> deliveryKafkaTemplate(
+            ProducerFactory<String, OrderCardDeliveryDto> producerFactory
     ) {
         return new KafkaTemplate<>(producerFactory);
     }
@@ -125,16 +151,30 @@ public class KafkaConfig {
     }
 
     @Bean
+    public ConsumerFactory<String, BaseMessage> consumerBaseMessageFactory() {
+        Map<String, Object> config = getBaseConsumerConfig(kafkaProperties.getGroupId());
+        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, BaseMessage.class.getName());
+        config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+
+        return getDefaultKafkaConsumerFactory(config, BaseMessage.class);
+    }
+
+    @Bean
     public ConsumerFactory<String, OrderCardDto> consumerFactory() {
         Map<String, Object> config = getBaseConsumerConfig(kafkaProperties.getGroupId());
         config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, OrderCardDto.class.getName());
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
 
-        return new DefaultKafkaConsumerFactory<>(
-                config,
-                new StringDeserializer(),
-                new JsonDeserializer<>(objectMapper)
-        );
+        return getDefaultKafkaConsumerFactory(config, OrderCardDto.class);
+    }
+
+    @Bean
+    public ConsumerFactory<String, OrderCardDto> consumerRetryFactory() {
+        Map<String, Object> config = getBaseConsumerConfig(kafkaProperties.getRetryGroupId());
+        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, OrderCardDto.class.getName());
+        config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+
+        return getDefaultKafkaConsumerFactory(config, OrderCardDto.class);
     }
 
     @Bean
@@ -143,15 +183,38 @@ public class KafkaConfig {
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
         config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class.getName());
 
-        return new DefaultKafkaConsumerFactory<>(
-                config,
-                new StringDeserializer(),
-                new JsonDeserializer<>(objectMapper)
-        );
+        return getDefaultKafkaConsumerFactory(config, Object.class);
     }
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, OrderCardDto> orderCardKafkaListenerContainerFactory(
+            ConsumerFactory<String, OrderCardDto> consumerFactory,
+            KafkaTemplate<String, OrderCardDto> orderCreateKafkaTemplate
+    ) {
+        ConcurrentKafkaListenerContainerFactory<String, OrderCardDto> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory);
+
+        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(
+                orderCreateKafkaTemplate,
+                (record, exception) -> new org.apache.kafka.common.TopicPartition(
+                        kafkaProperties.getRetryTopic(),
+                        record.partition()
+                )
+        );
+
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(
+                recoverer,
+                new FixedBackOff(retryProperties.getDelay(), retryProperties.getMaxAttempts())
+        );
+        errorHandler.setRetryListeners();
+
+        factory.setCommonErrorHandler(errorHandler);
+        return factory;
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, OrderCardDto> retryOrderKafkaListenerContainerFactory(
             ConsumerFactory<String, OrderCardDto> consumerFactory,
             KafkaTemplate<String, OrderCardDto> orderCreateKafkaTemplate
     ) {
@@ -202,12 +265,26 @@ public class KafkaConfig {
         Map<String, Object> config = new HashMap<>();
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
         config.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         config.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, kafkaProperties.getMaxPullRecords());
 
         config.putAll(kafkaSslConfig.getSslConfigs());
 
         return config;
+    }
+
+    private <T>DefaultKafkaConsumerFactory<String, T> getDefaultKafkaConsumerFactory(Map<String, Object> config, Class<T> clazz) {
+        Map<String, Object> consumerConfig = new HashMap<>(config);
+        consumerConfig.remove(JsonDeserializer.VALUE_DEFAULT_TYPE);
+        consumerConfig.remove(JsonDeserializer.USE_TYPE_INFO_HEADERS);
+        consumerConfig.remove(JsonDeserializer.TRUSTED_PACKAGES);
+
+        JsonDeserializer<T> jsonDeserializer = new JsonDeserializer<>(clazz, objectMapper, false);
+        jsonDeserializer.setUseTypeHeaders(false);
+
+        return new DefaultKafkaConsumerFactory<>(
+                consumerConfig,
+                new StringDeserializer(),
+                new ErrorHandlingDeserializer<>(jsonDeserializer)
+        );
     }
 }

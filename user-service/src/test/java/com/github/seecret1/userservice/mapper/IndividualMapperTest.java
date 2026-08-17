@@ -36,6 +36,9 @@ class IndividualMapperTest {
     @Mock
     private DateTimeUtil dateTimeUtil;
 
+    @Mock
+    private EncryptionUtils encryptionUtils;
+
     @InjectMocks
     private IndividualMapperImpl individualMapper;
 
@@ -72,8 +75,8 @@ class IndividualMapperTest {
 
         individual = new Individual();
         individual.setId("1");
-        individual.setPassportNumber(EncryptionUtils.encrypt("1234 567890"));
-        individual.setPhoneNumber(EncryptionUtils.encrypt("+71234567890"));
+        individual.setPassportNumber(encryptionUtils.encrypt("1234 567890"));
+        individual.setPhoneNumber(encryptionUtils.encrypt("+71234567890"));
         individual.setUser(user);
         individual.setAddress(address);
         individual.setDeleted(false);
@@ -94,8 +97,8 @@ class IndividualMapperTest {
 
         assertThat(result).isNotNull();
         assertThat(result.getId()).isNull();
-        assertThat(result.getPassportNumber()).isEqualTo(EncryptionUtils.encrypt("1234 567890"));
-        assertThat(result.getPhoneNumber()).isEqualTo(EncryptionUtils.encrypt("+71234567890"));
+        assertThat(result.getPassportNumber()).isEqualTo(encryptionUtils.encrypt("1234 567890"));
+        assertThat(result.getPhoneNumber()).isEqualTo(encryptionUtils.encrypt("+71234567890"));
         assertThat(result.getAddress()).isEqualTo(address);
         assertThat(result.getUser()).isNull();
         assertThat(result.getDeleted()).isFalse();
@@ -119,8 +122,8 @@ class IndividualMapperTest {
         Individual result = individualMapper.toEntity(requestWithoutAddress);
 
         assertThat(result).isNotNull();
-        assertThat(result.getPassportNumber()).isEqualTo(EncryptionUtils.encrypt("1234 567890"));
-        assertThat(result.getPhoneNumber()).isEqualTo(EncryptionUtils.encrypt("+71234567890"));
+        assertThat(result.getPassportNumber()).isEqualTo(encryptionUtils.encrypt("1234 567890"));
+        assertThat(result.getPhoneNumber()).isEqualTo(encryptionUtils.encrypt("+71234567890"));
         assertThat(result.getAddress()).isNull();
         assertThat(result.getDeleted()).isFalse();
         assertThat(result.getCreatedAt()).isEqualTo(now);
@@ -295,8 +298,8 @@ class IndividualMapperTest {
     void toResponseDto_ShouldMapListOfIndividuals_WhenListNotEmpty() {
         Individual individual2 = new Individual();
         individual2.setId("2");
-        individual2.setPassportNumber(EncryptionUtils.encrypt("9876 543210"));
-        individual2.setPhoneNumber(EncryptionUtils.encrypt("+79876543210"));
+        individual2.setPassportNumber(encryptionUtils.encrypt("9876 543210"));
+        individual2.setPhoneNumber(encryptionUtils.encrypt("+79876543210"));
         User user2 = new User();
         user2.setId("2");
         user2.setFirstName("Jane");
@@ -364,8 +367,8 @@ class IndividualMapperTest {
 
         assertThat(individual.getAddress()).isEqualTo(newAddress);
         assertThat(individual.getUpdatedAt()).isEqualTo(now);
-        assertThat(individual.getPassportNumber()).isEqualTo(EncryptionUtils.encrypt("5678 123456"));
-        assertThat(individual.getPhoneNumber()).isEqualTo(EncryptionUtils.encrypt("+79998887766"));
+        assertThat(individual.getPassportNumber()).isEqualTo(encryptionUtils.encrypt("5678 123456"));
+        assertThat(individual.getPhoneNumber()).isEqualTo(encryptionUtils.encrypt("+79998887766"));
         verify(addressMapper).toAddress(any(AddressRequest.class));
     }
 
@@ -385,8 +388,8 @@ class IndividualMapperTest {
 
         assertThat(individual.getAddress()).isNull();
         assertThat(individual.getUpdatedAt()).isEqualTo(now);
-        assertThat(individual.getPassportNumber()).isEqualTo(EncryptionUtils.encrypt("5678 123456"));
-        assertThat(individual.getPhoneNumber()).isEqualTo(EncryptionUtils.encrypt("+79998887766"));
+        assertThat(individual.getPassportNumber()).isEqualTo(encryptionUtils.encrypt("5678 123456"));
+        assertThat(individual.getPhoneNumber()).isEqualTo(encryptionUtils.encrypt("+79998887766"));
     }
 
     @Test
@@ -480,16 +483,16 @@ class IndividualMapperTest {
 
         assertThat(individual.getAddress()).isNull();
         assertThat(individual.getUpdatedAt()).isEqualTo(now);
-        assertThat(individual.getPassportNumber()).isEqualTo(EncryptionUtils.encrypt("5678 123456"));
-        assertThat(individual.getPhoneNumber()).isEqualTo(EncryptionUtils.encrypt("+79998887766"));
+        assertThat(individual.getPassportNumber()).isEqualTo(encryptionUtils.encrypt("5678 123456"));
+        assertThat(individual.getPhoneNumber()).isEqualTo(encryptionUtils.encrypt("+79998887766"));
     }
 
     @Test
     void toResponseDto_ShouldHandleUserWithAllNullFields() {
         Individual individualWithNullUser = new Individual();
         individualWithNullUser.setId("2");
-        individualWithNullUser.setPassportNumber(EncryptionUtils.encrypt("1234 567890"));
-        individualWithNullUser.setPhoneNumber(EncryptionUtils.encrypt("+71234567890"));
+        individualWithNullUser.setPassportNumber(encryptionUtils.encrypt("1234 567890"));
+        individualWithNullUser.setPhoneNumber(encryptionUtils.encrypt("+71234567890"));
         individualWithNullUser.setUser(null);
         individualWithNullUser.setAddress(null);
         individualWithNullUser.setDeleted(false);
@@ -516,8 +519,8 @@ class IndividualMapperTest {
 
         Individual individualWithPartialUser = new Individual();
         individualWithPartialUser.setId("3");
-        individualWithPartialUser.setPassportNumber(EncryptionUtils.encrypt("1234 567890"));
-        individualWithPartialUser.setPhoneNumber(EncryptionUtils.encrypt("+71234567890"));
+        individualWithPartialUser.setPassportNumber(encryptionUtils.encrypt("1234 567890"));
+        individualWithPartialUser.setPhoneNumber(encryptionUtils.encrypt("+71234567890"));
         individualWithPartialUser.setUser(partialUser);
         individualWithPartialUser.setAddress(address);
 
@@ -547,8 +550,8 @@ class IndividualMapperTest {
         Individual result = individualMapper.toEntity(requestWithSpecialChars);
 
         assertThat(result).isNotNull();
-        assertThat(result.getPassportNumber()).isEqualTo(EncryptionUtils.encrypt("1234-567890"));
-        assertThat(result.getPhoneNumber()).isEqualTo(EncryptionUtils.encrypt("+7 (123) 456-78-90"));
+        assertThat(result.getPassportNumber()).isEqualTo(encryptionUtils.encrypt("1234-567890"));
+        assertThat(result.getPhoneNumber()).isEqualTo(encryptionUtils.encrypt("+7 (123) 456-78-90"));
     }
 
     @Test
@@ -593,7 +596,7 @@ class IndividualMapperTest {
         };
 
         for (String passport : passportFormats) {
-            individual.setPassportNumber(EncryptionUtils.encrypt(passport));
+            individual.setPassportNumber(encryptionUtils.encrypt(passport));
             when(addressMapper.fromAddress(address)).thenReturn(
                     new AddressResponse(false, null, null, null, null, "123 Main St", "12345", "New York")
             );

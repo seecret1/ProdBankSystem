@@ -134,6 +134,44 @@ services:
       timeout: 5s
       retries: 20
 
+  office-postgres:
+    image: postgres:17
+    container_name: office-postgres
+    environment:
+      POSTGRES_USER: ${OFFICE_DB_USERNAME}
+      POSTGRES_PASSWORD: ${OFFICE_DB_PASSWORD}
+      POSTGRES_DB: ${OFFICE_DB_NAME}
+    restart: on-failure
+    volumes:
+      - office_postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/databases/bank:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${OFFICE_DB_PORT}:${POSTGRES_DB_PORT}"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${OFFICE_DB_USERNAME} -p ${POSTGRES_DB_PORT}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  delivery-postgres:
+    image: postgres:17
+    container_name: delivery-postgres
+    environment:
+      POSTGRES_USER: ${DELIVERY_DB_USERNAME}
+      POSTGRES_PASSWORD: ${DELIVERY_DB_PASSWORD}
+      POSTGRES_DB: ${DELIVERY_DB_NAME}
+    restart: on-failure
+    volumes:
+      - delivery_postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/databases/bank:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${DELIVERY_DB_PORT}:${POSTGRES_DB_PORT}"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DELIVERY_DB_USERNAME} -p ${POSTGRES_DB_PORT}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
   user-postgres-exporter:
     image: prometheuscommunity/postgres-exporter:latest
     container_name: user-postgres-exporter
@@ -210,6 +248,28 @@ services:
       DATA_SOURCE_NAME: postgresql://${NOTIFICATION_DB_USERNAME}:${NOTIFICATION_DB_PASSWORD}@${NOTIFICATION_HOST}:${POSTGRES_DB_PORT}/${NOTIFICATION_DB_USERNAME}?sslmode=disable
     ports:
       - "${NOTIFICATION_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
+
+  office-postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: office-postgres-exporter
+    depends_on:
+      notification-postgres:
+        condition: service_healthy
+    environment:
+      DATA_SOURCE_NAME: postgresql://${OFFICE_DB_USERNAME}:${OFFICE_DB_PASSWORD}@${OFFICE_HOST}:${POSTGRES_DB_PORT}/${OFFICE_DB_USERNAME}?sslmode=disable
+    ports:
+      - "${OFFICE_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
+
+  delivery-postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: delivery-postgres-exporter
+    depends_on:
+      notification-postgres:
+        condition: service_healthy
+    environment:
+      DATA_SOURCE_NAME: postgresql://${DELIVERY_DB_USERNAME}:${DELIVERY_DB_PASSWORD}@${DELIVERY_HOST}:${POSTGRES_DB_PORT}/${DELIVERY_DB_NAME}?sslmode=disable
+    ports:
+      - "${DELIVERY_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
 
   nexus:
     image: sonatype/nexus3:3.76.0
@@ -341,8 +401,14 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:${ZOOKEEPER_PORT}
       KAFKA_LISTENERS: INTERNAL://0.0.0.0:${KAFKA1_INTERNAL_PORT},EXTERNAL://0.0.0.0:${KAFKA1_PORT}
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka1:${KAFKA1_INTERNAL_PORT},EXTERNAL://${HOST}:${KAFKA1_PORT}
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:SSL
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_SSL_KEYSTORE_LOCATION: /etc/kafka/secrets/kafka.keystore.jks
+      KAFKA_SSL_KEYSTORE_PASSWORD: ${KAFKA_KEYSTORE_PASSWORD:-changeit}
+      KAFKA_SSL_KEY_PASSWORD: ${KAFKA_KEY_PASSWORD:-changeit}
+      KAFKA_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/kafka.truststore.jks
+      KAFKA_SSL_TRUSTSTORE_PASSWORD: ${KAFKA_TRUSTSTORE_PASSWORD:-changeit}
+      KAFKA_SSL_CLIENT_AUTH: required
 
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
@@ -353,6 +419,7 @@ services:
       KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
     volumes:
       - kafka1_data:/var/lib/kafka/data
+      - ./certificates:/etc/kafka/secrets:ro
 
   kafka2:
     image: confluentinc/cp-kafka:6.2.0
@@ -367,8 +434,14 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:${ZOOKEEPER_PORT}
       KAFKA_LISTENERS: INTERNAL://0.0.0.0:${KAFKA2_INTERNAL_PORT},EXTERNAL://0.0.0.0:${KAFKA2_PORT}
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka2:${KAFKA2_INTERNAL_PORT},EXTERNAL://${HOST}:${KAFKA2_PORT}
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:SSL
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_SSL_KEYSTORE_LOCATION: /etc/kafka/secrets/kafka.keystore.jks
+      KAFKA_SSL_KEYSTORE_PASSWORD: ${KAFKA_KEYSTORE_PASSWORD:-changeit}
+      KAFKA_SSL_KEY_PASSWORD: ${KAFKA_KEY_PASSWORD:-changeit}
+      KAFKA_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/kafka.truststore.jks
+      KAFKA_SSL_TRUSTSTORE_PASSWORD: ${KAFKA_TRUSTSTORE_PASSWORD:-changeit}
+      KAFKA_SSL_CLIENT_AUTH: required
 
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
@@ -379,6 +452,7 @@ services:
       KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
     volumes:
       - kafka2_data:/var/lib/kafka/data
+      - ./certificates:/etc/kafka/secrets:ro
 
   kafka3:
     image: confluentinc/cp-kafka:6.2.0
@@ -393,8 +467,14 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:${ZOOKEEPER_PORT}
       KAFKA_LISTENERS: INTERNAL://0.0.0.0:${KAFKA3_INTERNAL_PORT},EXTERNAL://0.0.0.0:${KAFKA3_PORT}
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka3:${KAFKA3_INTERNAL_PORT},EXTERNAL://${HOST}:${KAFKA3_PORT}
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:SSL
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_SSL_KEYSTORE_LOCATION: /etc/kafka/secrets/kafka.keystore.jks
+      KAFKA_SSL_KEYSTORE_PASSWORD: ${KAFKA_KEYSTORE_PASSWORD:-changeit}
+      KAFKA_SSL_KEY_PASSWORD: ${KAFKA_KEY_PASSWORD:-changeit}
+      KAFKA_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/kafka.truststore.jks
+      KAFKA_SSL_TRUSTSTORE_PASSWORD: ${KAFKA_TRUSTSTORE_PASSWORD:-changeit}
+      KAFKA_SSL_CLIENT_AUTH: required
 
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
@@ -405,6 +485,7 @@ services:
       KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
     volumes:
       - kafka3_data:/var/lib/kafka/data
+      - ./certificates:/etc/kafka/secrets:ro
 
   # TODO: исправить RabbitMQ
   rabbitmq:
@@ -495,6 +576,8 @@ volumes:
   transaction_postgres_data:
   invoice_postgres_data:
   notification_postgres_data:
+  office_postgres_data:
+  delivery_postgres_data:
 
   zookeeper_data:
   zookeeper_log:

@@ -29,6 +29,8 @@ public abstract class IndividualMapper {
 
     protected DateTimeUtil dateTimeUtil;
 
+    protected EncryptionUtils encryptionUtils;
+
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "deleted", constant = "false")
     @Mapping(target = "deletedAt", ignore = true)
@@ -82,7 +84,7 @@ public abstract class IndividualMapper {
         if (value == null || value.isEmpty()) {
             return value;
         }
-        return EncryptionUtils.encrypt(value);
+        return encryptionUtils.encrypt(value);
     }
 
     @Named("decrypt")
@@ -91,7 +93,7 @@ public abstract class IndividualMapper {
             return value;
         }
         try {
-            return EncryptionUtils.decrypt(value);
+            return encryptionUtils.decrypt(value);
         } catch (Exception e) {
             return value;
         }

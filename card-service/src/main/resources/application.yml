@@ -54,9 +54,9 @@ user-service:
   jwt:
     secret: ${SECRET_KEY:MyVeryLongAndSecureSecretKeyForJWTTokenSigningThatIsAtLeast64CharactersLongToMeetHS512Requirements123456789}
   client:
-    base-url: http://localhost:8091
+    base-url: ${USER_CLIENT_BASE_URL:http://localhost:8091}
     api-key: ${INTERNAL_API_KEY:your-internal-api-key}
-    x-internal-key: X-Internal-Api-Key
+    x-internal-key: ${INTERNAL_KEY:X-Internal-Api-Key}
 
 springdoc:
   api-docs:
@@ -108,20 +108,23 @@ otel:
 app:
   kafka:
     bootstrap-servers: ${spring.kafka.bootstrap-servers}
-    topic: orders
-    response-topic: response-orders
-    groupId: order-group-id
-    dlt-topic: orders.DLT
-    dlt-group-id: order-group-id.dlt
+    topic: cards
+    retry-topic: cards-retry
+    orders-topic: orders
+    group-id: cards-group-id
+    retry-group-id: cards-retry-group-id
+    dlt-topic: cards.DLT
+    dlt-group-id: cards-group-id.dlt
     max-pull-records: 10
     partitions: 3
     replicas: 3
 
   retry:
     max-attempts: 3
-    delay: 1000
+    delay: 1500
     multiplier: 2
     max-interval: 10000
+    timout: 5
 
   cache:
     cache-names:

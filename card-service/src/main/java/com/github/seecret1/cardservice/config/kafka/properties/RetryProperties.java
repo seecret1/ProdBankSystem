@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "app.retry")
 public class RetryProperties {
 
+    private Integer maxAttemptsBaseTopic;
+
     private Integer maxAttempts;
 
     private Long delay;

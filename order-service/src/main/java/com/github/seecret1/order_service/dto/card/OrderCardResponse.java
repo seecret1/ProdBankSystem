@@ -1,13 +1,12 @@
 package com.github.seecret1.order_service.dto.card;
 
-import com.github.seecret1.order_service.entity.CardType;
-import com.github.seecret1.order_service.entity.OrderStatus;
+import com.github.seecret1.order_service.entity.enums.CardReceivingMethod;
+import com.github.seecret1.order_service.entity.enums.CardType;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.UUID;
 
 @Data
 @Builder
@@ -21,4 +20,6 @@ public class OrderCardResponse {
     BigDecimal spendingLimit;
 
     Instant createdAt;
+
+    CardReceivingMethod cardReceivingMethod;
 }

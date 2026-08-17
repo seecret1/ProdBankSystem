@@ -3,8 +3,8 @@ package com.github.seecret1.cardservice.config.kafka;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.seecret1.cardservice.config.kafka.properties.KafkaProperties;
 import com.github.seecret1.cardservice.config.kafka.properties.RetryProperties;
-import com.github.seecret1.cardservice.order.message.OrderCardDto;
-import com.github.seecret1.cardservice.order.message.OrderMessage;
+import com.github.seecret1.cardservice.dto.order.message.OrderCardDto;
+import com.github.seecret1.cardservice.dto.order.message.BaseMessage;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -19,6 +19,7 @@ import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
@@ -43,15 +44,23 @@ public class KafkaConfig {
     private final ObjectMapper objectMapper;
 
     @Bean
-    public NewTopic responsesTopic() {
-        return TopicBuilder.name(kafkaProperties.getResponseTopic())
+    public NewTopic cardsTopic() {
+        return TopicBuilder.name(kafkaProperties.getTopic())
                 .partitions(kafkaProperties.getPartitions())
                 .replicas(kafkaProperties.getReplicas())
                 .build();
     }
 
     @Bean
-    public NewTopic orderDltTopic() {
+    public NewTopic retryCardsTopic() {
+        return TopicBuilder.name(kafkaProperties.getRetryTopic())
+                .partitions(kafkaProperties.getPartitions())
+                .replicas(kafkaProperties.getReplicas())
+                .build();
+    }
+
+    @Bean
+    public NewTopic cardsDltTopic() {
         return TopicBuilder.name(kafkaProperties.getDltTopic())
                 .partitions(kafkaProperties.getPartitions())
                 .replicas(kafkaProperties.getReplicas())
@@ -59,7 +68,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ProducerFactory<String, OrderMessage> orderProducerFactory() {
+    public ProducerFactory<String, BaseMessage> orderProducerFactory() {
         return new DefaultKafkaProducerFactory<>(
                 getBaseProducerConfig(),
                 new StringSerializer(),
@@ -95,8 +104,8 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, OrderMessage> orderCardKafkaTemplate(
-            ProducerFactory<String, OrderMessage> producerFactory
+    public KafkaTemplate<String, BaseMessage> orderCardKafkaTemplate(
+            ProducerFactory<String, BaseMessage> producerFactory
     ) {
         return new KafkaTemplate<>(producerFactory);
     }
@@ -109,29 +118,69 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, OrderMessage> consumerFactory() {
+    public ConsumerFactory<String, BaseMessage> consumerFactory() {
         Map<String, Object> config = getBaseConsumerConfig(kafkaProperties.getGroupId());
-        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, OrderMessage.class.getName());
+        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, BaseMessage.class.getName());
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
 
-        return new DefaultKafkaConsumerFactory<>(
-                config,
-                new StringDeserializer(),
-                new JsonDeserializer<>(objectMapper)
-        );
+        return getDefaultKafkaConsumerFactory(config, BaseMessage.class);
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, OrderMessage> responseCardKafkaListenerContainerFactory(
-            ConsumerFactory<String, OrderMessage> consumerFactory,
-            KafkaTemplate<String, OrderMessage> orderCreateKafkaTemplate
+    public ConsumerFactory<String, BaseMessage> retryConsumerFactory() {
+        Map<String, Object> config = getBaseConsumerConfig(kafkaProperties.getRetryGroupId());
+        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, BaseMessage.class.getName());
+        config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+
+        return getDefaultKafkaConsumerFactory(config, BaseMessage.class);
+    }
+
+    @Bean
+    public ConsumerFactory<String, Object> dltConsumerFactory() {
+        Map<String, Object> config = getBaseConsumerConfig(kafkaProperties.getDltGroupId());
+        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class.getName());
+        config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+
+        return getDefaultKafkaConsumerFactory(config, Object.class);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, BaseMessage> cardKafkaListenerContainerFactory(
+            ConsumerFactory<String, BaseMessage> consumerFactory,
+            KafkaTemplate<String, BaseMessage> orderCardKafkaTemplate
     ) {
-        ConcurrentKafkaListenerContainerFactory<String, OrderMessage> factory =
+        ConcurrentKafkaListenerContainerFactory<String, BaseMessage> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
 
         DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(
-                orderCreateKafkaTemplate,
+                orderCardKafkaTemplate,
+                (record, exception) -> new org.apache.kafka.common.TopicPartition(
+                        kafkaProperties.getRetryTopic(),
+                        record.partition()
+                )
+        );
+
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(
+                recoverer, new FixedBackOff(0, 0)
+        );
+        errorHandler.setRetryListeners();
+
+        factory.setCommonErrorHandler(errorHandler);
+        return factory;
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, BaseMessage> retryCardKafkaListenerContainerFactory(
+            ConsumerFactory<String, BaseMessage> consumerFactory,
+            KafkaTemplate<String, BaseMessage> orderCardKafkaTemplate
+    ) {
+        ConcurrentKafkaListenerContainerFactory<String, BaseMessage> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory);
+
+        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(
+                orderCardKafkaTemplate,
                 (record, exception) -> new org.apache.kafka.common.TopicPartition(
                         kafkaProperties.getDltTopic(),
                         record.partition()
@@ -148,6 +197,18 @@ public class KafkaConfig {
         return factory;
     }
 
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, Object> dltCardsKafkaListenerContainerFactory(
+            ConsumerFactory<String, Object> consumerFactory
+    ) {
+        ConcurrentKafkaListenerContainerFactory<String, Object> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory);
+
+        return factory;
+    }
+
+
     private Map<String, Object> getBaseProducerConfig() {
         Map<String, Object> config = new HashMap<>();
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
@@ -163,12 +224,29 @@ public class KafkaConfig {
         Map<String, Object> config = new HashMap<>();
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
         config.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         config.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, kafkaProperties.getMaxPullRecords());
 
         config.putAll(kafkaSslConfig.getSslConfigs());
 
         return config;
+    }
+
+    private <T>DefaultKafkaConsumerFactory<String, T> getDefaultKafkaConsumerFactory(
+            Map<String, Object> config,
+            Class<T> clazz
+    ) {
+        Map<String, Object> consumerConfig = new HashMap<>(config);
+        consumerConfig.remove(JsonDeserializer.VALUE_DEFAULT_TYPE);
+        consumerConfig.remove(JsonDeserializer.USE_TYPE_INFO_HEADERS);
+        consumerConfig.remove(JsonDeserializer.TRUSTED_PACKAGES);
+
+        JsonDeserializer<T> jsonDeserializer = new JsonDeserializer<>(clazz, objectMapper, false);
+        jsonDeserializer.setUseTypeHeaders(false);
+
+        return new DefaultKafkaConsumerFactory<>(
+                consumerConfig,
+                new StringDeserializer(),
+                new ErrorHandlingDeserializer<>(jsonDeserializer)
+        );
     }
 }

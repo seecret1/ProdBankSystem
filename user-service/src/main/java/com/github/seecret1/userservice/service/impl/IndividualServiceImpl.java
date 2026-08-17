@@ -42,6 +42,8 @@ public class IndividualServiceImpl implements IndividualService {
 
     private final InternalUserService internalUserService;
 
+    private final EncryptionUtils encryptionUtils;
+
     @Override
     @Cacheable(value = "${app.cache.cache-names.individualAll}", key = "#pageModel.toString()")
     @Transactional(readOnly = true)
@@ -73,7 +75,7 @@ public class IndividualServiceImpl implements IndividualService {
     @Cacheable(value = "${app.cache.cache-names.individualByPhoneNumber}", key = "#phoneNumber")
     @Transactional(readOnly = true)
     public IndividualResponse findByPhoneNumber(String phoneNumber) {
-        String phoneEncrypt = EncryptionUtils.encrypt(phoneNumber);
+        String phoneEncrypt = encryptionUtils.encrypt(phoneNumber);
         var individual = individualRepository.findByPhoneNumber(phoneEncrypt)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Individual not found by phone number: " + phoneNumber
@@ -204,7 +206,7 @@ public class IndividualServiceImpl implements IndividualService {
     private void checkPassportAndPhone(Individual individual, IndividualRequest request) {
         String newPassportNumber = request.passportNumber();
         if (newPassportNumber != null && !newPassportNumber.isEmpty()) {
-            String newPassportEncrypted = EncryptionUtils.encrypt(newPassportNumber);
+            String newPassportEncrypted = encryptionUtils.encrypt(newPassportNumber);
             String currentPassportEncrypted = individual.getPassportNumber();
             if (!newPassportEncrypted.equals(currentPassportEncrypted)) {
                 if (individualRepository.existsIndividualByPassportNumber(newPassportEncrypted)) {
@@ -217,7 +219,7 @@ public class IndividualServiceImpl implements IndividualService {
 
         String newPhoneNumber = request.phoneNumber();
         if (newPhoneNumber != null && !newPhoneNumber.isEmpty()) {
-            String newPhoneEncrypted = EncryptionUtils.encrypt(newPhoneNumber);
+            String newPhoneEncrypted = encryptionUtils.encrypt(newPhoneNumber);
             String currentPhoneEncrypted = individual.getPhoneNumber();
             if (!newPhoneEncrypted.equals(currentPhoneEncrypted)) {
                 if (individualRepository.existsIndividualByPhoneNumber(newPhoneEncrypted)) {
@@ -232,14 +234,14 @@ public class IndividualServiceImpl implements IndividualService {
     private void checkPassportAndPhone(IndividualRequest request) {
         String passportNumber = request.passportNumber();
         if (passportNumber != null && !passportNumber.isEmpty()) {
-            String passportEncrypted = EncryptionUtils.encrypt(passportNumber);
+            String passportEncrypted = encryptionUtils.encrypt(passportNumber);
             if (individualRepository.existsIndividualByPassportNumber(passportEncrypted)) {
                 throw new IndividualDataExistsException("Passport number already exists");
             }
         }
         String phoneNumber = request.phoneNumber();
         if (phoneNumber != null && !phoneNumber.isEmpty()) {
-            String phoneEncrypted = EncryptionUtils.encrypt(phoneNumber);
+            String phoneEncrypted = encryptionUtils.encrypt(phoneNumber);
             if (individualRepository.existsIndividualByPhoneNumber(phoneEncrypted)) {
                 throw new IndividualDataExistsException("Phone number already exists");
             }
