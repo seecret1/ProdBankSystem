@@ -10,7 +10,7 @@ public record PersonInfo(
 
         String contactPhone,
 
-        AddressResponse address
+        AddressBaseResponse address
 
 ) {
 }

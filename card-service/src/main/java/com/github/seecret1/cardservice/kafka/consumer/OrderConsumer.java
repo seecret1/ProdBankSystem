@@ -31,7 +31,7 @@ public class OrderConsumer {
 
         try {
             orderProcessingService.orderProcessing(message);
-            log.debug("Received response order body: {}", order);
+            log.debug("Received response order body: {}", message);
         } catch (Exception e) {
             log.error("Error processing order: traceId={}, orderId={}, error={}",
                     message.getTraceId(), message.getOrderId(), e.getMessage(), e);

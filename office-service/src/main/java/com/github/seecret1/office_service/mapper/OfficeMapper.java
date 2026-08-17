@@ -6,6 +6,7 @@ import com.github.seecret1.office_service.dto.request.OfficeCreateRequest;
 import com.github.seecret1.office_service.dto.request.OfficeUpdateRequest;
 import com.github.seecret1.office_service.dto.request.ScheduleRequest;
 import com.github.seecret1.office_service.dto.response.OfficeFullResponse;
+import com.github.seecret1.office_service.dto.response.OfficeMainResponse;
 import com.github.seecret1.office_service.dto.response.OfficeResponse;
 import com.github.seecret1.office_service.entity.Office;
 import com.github.seecret1.office_service.utils.DateTimeUtil;
@@ -52,6 +53,12 @@ public abstract class OfficeMapper {
     public abstract OfficeFullResponse toFullDto(Office office);
 
     public abstract List<OfficeFullResponse> toFullDto(List<Office> offices);
+
+    @Mapping(target = "address", qualifiedByName = "fromBaseAddress")
+    public abstract OfficeMainResponse toMainResponse(Office office);
+
+    @Mapping(target = "address", qualifiedByName = "fromBaseAddress")
+    public abstract List<OfficeMainResponse> toMainResponseList(List<Office> offices);
 
     public Office toEntity(Office office, OfficeUpdateRequest request) {
         office.setName(request.name());

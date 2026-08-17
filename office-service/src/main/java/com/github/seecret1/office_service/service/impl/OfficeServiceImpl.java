@@ -5,6 +5,7 @@ import com.github.seecret1.common.model.PageModel;
 import com.github.seecret1.office_service.dto.request.OfficeCreateRequest;
 import com.github.seecret1.office_service.dto.request.OfficeUpdateRequest;
 import com.github.seecret1.office_service.dto.response.OfficeFullResponse;
+import com.github.seecret1.office_service.dto.response.OfficeMainResponse;
 import com.github.seecret1.office_service.dto.response.OfficeResponse;
 import com.github.seecret1.office_service.entity.Office;
 import com.github.seecret1.office_service.feign.UserServiceFeignClient;
@@ -69,6 +70,17 @@ public class OfficeServiceImpl implements OfficeService {
             throw new SecurityException("Invalid internal API key");
         }
         return officeMapper.toDto(officeRepository.findOfficeByCity(city));
+    }
+
+    @Override
+    public OfficeMainResponse findMainOfficeNearestByCity(
+            String apiKey
+    ) {
+        log.info("Check api key with internal api key");
+        if (!internalApiKey.equals(apiKey)) {
+            throw new SecurityException("Invalid internal API key");
+        }
+        return officeMapper.toMainResponse(officeRepository.findMainOffice());
     }
 
     @Override

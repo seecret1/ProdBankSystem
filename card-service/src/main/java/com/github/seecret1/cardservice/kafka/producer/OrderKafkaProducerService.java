@@ -1,4 +1,4 @@
-package com.github.seecret1.cardservice.kafka.service;
+package com.github.seecret1.cardservice.kafka.producer;
 
 import com.github.seecret1.cardservice.dto.order.message.OrderCardDto;
 

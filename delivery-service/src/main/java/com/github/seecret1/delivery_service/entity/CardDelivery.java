@@ -1,6 +1,7 @@
 package com.github.seecret1.delivery_service.entity;
 
 import com.github.seecret1.common.entity.BaseEntity;
+import com.github.seecret1.delivery_service.entity.enums.CardType;
 import com.github.seecret1.delivery_service.entity.enums.DeliveryStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.dialect.PostgreSQLIntervalSecondJdbcType;
 
 import java.io.Serializable;
 import java.time.Duration;
@@ -17,10 +20,17 @@ import java.time.Instant;
 @Setter
 @Entity
 @SuperBuilder
-@Table(name = "deliveries", schema = "delivery_bank")
+@Table(name = "card_deliveries", schema = "delivery_bank")
 @AllArgsConstructor
 @NoArgsConstructor
-public class Delivery extends BaseEntity implements Serializable {
+public class CardDelivery extends BaseEntity implements Serializable {
+
+    @Column(name = "planned_delivery_time", nullable = false)
+    private Instant plannedDeliveryTime;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "card_type", nullable = false)
+    private CardType cardType;
 
     @Column(name = "order_id", nullable = false)
     private String orderId;
@@ -35,11 +45,11 @@ public class Delivery extends BaseEntity implements Serializable {
     @Column(name = "courier_contact_phone")
     private String courierContactPhone;
 
-    @OneToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
+    @OneToOne(optional = false, cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     @JoinColumn(name = "origin_address_id", nullable = false)
     private Address originAddress;
 
-    @OneToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
+    @OneToOne(optional = false, cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     @JoinColumn(name = "destination_address_id", nullable = false)
     private Address destinationAddress;
 
@@ -48,6 +58,7 @@ public class Delivery extends BaseEntity implements Serializable {
     private DeliveryStatus status;
 
     @Column(name = "delivery_duration", columnDefinition = "INTERVAL")
+    @JdbcType(PostgreSQLIntervalSecondJdbcType.class)
     private Duration deliveryDuration;
 
     @Column(name = "pickup_date")

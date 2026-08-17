@@ -1,6 +1,6 @@
 package com.github.seecret1.delivery_service.kafka.consumer;
 
-import com.github.seecret1.delivery_service.dto.order.OrderDeliveryDto;
+import com.github.seecret1.delivery_service.dto.order.OrderCardDeliveryDto;
 import com.github.seecret1.delivery_service.service.DeliveryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,9 +21,9 @@ public class DeliveryRetryConsumer {
             containerFactory = "retryKafkaListenerContainerFactory"
     )
     public void listenRetry(
-            ConsumerRecord<String, OrderDeliveryDto> event
+            ConsumerRecord<String, OrderCardDeliveryDto> event
     ) {
-        OrderDeliveryDto dto = event.value();
+        OrderCardDeliveryDto dto = event.value();
         log.info("Retry delivery received: traceId={}, topic={}, partition={}, offset={}",
                 dto.getTraceId(), event.topic(), event.partition(), event.offset());
         try {

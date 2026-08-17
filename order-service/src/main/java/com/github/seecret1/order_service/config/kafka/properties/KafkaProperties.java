@@ -5,6 +5,8 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.TimeUnit;
+
 @Getter
 @Setter
 @Component
@@ -23,6 +25,8 @@ public class KafkaProperties {
 
     private String retryGroupId;
 
+    private String deliveryTopic;
+
     private String dltTopic;
 
     private String dltGroupId;
@@ -32,4 +36,6 @@ public class KafkaProperties {
     private Integer partitions;
 
     private Integer replicas;
+
+    private Integer timeoutSeconds;
 }

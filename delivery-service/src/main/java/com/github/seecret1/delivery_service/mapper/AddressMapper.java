@@ -1,5 +1,6 @@
 package com.github.seecret1.delivery_service.mapper;
 
+import com.github.seecret1.delivery_service.dto.address.AddressBaseResponse;
 import com.github.seecret1.delivery_service.dto.address.AddressRequest;
 import com.github.seecret1.delivery_service.dto.address.AddressResponse;
 import com.github.seecret1.delivery_service.entity.Address;
@@ -38,6 +39,10 @@ public abstract class AddressMapper {
     @Mapping(target = "deletedAt", source = "deletedAt")
     @Mapping(target = "deletedBy", source = "deletedBy")
     public abstract AddressResponse fromAddress(Address address);
+
+    @Named("fromBaseAddress")
+    @Mapping(target = "deleted", source = "deleted")
+    public abstract AddressBaseResponse fromBaseAddress(Address address);
 
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "updatedAt", expression = "java(dateTimeUtil.now())")

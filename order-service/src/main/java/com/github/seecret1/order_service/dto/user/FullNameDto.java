@@ -1,5 +1,6 @@
 package com.github.seecret1.order_service.dto.user;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,8 +10,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class FullNameDto {
 
+    @NotBlank(message = "first name must be set!")
     private String firstName;
 
+    @NotBlank(message = "last name must be set!")
     private String lastName;
 
     private String middleName;

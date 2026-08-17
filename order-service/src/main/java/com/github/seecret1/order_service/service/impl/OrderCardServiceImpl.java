@@ -2,17 +2,21 @@ package com.github.seecret1.order_service.service.impl;
 
 import com.github.seecret1.order_service.dto.BaseMessage;
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
+import com.github.seecret1.order_service.dto.delivery.OrderCardDeliveryDto;
 import com.github.seecret1.order_service.dto.office.OfficeResponse;
 import com.github.seecret1.order_service.dto.user.PersonInfo;
 import com.github.seecret1.order_service.entity.OrderCard;
 import com.github.seecret1.order_service.entity.enums.CardType;
 import com.github.seecret1.order_service.entity.enums.OrderStatus;
 import com.github.seecret1.order_service.entity.enums.OrderType;
+import com.github.seecret1.order_service.entity.enums.PersonType;
 import com.github.seecret1.order_service.exception.OrderTypeException;
 import com.github.seecret1.order_service.feign.OfficeServiceFeignClient;
 import com.github.seecret1.order_service.feign.UserServiceFeignClient;
-import com.github.seecret1.order_service.kafka.producer.OrderKafkaProducerService;
-import com.github.seecret1.order_service.mapper.OrderCardMapper;
+import com.github.seecret1.order_service.kafka.producer.OrderDeliveryRequestKafkaProducerService;
+import com.github.seecret1.order_service.kafka.producer.OrderMessageKafkaProducerService;
+import com.github.seecret1.order_service.mapper.AddressMapper;
+import com.github.seecret1.order_service.mapper.OrderCardManualMapper;
 import com.github.seecret1.order_service.repository.OrderCardRepository;
 import com.github.seecret1.order_service.service.OrderCardService;
 import com.github.seecret1.order_service.utils.OrderValidateUtils;
@@ -29,7 +33,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderCardServiceImpl implements OrderCardService {
 
-    private final OrderKafkaProducerService orderKafkaProducerService;
+    private final OrderMessageKafkaProducerService orderMessageKafkaProducerService;
+
+    private final OrderDeliveryRequestKafkaProducerService deliveryKafkaProducerService;
 
     private final OrderCardRepository orderCardRepository;
 
@@ -37,7 +43,9 @@ public class OrderCardServiceImpl implements OrderCardService {
 
     private final OfficeServiceFeignClient officeServiceFeignClient;
 
-    private final OrderCardMapper orderCardMapper;
+    private final OrderCardManualMapper orderCardMapper;
+
+    private final AddressMapper addressMapper;
 
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ)
@@ -89,13 +97,9 @@ public class OrderCardServiceImpl implements OrderCardService {
 
         switch (event.getCardReceivingMethod()) {
             case OFFICE:
-                return processOfficeMethod(city, order, event.getCardType());
+                return processOfficeMethod(city, order, event, personInfo);
             case DELIVERY_COURIER:
-                //TODO: заглушка
-                order.setStatus(OrderStatus.REJECTED);
-                order.setComment("This version does not include support");
-                return order;
-//                return processDeliveryCourierMethod(order, event);
+                return processDeliveryCourierMethod(city, order, event, personInfo, false);
             case DIGITAL:
                 //TODO: заглушка
                 order.setStatus(OrderStatus.REJECTED);
@@ -111,20 +115,21 @@ public class OrderCardServiceImpl implements OrderCardService {
         }
     }
 
-    private OrderCard processOfficeMethod(String city, OrderCard order, CardType cardType) {
+    private OrderCard processOfficeMethod(String city, OrderCard order, OrderCardDto event, PersonInfo personInfo) {
 
+        CardType cardType = event.getCardType();
         switch (cardType) {
             case DEBIT:
                 return processDebit(city, order);
             case DEBIT_PERSONAL:
                 OrderCard newOrder = processDebit(city, order);
-                //TODO: связать логику с delivery-service, чтобы доставили карту в офис
+                processDeliveryCourierMethod(city, newOrder, event, personInfo, true);
                 return newOrder;
-            case CREDIT:
+            case CREDIT: //TODO: заглушка на время
                 order.setStatus(OrderStatus.REJECTED);
                 order.setComment("This version does not include support for create credit card");
                 return order;
-//                return processCredit(city, order);
+//                return processCredit(city, order); //TODO: добавить работу с мс кредитов (надежный ли налогоплательщик?)
             default:
                 log.error("Unsupported card type: {}", cardType);
                 order.setStatus(OrderStatus.REJECTED);
@@ -133,11 +138,40 @@ public class OrderCardServiceImpl implements OrderCardService {
         }
     }
 
-    private OrderCard processDeliveryCourierMethod(OrderCard order, OrderCardDto event) {
-        // TODO: Работа с delivery-service:
-        //  возможно доставка по данному адресу не осуществляется в данный момент
-        //  Возможно доставка в целом недоступна из-за нагрузки
-        return null;
+    private OrderCard processDeliveryCourierMethod(
+            String city,
+            OrderCard order,
+            OrderCardDto event,
+            PersonInfo personInfo,
+            boolean office
+    ) {
+        var mainOffice = officeServiceFeignClient.findMainOfficeNearestByCity(); //TODO: исправить (это лишний запрос)
+
+        order.setStatus(OrderStatus.SUCCESS);
+        orderCardRepository.save(order);
+
+        var orderDeliveryDto = OrderCardDeliveryDto.builder()
+                .traceId(event.getTraceId())
+                .userId(event.getUserId())
+                .orderType(event.getOrderType())
+                .createdAt(event.getCreatedAt())
+                .comment(event.getComment())
+                .orderId(order.getId())
+                .cardType(event.getCardType())
+                .fullName(personInfo.fullName())
+                .contactPhone(personInfo.contactPhone())
+                .personType(PersonType.PHYSICAL) // TODO: временно задано жестко, пока нет работы с ФЛ и ЮЛ отдельно
+                .originAddress(addressMapper.toAddressRequest(mainOffice.address()))
+                .destinationAddress(event.getDeliveryRequest().address())
+                .plannedDeliveryTime(event.getDeliveryRequest().plannedDeliveryTime())
+                .build();
+
+        if (office) {
+            orderDeliveryDto.setOfficeId(mainOffice.id());
+        }
+
+        deliveryKafkaProducerService.sendRequestWithWait(orderDeliveryDto);
+        return order;
     }
 
     private OrderCard processDigitalMethod(OrderCard order, OrderCardDto event) {
@@ -171,9 +205,10 @@ public class OrderCardServiceImpl implements OrderCardService {
         return order;
     }
 
+    // TODO: нельзя сразу отправлять ответ (при работе с delivery) нужно написатьь listener
     private BaseMessage sendMessage(OrderCard order) {
         var message = orderCardMapper.toMessage(order);
-        orderKafkaProducerService.sendWithWait(message);
+        orderMessageKafkaProducerService.sendWithWait(message);
         return message;
     }
 }

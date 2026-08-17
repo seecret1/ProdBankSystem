@@ -9,7 +9,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutionException;
 
 @Slf4j

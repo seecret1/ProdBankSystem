@@ -9,7 +9,7 @@ import com.github.seecret1.cardservice.entity.Card;
 import com.github.seecret1.cardservice.entity.enums.CardStatus;
 import com.github.seecret1.cardservice.entity.enums.CardType;
 import com.github.seecret1.cardservice.exception.*;
-import com.github.seecret1.cardservice.kafka.service.OrderKafkaProducerService;
+import com.github.seecret1.cardservice.kafka.producer.OrderKafkaProducerService;
 import com.github.seecret1.cardservice.mapper.CardMapper;
 import com.github.seecret1.cardservice.model.CardFilterModel;
 import com.github.seecret1.cardservice.repository.CardRepository;

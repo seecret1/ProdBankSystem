@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderCard extends BaseOrderEntity {
 
-    @Column(name = "card_id", nullable = false)
+    @Column(name = "card_id", nullable = false, unique = true)
     String cardId;
 
     @Column(name = "card_type", nullable = false, length = 20)
@@ -33,5 +33,7 @@ public class OrderCard extends BaseOrderEntity {
     @Enumerated(EnumType.STRING)
     CardReceivingMethod cardReceivingMethod;
 
-    //TODO: добавить работу с delivery-service
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "order_card_delivery_id")
+    OrderCardDelivery orderCardDelivery;
 }
