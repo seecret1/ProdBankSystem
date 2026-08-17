@@ -1,9 +1,10 @@
-package com.github.seecret1.delivery_service.service;
+package com.github.seecret1.delivery_service.service.processed;
 
 import com.github.seecret1.delivery_service.dto.order.OrderCardDeliveryDto;
 import com.github.seecret1.delivery_service.dto.user.RecipientDto;
 import com.github.seecret1.delivery_service.entity.Recipient;
 import com.github.seecret1.delivery_service.repository.RecipientRepository;
+import com.github.seecret1.delivery_service.service.RecipientService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
