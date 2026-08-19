@@ -162,8 +162,7 @@ class DeliveryMapperTest {
     @Test
     @DisplayName("Should include courier fields in DeliveryResponse when present")
     void shouldIncludeCourierFieldsInResponse() {
-        cardDelivery.setCourierId("courier-1");
-        cardDelivery.setCourierContactPhone("+79998887766");
+        cardDelivery.setCourier(DeliveryTestDataFactory.defaultCourier());
         RecipientDto recipientDto = DeliveryTestDataFactory.defaultRecipientDto();
 
         when(addressMapper.fromAddress(cardDelivery.getOriginAddress())).thenReturn(
@@ -175,7 +174,7 @@ class DeliveryMapperTest {
 
         DeliveryResponse result = deliveryMapper.toResponse(cardDelivery, recipientDto);
 
-        assertThat(result.getCourierId()).isEqualTo("courier-1");
-        assertThat(result.getCourierContactPhone()).isEqualTo("+79998887766");
+        assertThat(result.getCourierId()).isEqualTo(DeliveryTestDataFactory.COURIER_ID);
+        assertThat(result.getCourierContactPhone()).isEqualTo(DeliveryTestDataFactory.COURIER_CONTACT_PHONE);
     }
 }

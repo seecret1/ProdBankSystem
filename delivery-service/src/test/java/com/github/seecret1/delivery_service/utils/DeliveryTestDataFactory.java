@@ -2,12 +2,14 @@ package com.github.seecret1.delivery_service.utils;
 
 import com.github.seecret1.delivery_service.dto.address.AddressPair;
 import com.github.seecret1.delivery_service.dto.address.AddressRequest;
+import com.github.seecret1.delivery_service.dto.CourierDto;
 import com.github.seecret1.delivery_service.dto.order.OrderCardDeliveryDto;
 import com.github.seecret1.delivery_service.dto.user.FullNameDto;
 import com.github.seecret1.delivery_service.dto.user.RecipientDto;
 import com.github.seecret1.delivery_service.entity.Address;
 import com.github.seecret1.delivery_service.entity.CardDelivery;
 import com.github.seecret1.delivery_service.entity.Country;
+import com.github.seecret1.delivery_service.entity.Courier;
 import com.github.seecret1.delivery_service.entity.FullName;
 import com.github.seecret1.delivery_service.entity.Recipient;
 import com.github.seecret1.delivery_service.entity.enums.CardType;
@@ -24,6 +26,10 @@ public final class DeliveryTestDataFactory {
     public static final String TRACE_ID = "trace-789";
     public static final String OFFICE_ID = "office-001";
     public static final String CONTACT_PHONE = "+79991234567";
+
+    public static final String COURIER_USER_ID = "courier-user-001";
+    public static final String COURIER_ID = "courier-id-001";
+    public static final String COURIER_CONTACT_PHONE = "+79998887766";
 
     private DeliveryTestDataFactory() {
     }
@@ -143,6 +149,28 @@ public final class DeliveryTestDataFactory {
                 .status(DeliveryStatus.CREATED)
                 .deleted(false)
                 .createdAt(Instant.parse("2026-08-17T10:00:00Z"))
+                .build();
+    }
+
+    public static CourierDto defaultCourierDto() {
+        return new CourierDto(
+                COURIER_USER_ID,
+                defaultFullNameDto(),
+                false,
+                COURIER_CONTACT_PHONE
+        );
+    }
+
+    public static Courier defaultCourier() {
+        return Courier.builder()
+                .id(COURIER_ID)
+                .userId(COURIER_USER_ID)
+                .fullName(defaultFullName())
+                .busy(false)
+                .contactPhone(COURIER_CONTACT_PHONE)
+                .deleted(false)
+                .createdAt(Instant.parse("2026-08-17T10:00:00Z"))
+                .updatedAt(Instant.parse("2026-08-17T10:00:00Z"))
                 .build();
     }
 }

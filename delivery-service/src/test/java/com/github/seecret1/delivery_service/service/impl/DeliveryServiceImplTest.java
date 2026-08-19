@@ -4,9 +4,12 @@ import com.github.seecret1.delivery_service.dto.BaseMessage;
 import com.github.seecret1.delivery_service.dto.order.OrderCardDeliveryDto;
 import com.github.seecret1.delivery_service.entity.CardDelivery;
 import com.github.seecret1.delivery_service.entity.Recipient;
+import com.github.seecret1.delivery_service.entity.enums.DeliveryStatus;
 import com.github.seecret1.delivery_service.entity.enums.OrderStatus;
+import com.github.seecret1.delivery_service.exception.DeliveryException;
 import com.github.seecret1.delivery_service.mapper.DeliveryMapper;
 import com.github.seecret1.delivery_service.repository.DeliveryRepository;
+import com.github.seecret1.delivery_service.service.CourierService;
 import com.github.seecret1.delivery_service.service.processed.AddressProcessed;
 import com.github.seecret1.delivery_service.service.processed.RecipientProcessed;
 import com.github.seecret1.delivery_service.utils.DeliveryTestDataFactory;
@@ -45,6 +48,9 @@ class DeliveryServiceImplTest {
 
     @Mock
     private AddressProcessed addressProcessed;
+
+    @Mock
+    private CourierService courierService;
 
     @InjectMocks
     private DeliveryServiceImpl deliveryService;
@@ -245,5 +251,59 @@ class DeliveryServiceImplTest {
         BaseMessage result = deliveryService.create(orderDto);
 
         assertThat(result.getStatus()).isEqualTo(OrderStatus.SUCCESS);
+    }
+
+    @Test
+    @DisplayName("Should assign first available courier and set delivery to ASSIGNED")
+    void shouldAssignFirstAvailableCourier() {
+        var courier = DeliveryTestDataFactory.defaultCourier();
+        var addressPair = DeliveryTestDataFactory.defaultAddressPair();
+
+        when(addressProcessed.processOriginalAndDestinationAddresses(any(), any())).thenReturn(addressPair);
+        when(recipientProcessed.processDelivery(orderDto)).thenReturn(recipient);
+        when(deliveryMapper.toEntity(any(), any(), any(), any())).thenReturn(cardDelivery);
+        when(courierService.assignFirstAvailable()).thenReturn(courier);
+        when(deliveryRepository.save(cardDelivery)).thenReturn(cardDelivery);
+        when(deliveryMapper.toMessage(cardDelivery, TRACE_ID)).thenReturn(baseMessage);
+
+        BaseMessage result = deliveryService.create(orderDto);
+
+        assertThat(result.getStatus()).isEqualTo(OrderStatus.SUCCESS);
+        assertThat(cardDelivery.getCourier()).isEqualTo(courier);
+        assertThat(cardDelivery.getStatus()).isEqualTo(DeliveryStatus.ASSIGNED);
+        verify(courierService).assignFirstAvailable();
+    }
+
+    @Test
+    @DisplayName("Should keep delivery CREATED when no courier is available")
+    void shouldKeepDeliveryCreatedWhenNoCourierAvailable() {
+        var addressPair = DeliveryTestDataFactory.defaultAddressPair();
+
+        when(addressProcessed.processOriginalAndDestinationAddresses(any(), any())).thenReturn(addressPair);
+        when(recipientProcessed.processDelivery(orderDto)).thenReturn(recipient);
+        when(deliveryMapper.toEntity(any(), any(), any(), any())).thenReturn(cardDelivery);
+        when(courierService.assignFirstAvailable())
+                .thenThrow(new DeliveryException("No available couriers"));
+        when(deliveryRepository.save(cardDelivery)).thenReturn(cardDelivery);
+        when(deliveryMapper.toMessage(cardDelivery, TRACE_ID)).thenReturn(baseMessage);
+
+        BaseMessage result = deliveryService.create(orderDto);
+
+        assertThat(result.getStatus()).isEqualTo(OrderStatus.SUCCESS);
+        assertThat(cardDelivery.getCourier()).isNull();
+        assertThat(cardDelivery.getStatus()).isEqualTo(DeliveryStatus.CREATED);
+        verify(deliveryRepository).save(cardDelivery);
+    }
+
+    @Test
+    @DisplayName("Should throw DeliveryException when contact phone is blank")
+    void shouldThrowWhenContactPhoneIsBlank() {
+        orderDto.setContactPhone("   ");
+
+        assertThatThrownBy(() -> deliveryService.create(orderDto))
+                .isInstanceOf(DeliveryException.class)
+                .hasMessageContaining("Phone must not be blank");
+
+        verify(deliveryRepository, never()).save(any());
     }
 }
