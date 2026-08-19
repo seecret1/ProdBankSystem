@@ -22,10 +22,11 @@ WHERE NOT EXISTS (
 );
 
 -- Вставляем офисы (пропускаем если уже есть)
-INSERT INTO office_bank.offices (id, name, contact_phone, schedule_json, active, address_id, owner_id, created_at, updated_at)
+INSERT INTO office_bank.offices (id, name, main, contact_phone, schedule_json, active, address_id, owner_id, created_at, updated_at)
 SELECT
     gen_random_uuid()::VARCHAR,
     name,
+    true,
     contact_phone,
     schedule_json::JSONB,
     true,
@@ -34,10 +35,10 @@ SELECT
     NOW() AT TIME ZONE 'utc',
     NOW() AT TIME ZONE 'utc'
 FROM (VALUES
-          ('Центральный офис Москва', '+7 (495) 111-11-11', '{"monday": {"open": "09:00", "close": "21:00"}, "tuesday": {"open": "09:00", "close": "21:00"}, "wednesday": {"open": "09:00", "close": "21:00"}, "thursday": {"open": "09:00", "close": "21:00"}, "friday": {"open": "09:00", "close": "21:00"}, "saturday": {"open": "10:00", "close": "18:00"}, "sunday": {"open": "10:00", "close": "18:00"}}'::text, 'ул. Тверская, д. 1', 'Moscow'),
-          ('Офис Санкт-Петербург', '+7 (812) 222-22-22', '{"monday": {"open": "09:00", "close": "20:00"}, "tuesday": {"open": "09:00", "close": "20:00"}, "wednesday": {"open": "09:00", "close": "20:00"}, "thursday": {"open": "09:00", "close": "20:00"}, "friday": {"open": "09:00", "close": "20:00"}, "saturday": {"open": "10:00", "close": "17:00"}, "sunday": {"open": "10:00", "close": "17:00"}}'::text, 'Невский проспект, д. 28', 'Saint Petersburg'),
-          ('Офис Казань', '+7 (843) 333-33-33', '{"monday": {"open": "09:00", "close": "19:00"}, "tuesday": {"open": "09:00", "close": "19:00"}, "wednesday": {"open": "09:00", "close": "19:00"}, "thursday": {"open": "09:00", "close": "19:00"}, "friday": {"open": "09:00", "close": "19:00"}, "saturday": {"open": "10:00", "close": "16:00"}, "sunday": {"open": "10:00", "close": "16:00"}}'::text, 'ул. Баумана, д. 15', 'Kazan'),
-          ('Офис Самара', '+7 (846) 444-44-44', '{"monday": {"open": "09:00", "close": "19:00"}, "tuesday": {"open": "09:00", "close": "19:00"}, "wednesday": {"open": "09:00", "close": "19:00"}, "thursday": {"open": "09:00", "close": "19:00"}, "friday": {"open": "09:00", "close": "19:00"}, "saturday": {"open": "10:00", "close": "16:00"}, "sunday": {"open": "10:00", "close": "16:00"}}'::text, 'ул. Ленинградская, д. 45', 'Samara')
+          ('Центральный офис Москва', true, '+7 (495) 111-11-11', '{"monday": {"open": "09:00", "close": "21:00"}, "tuesday": {"open": "09:00", "close": "21:00"}, "wednesday": {"open": "09:00", "close": "21:00"}, "thursday": {"open": "09:00", "close": "21:00"}, "friday": {"open": "09:00", "close": "21:00"}, "saturday": {"open": "10:00", "close": "18:00"}, "sunday": {"open": "10:00", "close": "18:00"}}'::text, 'ул. Тверская, д. 1', 'Moscow'),
+          ('Офис Санкт-Петербург', false,'+7 (812) 222-22-22', '{"monday": {"open": "09:00", "close": "20:00"}, "tuesday": {"open": "09:00", "close": "20:00"}, "wednesday": {"open": "09:00", "close": "20:00"}, "thursday": {"open": "09:00", "close": "20:00"}, "friday": {"open": "09:00", "close": "20:00"}, "saturday": {"open": "10:00", "close": "17:00"}, "sunday": {"open": "10:00", "close": "17:00"}}'::text, 'Невский проспект, д. 28', 'Saint Petersburg'),
+          ('Офис Казань', false,'+7 (843) 333-33-33', '{"monday": {"open": "09:00", "close": "19:00"}, "tuesday": {"open": "09:00", "close": "19:00"}, "wednesday": {"open": "09:00", "close": "19:00"}, "thursday": {"open": "09:00", "close": "19:00"}, "friday": {"open": "09:00", "close": "19:00"}, "saturday": {"open": "10:00", "close": "16:00"}, "sunday": {"open": "10:00", "close": "16:00"}}'::text, 'ул. Баумана, д. 15', 'Kazan'),
+          ('Офис Самара', false,'+7 (846) 444-44-44', '{"monday": {"open": "09:00", "close": "19:00"}, "tuesday": {"open": "09:00", "close": "19:00"}, "wednesday": {"open": "09:00", "close": "19:00"}, "thursday": {"open": "09:00", "close": "19:00"}, "friday": {"open": "09:00", "close": "19:00"}, "saturday": {"open": "10:00", "close": "16:00"}, "sunday": {"open": "10:00", "close": "16:00"}}'::text, 'ул. Ленинградская, д. 45', 'Samara')
      ) AS v(name, contact_phone, schedule_json, address_name, city_name)
 WHERE NOT EXISTS (
     SELECT 1 FROM office_bank.offices o

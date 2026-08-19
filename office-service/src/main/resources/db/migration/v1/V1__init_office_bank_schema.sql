@@ -36,6 +36,7 @@ CREATE TABLE office_bank.offices
     deleted_at TIMESTAMP WITHOUT TIME ZONE,
     deleted_by VARCHAR(255),
     name VARCHAR(64) NOT NULL,
+    main boolean NOT NULL DEFAULT FALSE,
     contact_phone VARCHAR(64) NOT NULL UNIQUE,
     schedule_json JSONB NOT NULL,
     active boolean NOT NULL DEFAULT TRUE,

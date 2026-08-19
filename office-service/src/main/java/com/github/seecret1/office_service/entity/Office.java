@@ -19,6 +19,9 @@ public class Office extends BaseEntity implements Serializable {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Column(name = "main", nullable = false)
+    private Boolean main;
+
     @Column(name = "contact_phone", unique = true)
     private String contactPhone;
 
