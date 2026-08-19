@@ -44,6 +44,29 @@ CREATE TABLE delivery_bank_history.addresses_history
 
 CREATE INDEX IF NOT EXISTS idx_addresses_history_revision ON delivery_bank_history.addresses_history (rev);
 
+CREATE TABLE delivery_bank.couriers_history
+(
+    id VARCHAR NOT NULL,
+    rev BIGINT NOT NULL,
+    revtype SMALLINT NOT NULL,
+    deleted boolean NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc'),
+    updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
+    deleted_at TIMESTAMP WITHOUT TIME ZONE,
+    deleted_by VARCHAR(255),
+    user_id VARCHAR NOT NULL UNIQUE,
+    first_name VARCHAR(64) NOT NULL,
+    last_name VARCHAR(64) NOT NULL,
+    middle_name VARCHAR(64),
+    busy boolean NOT NULL DEFAULT FALSE,
+    contact_phone VARCHAR(32) NOT NULL UNIQUE,
+
+    CONSTRAINT pk_couriers_history PRIMARY KEY (id, rev),
+    CONSTRAINT fk_couriers_history_rev FOREIGN KEY (rev) REFERENCES delivery_bank_history.revinfo (rev)
+);
+
+CREATE INDEX IF NOT EXISTS idx_couriers_history_revision ON delivery_bank_history.couriers_history (rev);
+
 CREATE TABLE delivery_bank_history.recipients_history
 (
     id BIGINT NOT NULL,
@@ -58,7 +81,7 @@ CREATE TABLE delivery_bank_history.recipients_history
     first_name VARCHAR(64) NOT NULL,
     last_name VARCHAR(64) NOT NULL,
     middle_name VARCHAR(64),
-    contact_phone VARCHAR(32) NOT NULL,
+    contact_phone VARCHAR(32) NOT NULL UNIQUE,
     office_id VARCHAR,
     person_type VARCHAR(20) NOT NULL,
 
@@ -81,11 +104,11 @@ CREATE TABLE delivery_bank_history.card_deliveries_history
     planned_delivery_time TIMESTAMP WITHOUT TIME ZONE,
     order_id VARCHAR NOT NULL,
     card_type VARCHAR NOT NULL,
-    recipient_id BIGINT NOT NULL REFERENCES delivery_bank.recipients (id),
+    recipient_id BIGINT NOT NULL,
     courier_id VARCHAR,
     courier_contact_phone VARCHAR(32),
-    origin_address_id VARCHAR NOT NULL REFERENCES delivery_bank.addresses (id),
-    destination_address_id VARCHAR NOT NULL REFERENCES delivery_bank.addresses (id),
+    origin_address_id VARCHAR NOT NULL,
+    destination_address_id VARCHAR NOT NULL,
     status VARCHAR(20) NOT NULL,
     delivery_duration INTERVAL,
     pickup_date TIMESTAMP WITHOUT TIME ZONE,

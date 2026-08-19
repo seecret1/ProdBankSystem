@@ -8,7 +8,6 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-// TODO: заменить на Long
 public interface RecipientRepository extends JpaRepository<Recipient, Long> {
 
     Optional<Recipient> findByUserId(String userId);
@@ -20,7 +19,7 @@ public interface RecipientRepository extends JpaRepository<Recipient, Long> {
             r.contactPhone = :#{#entity.contactPhone},
             r.officeId = :#{#entity.officeId},
             r.personType = :#{#entity.personType},
-            r.updatedAt = CURRENT_TIMESTAMP
+            r.updatedAt = CURRENT_INSTANT
         WHERE r.userId = :#{#entity.userId}
     """)
     void update(@Param("entity") Recipient recipient);

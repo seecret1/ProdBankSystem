@@ -7,6 +7,7 @@ import com.github.seecret1.delivery_service.dto.user.FullNameDto;
 import com.github.seecret1.delivery_service.dto.user.RecipientDto;
 import com.github.seecret1.delivery_service.entity.Address;
 import com.github.seecret1.delivery_service.entity.CardDelivery;
+import com.github.seecret1.delivery_service.entity.Courier;
 import com.github.seecret1.delivery_service.entity.FullName;
 import com.github.seecret1.delivery_service.entity.Recipient;
 import com.github.seecret1.delivery_service.entity.enums.DeliveryStatus;
@@ -41,10 +42,11 @@ public class DeliveryMapper {
     }
 
     public DeliveryResponse toResponse(CardDelivery cardDelivery, RecipientDto recipient) {
+        Courier courier = cardDelivery.getCourier();
         return DeliveryResponse.builder()
-                .courierId(cardDelivery.getCourierId())
+                .courierId(courier != null ? courier.getId() : null)
                 .recipient(recipient)
-                .courierContactPhone(cardDelivery.getCourierContactPhone())
+                .courierContactPhone(courier != null ? courier.getContactPhone() : null)
                 .originAddress(addressMapper.fromAddress(cardDelivery.getOriginAddress()))
                 .destinationAddress(addressMapper.fromAddress(cardDelivery.getDestinationAddress()))
                 .createdAt(cardDelivery.getCreatedAt())

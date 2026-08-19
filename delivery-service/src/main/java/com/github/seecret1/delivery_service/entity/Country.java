@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
@@ -12,6 +13,7 @@ import java.io.Serializable;
 import java.time.Instant;
 
 @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+@DynamicInsert
 @Setter
 @Getter
 @Entity
@@ -26,11 +28,11 @@ public class Country implements Serializable {
     @Column(name = "deleted", nullable = false)
     private Boolean deleted = false;
 
-    @ColumnDefault("(now) AT TIME ZONE 'utc'::text")
+    @ColumnDefault("now()")
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-    @ColumnDefault("(now) AT TIME ZONE 'utc'::text")
+    @ColumnDefault("now()")
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 

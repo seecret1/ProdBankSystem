@@ -4,9 +4,11 @@ import com.github.seecret1.delivery_service.entity.enums.PersonType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.envers.Audited;
 
 import java.io.Serializable;
 
+@Audited
 @Getter
 @Setter
 @Entity
