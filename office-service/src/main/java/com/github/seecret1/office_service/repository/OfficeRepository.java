@@ -22,7 +22,7 @@ public interface OfficeRepository extends JpaRepository<Office, String> {
     List<Office> findOfficeByCity(String city);
 
     @Query("""
-    SELECT o FROM Office o WHERE o.address.city = 'Moscow'
+    SELECT o FROM Office o WHERE o.address.city = 'Moscow' AND o.main = true
     """)
     @EntityGraph(attributePaths = {"address", "address.country"})
     Office findMainOffice();
