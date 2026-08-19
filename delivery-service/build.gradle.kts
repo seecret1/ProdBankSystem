@@ -69,6 +69,7 @@ dependencies {
 	implementation("org.hibernate.orm:hibernate-envers:${versions["hibernateVersion"]}")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("com.h2database:h2")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
