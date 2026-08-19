@@ -1,0 +1,84 @@
+server:
+  port: 0
+
+spring:
+  application:
+    name: delivery-service-test
+
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    generate-ddl: true
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+        use_sql_comments: true
+      org.hibernate.envers.audit_table_suffix: _history
+      org.hibernate.envers.audit_table_prefix:
+      org.hibernate.envers.default_schema: delivery_bank_history
+
+  flyway:
+    enabled: false
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    properties:
+      security:
+        protocol: PLAINTEXT
+
+springdoc:
+  api-docs:
+    path: /api-docs
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+logging:
+  level:
+    com.github.seecret1.delivery_service: DEBUG
+    org.springframework.test: DEBUG
+    org.hibernate.SQL: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  tracing:
+    enabled: false
+
+app:
+  kafka:
+    bootstrap-servers: localhost:9092
+    topic: delivery-test
+    retry-topic: delivery-retry-test
+    orders-topic: orders-test
+    group-id: delivery-group-id-test
+    retry-group-id: delivery-retry-group-id-test
+    dlt-topic: delivery.DLT.test
+    dlt-group-id: delivery-group-id.dlt.test
+    max-pull-records: 10
+    partitions: 1
+    replicas: 1
+
+  retry:
+    max-attempts: 1
+    delay: 100
+    multiplier: 1
+    max-interval: 100
+    timeout: 1
+
+
