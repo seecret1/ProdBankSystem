@@ -46,6 +46,7 @@ public abstract class AddressMapper {
 
     @Named("fromBaseAddress")
     @Mapping(target = "deleted", source = "deleted")
+    @Mapping(target = "countryCode", source = "country.code")
     public abstract AddressBaseResponse fromBaseAddress(Address address);
 
     @BeanMapping(ignoreByDefault = true)

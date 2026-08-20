@@ -52,9 +52,9 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
-    @ExceptionHandler(IndividualDataExistsException.class)
+    @ExceptionHandler(PersonDataExistsException.class)
     public ResponseEntity<ErrorResponse> handleIndividualDataExistsException(
-            IndividualDataExistsException ex
+            PersonDataExistsException ex
     ) {
         log.error("GlobalRestControllerAdvice -> IndividualDataExistsException: {}", ex.getMessage());
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
