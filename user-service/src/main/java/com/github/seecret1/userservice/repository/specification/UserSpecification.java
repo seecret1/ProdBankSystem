@@ -1,10 +1,8 @@
 package com.github.seecret1.userservice.repository.specification;
 
-import com.github.seecret1.userservice.entity.enums.RoleType;
 import com.github.seecret1.userservice.entity.User;
 import com.github.seecret1.userservice.model.UserFilterModel;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 
@@ -37,7 +35,7 @@ public interface UserSpecification {
         };
     }
 
-    private static <T> Specification<User> isEquals(String fieldName, LocalDate date) {
+    private static Specification<User> isEquals(String fieldName, LocalDate date) {
         return (root, query, cb) -> {
             if (date == null) {
                 return null;
@@ -48,12 +46,6 @@ public interface UserSpecification {
                         "date", LocalDate.class, root.get(fieldName)),
                         date
             );
-        };
-    }
-
-    private static <T> Specification<User> isEquals(String fieldName, RoleType roleType) {
-        return (root, query, cb) -> {
-            return cb.equal(root.get(fieldName), roleType);
         };
     }
 }

@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Table(name = "refresh_tokens", schema = "person_bank")
 @AllArgsConstructor
 @NoArgsConstructor
-public class RefreshToken {
+public class RefreshToken { //TODO: добавить шифрование для токенов перед сохранением + дешифрование
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -32,7 +32,7 @@ public class IndividualPublicController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MANAGER')")
-    @RequireUserStatus(allowed = {UserStatus.PENDING_PROFILE, UserStatus.ACTIVE})
+    @RequireUserStatus(allowed = UserStatus.PENDING_PROFILE)
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Complete client profile", description = "Link personal data to the authenticated user account")
     @ApiResponses(value = {

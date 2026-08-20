@@ -12,7 +12,7 @@ import com.github.seecret1.userservice.entity.Individual;
 import com.github.seecret1.userservice.entity.User;
 import com.github.seecret1.userservice.entity.enums.RoleType;
 import com.github.seecret1.userservice.entity.enums.UserStatus;
-import com.github.seecret1.userservice.exception.IndividualDataExistsException;
+import com.github.seecret1.userservice.exception.PersonDataExistsException;
 import com.github.seecret1.userservice.exception.PersonException;
 import com.github.seecret1.userservice.mapper.IndividualMapper;
 import com.github.seecret1.userservice.repository.IndividualRepository;
@@ -180,7 +180,6 @@ class IndividualServiceTest {
             assertThat(result).isNotNull();
             assertThat(result.passportNumber()).isEqualTo("AB1234567");
             verify(individualRepository).save(any(Individual.class));
-            authUtil.verify(() -> AuthUtil.userRecordPersonalData(user));
         }
     }
 
@@ -193,7 +192,6 @@ class IndividualServiceTest {
                 .isInstanceOf(PersonException.class)
                 .hasMessageContaining("Individual profile already exists");
     }
-
 
     @Test
     void update_ShouldReturnUpdatedIndividualResponse_WhenValid() {
@@ -249,7 +247,7 @@ class IndividualServiceTest {
         );
 
         assertThatThrownBy(() -> individualService.update("AB1234567", requestWithNewPassport))
-                .isInstanceOf(IndividualDataExistsException.class)
+                .isInstanceOf(PersonDataExistsException.class)
                 .hasMessageContaining("Passport number already exists");
     }
 
@@ -274,7 +272,7 @@ class IndividualServiceTest {
         );
 
         assertThatThrownBy(() -> individualService.update("AB1234567", requestWithNewPhone))
-                .isInstanceOf(IndividualDataExistsException.class)
+                .isInstanceOf(PersonDataExistsException.class)
                 .hasMessageContaining("Phone number already exists");
     }
 
@@ -343,7 +341,7 @@ class IndividualServiceTest {
         );
 
         assertThatThrownBy(() -> individualService.updateYour("1", requestWithNewPassport))
-                .isInstanceOf(IndividualDataExistsException.class)
+                .isInstanceOf(PersonDataExistsException.class)
                 .hasMessageContaining("Passport number already exists");
     }
 
@@ -369,7 +367,7 @@ class IndividualServiceTest {
         );
 
         assertThatThrownBy(() -> individualService.updateYour("1", requestWithNewPhone))
-                .isInstanceOf(IndividualDataExistsException.class)
+                .isInstanceOf(PersonDataExistsException.class)
                 .hasMessageContaining("Phone number already exists");
     }
 

@@ -6,6 +6,7 @@ import com.github.seecret1.userservice.mapper.AddressMapper;
 import com.github.seecret1.userservice.mapper.PersonMapper;
 import com.github.seecret1.userservice.repository.UserRepository;
 import com.github.seecret1.userservice.service.PersonService;
+import com.github.seecret1.userservice.utils.EncryptionUtils;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,8 @@ public class PersonServiceImpl implements PersonService {
 
     private final AddressMapper addressMapper;
 
+    private final EncryptionUtils encryptionUtils;
+
     @Override
     @Transactional(readOnly = true)
     public PersonInfo getPersonInfo(String userId, String apiKey) {
@@ -42,7 +45,7 @@ public class PersonServiceImpl implements PersonService {
         return PersonMapper.toDto(
                 individual.getUser().getId(),
                 fullName,
-                individual.getPhoneNumber(),
+                encryptionUtils.decrypt(individual.getPhoneNumber()),
                 addressResponse
         );
     }

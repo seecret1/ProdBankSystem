@@ -1,4 +1,4 @@
-package com.github.seecret1.userservice.schduler;
+package com.github.seecret1.userservice.scheduler;
 
 import com.github.seecret1.userservice.service.PersonSchedulerService;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +26,15 @@ public class PassportValidityScheduler {
                 PassportValidityScheduler.class.getName());
         personSchedulerService.checkPassportValidityWhoMissedPassportRenewalDeadline();
         log.info("[Scheduler: {}]End checkPassportValidityWhoMissedPassportRenewalDeadline Scheduler",
+                PassportValidityScheduler.class.getName());
+    }
+
+    @Scheduled(cron = "${app.scheduler.passport-validity.deactivate.cron}", zone = "Europe/Moscow")
+    public void deactivateUsersIfPassportExpired() {
+        log.info("[Scheduler: {}]Start deactivateUsersIfPassportExpired Scheduler",
+                PassportValidityScheduler.class.getName());
+        personSchedulerService.deactivateUsersIfPassportExpired();
+        log.info("[Scheduler: {}]End deactivateUsersIfPassportExpired Scheduler",
                 PassportValidityScheduler.class.getName());
     }
 }

@@ -59,7 +59,7 @@ CREATE TABLE person_bank.individuals
 CREATE TABLE person_bank.refresh_tokens
 (
     id BIGSERIAL PRIMARY KEY,
-    token VARCHAR(255) NOT NULL,
+    token VARCHAR NOT NULL,
     expiry_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc'),
     revoked boolean NOT NULL DEFAULT FALSE,
     user_id VARCHAR NOT NULL REFERENCES person_bank.users (id)
