@@ -28,12 +28,27 @@ public interface UserRepository extends JpaRepository<User, String>, JpaSpecific
         AND u.birthDate IS NOT NULL
         AND u.individual IS NOT NULL
         AND (
-            FUNCTION('DATE_ADD', u.birthDate, 20, 'YEAR') = CURRENT_DATE
+            FUNCTION('DATE_ADD', u.birthDate, :firstAge, 'YEAR') = CURRENT_DATE
             OR 
-            FUNCTION('DATE_ADD', u.birthDate, 45, 'YEAR') = CURRENT_DATE
+            FUNCTION('DATE_ADD', u.birthDate, :secondAge, 'YEAR') = CURRENT_DATE
         )
         """)
-    Page<User> findUsersUpdatePassport(Pageable pageable);
+    Page<User> findUsersUpdatePassport(Pageable pageable, int firstAge, int secondAge);
+
+    @Query("""
+    SELECT u FROM User u
+    WHERE u.deleted = false
+    AND u.birthDate IS NOT NULL
+    AND u.individual IS NOT NULL
+    AND (
+        FUNCTION('DATE_ADD', u.birthDate, :firstAge, 'YEAR') <= CURRENT_DATE
+        AND FUNCTION('DATE_ADD', u.birthDate, :firstAge, 'YEAR') >= CURRENT_DATE - :daysThreshold
+        OR
+        FUNCTION('DATE_ADD', u.birthDate, :secondAge, 'YEAR') <= CURRENT_DATE
+        AND FUNCTION('DATE_ADD', u.birthDate, :secondAge, 'YEAR') >= CURRENT_DATE - :daysThreshold
+    )
+    """)
+    Page<User> findUsersWithExpiredPassport(Pageable pageable, int firstAge, int secondAge, int daysThreshold);
 
     @Query("""
         SELECT u FROM User u
@@ -41,14 +56,14 @@ public interface UserRepository extends JpaRepository<User, String>, JpaSpecific
         AND u.birthDate IS NOT NULL
         AND u.individual IS NOT NULL
         AND (
-            FUNCTION('DATE_ADD', u.birthDate, 20, 'YEAR') <= CURRENT_DATE
-            AND FUNCTION('DATE_ADD', u.birthDate, 20, 'YEAR') >= FUNCTION('DATE_ADD', CURRENT_DATE, -90, 'DAY')
+            FUNCTION('DATE_ADD', u.birthDate, :firstAge, 'YEAR') <= CURRENT_DATE
+            AND FUNCTION('DATE_ADD', u.birthDate, :firstAge, 'YEAR') >= FUNCTION('DATE_ADD', CURRENT_DATE, - :daysNotified, 'DAY')
             OR 
-            FUNCTION('DATE_ADD', u.birthDate, 45, 'YEAR') <= CURRENT_DATE
-            AND FUNCTION('DATE_ADD', u.birthDate, 45, 'YEAR') >= FUNCTION('DATE_ADD', CURRENT_DATE, -90, 'DAY')
+            FUNCTION('DATE_ADD', u.birthDate, :secondAge, 'YEAR') <= CURRENT_DATE
+            AND FUNCTION('DATE_ADD', u.birthDate, :secondAge, 'YEAR') >= FUNCTION('DATE_ADD', CURRENT_DATE, - :daysNotified, 'DAY')
         )
         """)
-    Page<User> findUsersWhoMissedPassportRenewalDeadline(Pageable pageable);
+    Page<User> findUsersWhoMissedPassportRenewalDeadline(Pageable pageable, int firstAge, int secondAge, int daysNotified);
 
     @Query("SELECT u FROM User u WHERE u.deleted = false")
     Page<User> findAllActiveUsers(Pageable pageable);

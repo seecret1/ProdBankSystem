@@ -5,4 +5,6 @@ public interface PersonSchedulerService {
     void checkPassportValidity();
 
     void checkPassportValidityWhoMissedPassportRenewalDeadline();
+
+    void deactivateUsersIfPassportExpired();
 }

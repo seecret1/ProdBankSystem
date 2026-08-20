@@ -30,7 +30,7 @@ public record CustomUserDetails(User user) implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return true;
+        return user.getStatus() != UserStatus.INACTIVE;
     }
 
     @Override

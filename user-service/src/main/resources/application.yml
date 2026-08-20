@@ -34,8 +34,13 @@ spring:
 user-service:
   jwt:
     secret: ${SECRET_KEY:MyVeryLongAndSecureSecretKeyForJWTTokenSigningThatIsAtLeast64CharactersLongToMeetHS512Requirements123456789}
-    tokenExpiration: 10m
-    refreshTokenExpiration: 60m
+    tokenExpiration: ${TOKEN_EXPIRED:60m}
+    refreshTokenExpiration: ${REFRESH_TOKEN_EXPIRED:360m}
+  passport:
+    first-age: ${FIRST_AGE_PASSPORT_EXPIRED:20}
+    second-age: ${SECOND_AGE_PASSPORT_EXPIRED:45}
+    days-notified: ${DAYS_NOTIFIED:90}
+    days-threshold: ${DAYS_THRESHOLD:30}
 
 springdoc:
   api-docs:

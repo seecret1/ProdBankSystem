@@ -198,6 +198,13 @@ public class IndividualServiceImpl implements IndividualService {
     private IndividualResponse updateIndividual(Individual individual, IndividualRequest request) {
         checkPassportAndPhone(individual, request);
 
+        var user = individual.getUser();
+
+        if (user.getStatus() == UserStatus.INACTIVE) {
+            user.setStatus(UserStatus.ACTIVE);
+            userRepository.save(user);
+        }
+
         individualMapper.update(individual, request);
         individualRepository.save(individual);
         return individualMapper.toResponseDto(individual);
