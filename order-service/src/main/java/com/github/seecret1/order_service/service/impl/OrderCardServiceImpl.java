@@ -99,13 +99,9 @@ public class OrderCardServiceImpl implements OrderCardService {
             case OFFICE:
                 return processOfficeMethod(city, order, event, personInfo);
             case DELIVERY_COURIER:
-                return processDeliveryCourierMethod(city, order, event, personInfo, false);
+                return processDeliveryCourierMethod(order, event, personInfo, false);
             case DIGITAL:
-                //TODO: заглушка
-                order.setStatus(OrderStatus.REJECTED);
-                order.setComment("This version does not include support");
-                return order;
-//                return processDigitalMethod(order, event);
+                return processDigitalMethod(order, personInfo);
             default:
                 // TODO: добавить автоматическую обработку в card-service для retry заказа
                 log.error("Unsupported card receiving method: {}", event.getCardReceivingMethod());
@@ -123,7 +119,7 @@ public class OrderCardServiceImpl implements OrderCardService {
                 return processDebit(city, order);
             case DEBIT_PERSONAL:
                 OrderCard newOrder = processDebit(city, order);
-                processDeliveryCourierMethod(city, newOrder, event, personInfo, true);
+                processDeliveryCourierMethod(newOrder, event, personInfo, true);
                 return newOrder;
             case CREDIT: //TODO: заглушка на время
                 order.setStatus(OrderStatus.REJECTED);
@@ -139,7 +135,6 @@ public class OrderCardServiceImpl implements OrderCardService {
     }
 
     private OrderCard processDeliveryCourierMethod(
-            String city,
             OrderCard order,
             OrderCardDto event,
             PersonInfo personInfo,
@@ -174,9 +169,17 @@ public class OrderCardServiceImpl implements OrderCardService {
         return order;
     }
 
-    private OrderCard processDigitalMethod(OrderCard order, OrderCardDto event) {
-        // TODO: продумать логику
-        return null;
+    private OrderCard processDigitalMethod(
+            OrderCard order,
+            PersonInfo personInfo
+    ) {
+        if (personInfo.contactPhone() == null) {
+            order.setStatus(OrderStatus.REJECTED);
+            order.setComment("Contact phone must be set!");
+        }
+        order.setStatus(OrderStatus.SUCCESS);
+        order.setComment("Digital card successfully issued and activated");
+        return order;
     }
 
     private OrderCard processCredit(String city, OrderCard order) {
