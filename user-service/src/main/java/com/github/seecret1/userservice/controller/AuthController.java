@@ -1,5 +1,6 @@
 package com.github.seecret1.userservice.controller;
 
+import com.github.seecret1.userservice.aop.RequireUserStatus;
 import com.github.seecret1.userservice.dto.request.*;
 import com.github.seecret1.userservice.dto.response.JwtAuthenticationDto;
 import com.github.seecret1.userservice.service.AuthService;
@@ -76,6 +77,7 @@ public class AuthController {
     }
 
     @PostMapping("/sign-out")
+    @RequireUserStatus
     @Operation(summary = "Sign out", description = "Logout user and invalidate refresh token")
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponses(value = {
@@ -95,6 +97,7 @@ public class AuthController {
     }
 
     @PostMapping("/change-password")
+    @RequireUserStatus
     @Operation(summary = "Sign out", description = "Logout user and invalidate refresh token")
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponses(value = {

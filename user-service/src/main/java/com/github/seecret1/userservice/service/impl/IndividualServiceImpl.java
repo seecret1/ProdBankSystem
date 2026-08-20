@@ -151,7 +151,6 @@ public class IndividualServiceImpl implements IndividualService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         "User not found by id: " + userId
                 ));
-        AuthUtil.checkUserPersonalData(user);
         loggingIndividualInfo(request);
         var individual = user.getIndividual();
         return updateIndividual(individual, request);
