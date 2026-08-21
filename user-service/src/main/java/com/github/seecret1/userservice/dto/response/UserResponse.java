@@ -26,8 +26,6 @@ public record UserResponse(
 
     RoleType role,
 
-    boolean active,
-
     Instant createdAt,
 
     Instant updatedAt,

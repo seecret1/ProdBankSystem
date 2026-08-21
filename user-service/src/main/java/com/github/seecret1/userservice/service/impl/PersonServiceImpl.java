@@ -7,6 +7,7 @@ import com.github.seecret1.userservice.mapper.PersonMapper;
 import com.github.seecret1.userservice.repository.UserRepository;
 import com.github.seecret1.userservice.service.PersonService;
 import com.github.seecret1.userservice.utils.EncryptionUtils;
+import com.github.seecret1.userservice.utils.PhoneUtils;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,11 +42,12 @@ public class PersonServiceImpl implements PersonService {
         var address = individual.getAddress();
 
         var addressResponse = addressMapper.fromBaseAddress(address);
+        var phoneDecrypt = encryptionUtils.decrypt(individual.getPhoneNumber());
         FullNameDto fullName = new FullNameDto(user.getFirstName(), user.getLastName(), user.getMiddleName());
         return PersonMapper.toDto(
                 individual.getUser().getId(),
                 fullName,
-                encryptionUtils.decrypt(individual.getPhoneNumber()),
+                PhoneUtils.maskPhoneWithPrefix(phoneDecrypt),
                 addressResponse
         );
     }
