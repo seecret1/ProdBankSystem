@@ -42,12 +42,12 @@ public class PersonServiceImpl implements PersonService {
         var address = individual.getAddress();
 
         var addressResponse = addressMapper.fromBaseAddress(address);
-        var phoneDecrypt = encryptionUtils.decrypt(individual.getPhoneNumber());
+        var phone = PhoneUtils.formatInternationalPhone(encryptionUtils.decrypt(individual.getPhoneNumber()));
         FullNameDto fullName = new FullNameDto(user.getFirstName(), user.getLastName(), user.getMiddleName());
         return PersonMapper.toDto(
                 individual.getUser().getId(),
                 fullName,
-                PhoneUtils.maskPhoneWithPrefix(phoneDecrypt),
+                phone,
                 addressResponse
         );
     }
