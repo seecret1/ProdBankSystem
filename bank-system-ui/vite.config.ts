@@ -1,0 +1,27 @@
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+    plugins: [react()],
+    server: {
+        port: 3000,
+        proxy: {
+            '/api/v1/private/cards': {
+                target: 'http://localhost:8092',
+                changeOrigin: true,
+            },
+            '/api/v1/public/cards': {
+                target: 'http://localhost:8092',
+                changeOrigin: true,
+            },
+            '/api/v1/private/offices': {
+                target: 'http://localhost:8098',
+                changeOrigin: true,
+            },
+            '/api': {
+                target: 'http://localhost:8091',
+                changeOrigin: true,
+            },
+        },
+    },
+});
