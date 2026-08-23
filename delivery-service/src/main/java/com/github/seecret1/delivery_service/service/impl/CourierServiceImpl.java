@@ -25,13 +25,19 @@ public class CourierServiceImpl implements CourierService {
     @Override
     @Transactional
     public CourierDto create(CourierDto dto) {
-        if (courierRepository.existsByUserId(dto.userId())) {
-            throw new DeliveryException("Courier with userId: %s already exists", dto.userId());
-        }
+        existsByUserId(dto.userId());
         Courier courier = courierMapper.toEntity(dto);
         courierRepository.save(courier);
         log.info("Courier created: id={}, userId={}", courier.getId(), courier.getUserId());
         return courierMapper.toDto(courier);
+    }
+
+    @Override
+    @Transactional
+    public CourierDto register(CourierDto dto) {
+        return create(dto); //TODO: временная обработка, далее нужно добавить:
+                            // рассмотрение заявки на регистрацию
+                            // взаимодействие с мс аналитики
     }
 
     @Override
@@ -86,5 +92,11 @@ public class CourierServiceImpl implements CourierService {
     private Courier findActive(String courierId) {
         return courierRepository.findByIdAndDeletedFalse(courierId)
                 .orElseThrow(() -> new DeliveryException("Courier %s not found", courierId));
+    }
+
+    private void existsByUserId(String userId) {
+        if (courierRepository.existsByUserId(userId)) {
+            throw new DeliveryException("Courier with userId: %s already exists", userId);
+        }
     }
 }
