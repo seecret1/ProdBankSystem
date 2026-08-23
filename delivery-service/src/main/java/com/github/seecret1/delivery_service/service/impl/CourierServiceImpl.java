@@ -26,13 +26,12 @@ public class CourierServiceImpl implements CourierService {
     @Transactional
     public CourierDto create(CourierDto dto) {
         if (courierRepository.existsByUserId(dto.userId())) {
-            throw new DeliveryException("Courier with userId %s already exists", dto.userId());
+            throw new DeliveryException("Courier with userId: %s already exists", dto.userId());
         }
         Courier courier = courierMapper.toEntity(dto);
-        courier.setBusy(false);
-        Courier saved = courierRepository.save(courier);
-        log.info("Courier created: id={}, userId={}", saved.getId(), saved.getUserId());
-        return courierMapper.toDto(saved);
+        courierRepository.save(courier);
+        log.info("Courier created: id={}, userId={}", courier.getId(), courier.getUserId());
+        return courierMapper.toDto(courier);
     }
 
     @Override

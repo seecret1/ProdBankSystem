@@ -54,9 +54,8 @@ public abstract class DeliveryBaseEntity implements Serializable {
     @Column(name = "status", nullable = false)
     private DeliveryStatus status;
 
-    @Column(name = "delivery_duration", columnDefinition = "INTERVAL DAY TO SECOND")
-    @JdbcType(PostgreSQLIntervalSecondJdbcType.class)
-    private Duration deliveryDuration;
+    @Column(name = "delivery_duration")
+    private String deliveryDuration;
 
     @Column(name = "pickup_date")
     private Instant pickupDate;

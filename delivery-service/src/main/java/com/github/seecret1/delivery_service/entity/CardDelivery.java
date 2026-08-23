@@ -11,7 +11,6 @@ import org.hibernate.envers.Audited;
 
 import java.io.Serializable;
 
-@Audited
 @Getter
 @Setter
 @Entity

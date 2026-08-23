@@ -78,7 +78,7 @@ CREATE TABLE delivery_bank.card_deliveries
     origin_address_id VARCHAR NOT NULL REFERENCES delivery_bank.addresses (id),
     destination_address_id VARCHAR NOT NULL REFERENCES delivery_bank.addresses (id),
     status VARCHAR(20) NOT NULL,
-    delivery_duration INTERVAL,
+    delivery_duration VARCHAR,
     pickup_date TIMESTAMP WITHOUT TIME ZONE,
     delivered_at TIMESTAMP WITHOUT TIME ZONE
 );

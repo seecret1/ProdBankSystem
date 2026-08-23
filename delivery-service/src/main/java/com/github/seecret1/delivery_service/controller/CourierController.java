@@ -5,6 +5,7 @@ import com.github.seecret1.delivery_service.service.CourierService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -26,6 +27,7 @@ public class CourierController {
     private final CourierService courierService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ROLE_USER')")
     @ResponseStatus(HttpStatus.CREATED)
     public CourierDto create(@Valid @RequestBody CourierDto dto) {
         return courierService.create(dto);

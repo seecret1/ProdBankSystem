@@ -44,7 +44,7 @@ CREATE TABLE delivery_bank_history.addresses_history
 
 CREATE INDEX IF NOT EXISTS idx_addresses_history_revision ON delivery_bank_history.addresses_history (rev);
 
-CREATE TABLE delivery_bank.couriers_history
+CREATE TABLE delivery_bank_history.couriers_history
 (
     id VARCHAR NOT NULL,
     rev BIGINT NOT NULL,
@@ -110,7 +110,7 @@ CREATE TABLE delivery_bank_history.card_deliveries_history
     origin_address_id VARCHAR NOT NULL,
     destination_address_id VARCHAR NOT NULL,
     status VARCHAR(20) NOT NULL,
-    delivery_duration INTERVAL,
+    delivery_duration VARCHAR,
     pickup_date TIMESTAMP WITHOUT TIME ZONE,
     delivered_at TIMESTAMP WITHOUT TIME ZONE,
 
