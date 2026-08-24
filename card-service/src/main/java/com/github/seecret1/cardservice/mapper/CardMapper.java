@@ -45,8 +45,6 @@ public final class CardMapper {
                 card.getDateActivation(),
                 card.getDateExpiry(),
                 card.getStatus(),
-                card.getBalance(),
-                card.getSpendingLimit(),
                 card.getUserId()
         );
     }
@@ -58,8 +56,6 @@ public final class CardMapper {
                 card.getDateActivation(),
                 card.getDateExpiry(),
                 card.getStatus(),
-                card.getBalance(),
-                card.getSpendingLimit(),
                 card.getUserId()
         );
     }
@@ -71,8 +67,6 @@ public final class CardMapper {
                 .numberHash(CardHashUtils.hash(request.number()))
                 .dateActivation(request.dateActivation())
                 .dateExpiry(request.dateExpiry())
-                .balance(request.balance())
-                .spendingLimit(request.spendingLimit())
                 .status(CardStatus.PENDING)
                 .deleted(false)
                 .userId(userId)
@@ -91,7 +85,6 @@ public final class CardMapper {
         dto.setOrderType(OrderDto.OrderType.CARD);
         dto.setCardId(card.getId());
         dto.setCardType(card.getType());
-        dto.setSpendingLimit(card.getSpendingLimit());
         dto.setCardReceivingMethod(request.receivingMethod());
         dto.setDeliveryRequest(request.cardDeliveryRequest());
         dto.setComment(request.comment());

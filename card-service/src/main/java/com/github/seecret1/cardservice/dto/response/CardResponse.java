@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.github.seecret1.cardservice.entity.enums.CardStatus;
 import com.github.seecret1.cardservice.entity.enums.CardType;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
@@ -22,10 +21,6 @@ public record CardResponse (
     LocalDate dateExpiry,
 
     CardStatus status,
-
-    BigDecimal balance,
-
-    BigDecimal spendingLimit,
 
     String userId
 

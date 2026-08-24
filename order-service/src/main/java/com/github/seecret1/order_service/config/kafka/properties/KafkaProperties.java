@@ -17,9 +17,13 @@ public class KafkaProperties {
 
     private String topic;
 
+    private String innerTopic;
+
     private String retryTopic;
 
     private String cardsTopic;
+
+    private String invoiceTopic;
 
     private String groupId;
 

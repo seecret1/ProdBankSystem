@@ -33,6 +33,9 @@ public class OrderCardDelivery extends BaseOrderEntity {
     @Column(name = "office_id")
     String officeId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    Address address;
+
     //TODO: сейчас не будет разделения на ФЛ и ЮЛ
     // Все клиенты будут ФЛ, в дальнейшем нужны буду сервисы анализа ФЛ и ЮР
     @Enumerated(EnumType.STRING)

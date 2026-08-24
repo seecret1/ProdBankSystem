@@ -26,8 +26,8 @@ public class OrderCard extends BaseOrderEntity {
     @Enumerated(EnumType.STRING)
     CardType cardType;
 
-    @Column(name = "spending_limit", nullable = false)
-    BigDecimal spendingLimit;
+    @Column(name = "invoice_id", nullable = false, unique = true)
+    String invoiceId;
 
     @Column(name = "card_receiving_method", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)

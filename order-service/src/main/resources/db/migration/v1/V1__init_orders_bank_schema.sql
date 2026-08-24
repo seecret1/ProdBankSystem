@@ -36,7 +36,7 @@ CREATE TABLE order_bank.orders_card
     comment VARCHAR(255) NOT NULL,
     card_id VARCHAR NOT NULL,
     card_type VARCHAR(20) NOT NULL,
-    spending_limit DECIMAL(19, 2) NOT NULL,
+    invoice_id VARCHAR NOT NULL,
     card_receiving_method VARCHAR(20) NOT NULL,
     order_card_delivery_id VARCHAR REFERENCES order_bank.orders_card_delivery (id)
 );

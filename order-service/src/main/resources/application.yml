@@ -18,7 +18,7 @@ spring:
     properties:
       org.hibernate.envers.audit_table_suffix: _history
       org.hibernate.envers.audit_table_prefix:
-      org.hibernate.envers.default_schema: person_bank_history
+      org.hibernate.envers.default_schema: order_bank_history
 
   flyway:
     enabled: true
@@ -113,6 +113,9 @@ app:
   kafka:
     bootstrap-servers: ${spring.kafka.bootstrap-servers}
     topic: orders
+    inner-topic: inner-orders
+    response-topic: response-orders
+    invoice-topic: invoices
     cards-topic: cards
     retry-topic: retry-orders
     group-id: order-group-id

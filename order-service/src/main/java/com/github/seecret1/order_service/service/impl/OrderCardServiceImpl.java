@@ -8,12 +8,11 @@ import com.github.seecret1.order_service.dto.user.PersonInfo;
 import com.github.seecret1.order_service.entity.OrderCard;
 import com.github.seecret1.order_service.entity.enums.CardType;
 import com.github.seecret1.order_service.entity.enums.OrderStatus;
-import com.github.seecret1.order_service.entity.enums.OrderType;
 import com.github.seecret1.order_service.entity.enums.PersonType;
-import com.github.seecret1.order_service.exception.OrderTypeException;
 import com.github.seecret1.order_service.feign.OfficeServiceFeignClient;
 import com.github.seecret1.order_service.feign.UserServiceFeignClient;
 import com.github.seecret1.order_service.kafka.producer.OrderDeliveryRequestKafkaProducerService;
+import com.github.seecret1.order_service.kafka.producer.OrderInvoiceRequestKafkaProducerService;
 import com.github.seecret1.order_service.kafka.producer.OrderMessageKafkaProducerService;
 import com.github.seecret1.order_service.mapper.AddressMapper;
 import com.github.seecret1.order_service.mapper.OrderCardManualMapper;
@@ -33,6 +32,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderCardServiceImpl implements OrderCardService {
 
+    private final OrderInvoiceRequestKafkaProducerService orderInvoiceRequestKafkaProducerService;
+
     private final OrderMessageKafkaProducerService orderMessageKafkaProducerService;
 
     private final OrderDeliveryRequestKafkaProducerService deliveryKafkaProducerService;
@@ -48,17 +49,11 @@ public class OrderCardServiceImpl implements OrderCardService {
     private final AddressMapper addressMapper;
 
     @Override
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    @Transactional(isolation = Isolation.REPEATABLE_READ) //TODO: обавить метрики
     public BaseMessage createOrder(OrderCardDto event) {
 
         // TODO: добавить отправку сообщения через notification-service
         try {
-            if (event.getOrderType() != OrderType.CARD) {
-                throw new OrderTypeException("Order card service works only with OrderType=CARD");
-            }
-
-            event.validate();
-
             // TODO: добавить проверку счетов карт (если имеется задолженность -> REJECT)
             //  Реализовать через invoice-service
 
@@ -71,6 +66,7 @@ public class OrderCardServiceImpl implements OrderCardService {
             }
 
             order = processReceivingMethod(order, event, personInfo);
+            orderInvoiceRequestKafkaProducerService.sendWithWait(event);
             return sendMessage(orderCardRepository.save(order));
 
         } catch (Exception ex) {
