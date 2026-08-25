@@ -1,6 +1,6 @@
 package com.github.seecret1.invoice_service.dto.order;
 
-import com.github.seecret1.order_service.entity.enums.OrderType;
+import com.github.seecret1.invoice_service.entity.enums.OrderType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -6,6 +6,8 @@ import com.github.seecret1.order_service.entity.enums.CardType;
 import com.github.seecret1.order_service.exception.OrderValidException;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -16,18 +18,20 @@ public class OrderCardDto extends OrderDto {
 
     private CardType cardType;
 
-    private String invoiceId;
-
     private CardReceivingMethod cardReceivingMethod;
 
     private CardDeliveryRequest deliveryRequest;
 
+    private String currency;
+
+    private BigDecimal balance;
+
     @Override
     public void validate() {
-        if (userId == null || cardId == null || invoiceId == null || traceId == null) {
+        if (userId == null || cardId == null || traceId == null) {
             throw new OrderValidException("Ids must not be null");
         }
-        if (userId.isBlank() || cardId.isBlank() || invoiceId.isBlank() || traceId.isBlank()) {
+        if (userId.isBlank() || cardId.isBlank() || traceId.isBlank()) {
             throw new OrderValidException("Ids must not be blank");
         }
         if (cardType == null || orderType == null) {

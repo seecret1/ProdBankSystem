@@ -59,8 +59,8 @@ public class OrderInnerRequestKafkaProducerServiceImpl implements OrderInnerRequ
     }
 
     private static void logging(OrderCardDto message) {
-        log.debug("Response sent to Kafka: traceId={}, cardId={}, invoiceId={}, userId={}, createdAt={}",
-                message.getTraceId(), message.getCardId(), message.getInvoiceId(),
+        log.debug("Response sent to Kafka: traceId={}, cardId={}, userId={}, createdAt={}",
+                message.getTraceId(), message.getCardId(),
                 message.getUserId(), message.getCreatedAt());
     }
 }

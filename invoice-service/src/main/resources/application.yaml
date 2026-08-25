@@ -107,6 +107,7 @@ app:
   kafka:
     bootstrap-servers: ${spring.kafka.bootstrap-servers}
     topic: invoices
+    request-topic: request-invoices
     orders-topic: response-orders
     retry-topic: retry-invoices
     group-id: invoice-group-id

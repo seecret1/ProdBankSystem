@@ -51,7 +51,7 @@ CREATE TABLE order_bank_history.orders_card_history
     comment VARCHAR(255) NOT NULL,
     card_id VARCHAR NOT NULL,
     card_type VARCHAR(10) NOT NULL,
-    invoice_id VARCHAR NOT NULL,
+    invoice_id VARCHAR UNIQUE,
     card_receiving_method VARCHAR(20) NOT NULL,
     order_card_delivery_id VARCHAR,
 

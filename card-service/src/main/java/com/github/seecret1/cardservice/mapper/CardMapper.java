@@ -87,6 +87,8 @@ public final class CardMapper {
         dto.setCardType(card.getType());
         dto.setCardReceivingMethod(request.receivingMethod());
         dto.setDeliveryRequest(request.cardDeliveryRequest());
+        dto.setCurrency(request.currency());
+        dto.setBalance(request.balance());
         dto.setComment(request.comment());
         dto.setCreatedAt(Instant.now());
         return dto;

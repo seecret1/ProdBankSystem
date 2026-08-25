@@ -1,11 +1,10 @@
-package com.github.seecret1.order_service.dto.card;
+package com.github.seecret1.cardservice.dto.order.message;
 
-import com.github.seecret1.order_service.entity.enums.CardReceivingMethod;
-import com.github.seecret1.order_service.entity.enums.CardType;
+import com.github.seecret1.cardservice.dto.order.CardReceivingMethod;
+import com.github.seecret1.cardservice.entity.enums.CardType;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 
 @Data
@@ -13,9 +12,11 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class OrderCardProcessingMessage {
+public class OrderCardResponse {
 
     CardType cardType;
+
+    String invoiceId;
 
     Instant createdAt;
 

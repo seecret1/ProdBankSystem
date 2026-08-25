@@ -26,7 +26,7 @@ public interface CardService {
 
     PageResponse<CardResponse> findYourCards(String userId, PageModel pageModel);
 
-    CardResponse activateCard(String criterial);
+    CardResponse activateCard(String cardId, String invoiceId);
 
     CardResponse create(String userId, CardRequest request);
 

@@ -10,6 +10,10 @@ public record CardInvoiceCreateRequest(
         @Size(max = 120, message = "cardId max size is 120")
         String cardId,
 
+        @NotBlank(message = "userId must be set")
+        @Size(max = 120, message = "userId max size is 120")
+        String userId,
+
         @NotBlank(message = "invoiceNumber must be set")
         @Size(max = 50, message = "invoiceNumber max size is 50")
         String invoiceNumber,
@@ -20,9 +24,6 @@ public record CardInvoiceCreateRequest(
 
         @NotNull(message = "balance must be set")
         @Digits(integer = 18, fraction = 2, message = "balance format invalid")
-        BigDecimal balance,
-
-        @Size(max = 36, message = "operationId max size is 36")
-        String operationId
+        BigDecimal balance
 ) {
 }

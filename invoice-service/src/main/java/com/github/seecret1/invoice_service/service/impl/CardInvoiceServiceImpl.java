@@ -2,11 +2,13 @@ package com.github.seecret1.invoice_service.service.impl;
 
 import com.github.seecret1.common.dto.PageResponse;
 import com.github.seecret1.common.model.PageModel;
+import com.github.seecret1.invoice_service.dto.order.OrderInvoiceDto;
 import com.github.seecret1.invoice_service.dto.request.CardInvoiceCreateRequest;
 import com.github.seecret1.invoice_service.dto.response.CardInvoiceResponse;
 import com.github.seecret1.invoice_service.dto.response.OperationResponse;
 import com.github.seecret1.invoice_service.entity.CardInvoice;
 import com.github.seecret1.invoice_service.entity.Operation;
+import com.github.seecret1.invoice_service.entity.enums.CardType;
 import com.github.seecret1.invoice_service.exception.InvoiceAlreadyDeletedException;
 import com.github.seecret1.invoice_service.exception.InvoiceAlreadyExistsException;
 import com.github.seecret1.invoice_service.exception.InvoiceNotFoundException;
@@ -15,6 +17,8 @@ import com.github.seecret1.invoice_service.mapper.OperationMapper;
 import com.github.seecret1.invoice_service.repository.CardInvoiceRepository;
 import com.github.seecret1.invoice_service.repository.OperationRepository;
 import com.github.seecret1.invoice_service.service.CardInvoiceService;
+import com.github.seecret1.invoice_service.utils.DocumentType;
+import com.github.seecret1.invoice_service.utils.InvoiceNumberGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +26,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -46,6 +52,27 @@ public class CardInvoiceServiceImpl implements CardInvoiceService {
         CardInvoice invoice = findNotDeletedById(id);
         log.debug("Found invoice: {}", invoice.getId());
         return cardInvoiceMapper.toResponse(invoice);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CardInvoiceResponse findByCardId(String cardId) {
+        log.info("Get invoice by card ID: {}", cardId);
+        CardInvoice invoice = cardInvoiceRepository.findByCardId(cardId)
+                .orElseThrow(() -> new InvoiceNotFoundException(
+                        "Invoice not found by card ID: " + cardId
+                ));
+        log.debug("Founded invoice: {} by card ID", invoice.getId());
+        return cardInvoiceMapper.toResponse(invoice);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CardInvoiceResponse> findByUserId(String userId) {
+        log.info("Find invoice by user ID: {}", userId);
+        List<CardInvoice> invoice = cardInvoiceRepository.findByUserId(userId);
+        log.debug("Founded invoices: {} by user ID", invoice.size());
+        return cardInvoiceMapper.toResponseList(invoice);
     }
 
     @Override
@@ -80,22 +107,7 @@ public class CardInvoiceServiceImpl implements CardInvoiceService {
     public CardInvoiceResponse create(CardInvoiceCreateRequest request) {
         log.info("Create invoice: cardId={}, invoiceNumber={}", request.cardId(), request.invoiceNumber());
 
-        if (cardInvoiceRepository.existsByInvoiceNumber(request.invoiceNumber())) {
-            throw new InvoiceAlreadyExistsException("Invoice already exists by invoiceNumber: " + request.invoiceNumber());
-        }
-        if (cardInvoiceRepository.existsByCardId(request.cardId())) {
-            throw new InvoiceAlreadyExistsException("Invoice already exists by cardId: " + request.cardId());
-        }
-
-        Operation operation = null;
-        if (request.operationId() != null && !request.operationId().isBlank()) {
-            operation = operationRepository.findById(request.operationId())
-                    .orElseThrow(() -> new InvoiceNotFoundException("Operation not found by id: " + request.operationId()));
-        }
-
-        CardInvoice entity = cardInvoiceMapper.toEntity(request, operation);
-        CardInvoice saved = cardInvoiceRepository.save(entity);
-        log.info("Invoice created with id: {}", saved.getId());
+        CardInvoice saved = generateCardInvoice(request);
         return cardInvoiceMapper.toResponse(saved);
     }
 
@@ -136,5 +148,19 @@ public class CardInvoiceServiceImpl implements CardInvoiceService {
                     }
                     return new InvoiceNotFoundException("Invoice not found by id: " + id);
                 });
+    }
+
+    private CardInvoice generateCardInvoice(CardInvoiceCreateRequest request) {
+        if (cardInvoiceRepository.existsByInvoiceNumber(request.invoiceNumber())) {
+            throw new InvoiceAlreadyExistsException("Invoice already exists by invoiceNumber: " + request.invoiceNumber());
+        }
+        if (cardInvoiceRepository.existsByCardId(request.cardId())) {
+            throw new InvoiceAlreadyExistsException("Invoice already exists by cardId: " + request.cardId());
+        }
+
+        CardInvoice entity = cardInvoiceMapper.toEntity(request);
+        CardInvoice saved = cardInvoiceRepository.save(entity);
+        log.info("Invoice created with id: {}", saved.getId());
+        return saved;
     }
 }

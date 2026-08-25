@@ -27,11 +27,14 @@ public abstract class BaseInvoiceEntity implements Serializable {
     @Column(name = "id", nullable = false, updatable = false)
     private String id;
 
+    @Column(name = "user_id", nullable = false, updatable = false)
+    private String userId;
+
     @Column(name = "invoice_number", nullable = false, unique = true, length = 50)
     private String invoiceNumber;
 
     //TODO: заменить на сущность валюты
-    @Column(name = "currency", nullable = false, columnDefinition = "CHAR(3)")
+    @Column(name = "currency", nullable = false)
     private String currency;
 
     @Enumerated(EnumType.STRING)

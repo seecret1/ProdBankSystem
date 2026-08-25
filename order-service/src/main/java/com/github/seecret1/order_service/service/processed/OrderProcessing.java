@@ -1,5 +1,6 @@
 package com.github.seecret1.order_service.service.processed;
 
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.seecret1.order_service.dto.BaseMessage;
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.math.BigDecimal;
 
 @Slf4j
@@ -41,59 +43,76 @@ public class OrderProcessing {
 
     //TODO: добавить метрики
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public BaseMessage processOrder(OrderCardDto event) {
+    public void processOrder(OrderCardDto event) {
         try {
             if (event.getOrderType() != OrderType.CARD) {
                 throw new OrderTypeException("Order card service works only with OrderType=CARD");
             }
 
             event.validate();
-            OrderCard order = orderCardMapper.toEntity(event, OrderStatus.PENDING);
-            order = orderCardRepository.save(order);
-            orderInvoiceRequestKafkaProducerService.sendWithWait(event);
-            return sendMessage(order);
+            var invoice = orderCardMapper.toInvoiceDto(event);
+            orderInvoiceRequestKafkaProducerService.sendWithWait(invoice);
 
         } catch (Exception ex) {
             log.error("Error processing order: traceId={}, error={}", event.getTraceId(), ex.getMessage(), ex);
             OrderCard errorOrder = orderCardMapper.toEntity(event, OrderStatus.ERROR);
             errorOrder.setComment("Error: " + ex.getMessage());
             errorOrder = orderCardRepository.save(errorOrder); //TODO: выбрасывать в Prometheus
-            return sendMessage(errorOrder);
+            sendMessage(errorOrder);
         }
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public OrderCardDto processMessage(BaseMessage message) {
-        var invoiceResponse = objectMapper.convertValue(message.getData(), CardInvoiceResponse.class);
+    public void processMessage(BaseMessage message) {
+        JavaType listType = objectMapper.getTypeFactory()
+                .constructCollectionType(List.class, CardInvoiceResponse.class);
 
-        if (invoiceResponse.deleted().equals(Boolean.TRUE)) {
-            message.setStatus(OrderStatus.REJECTED);
-            message.setMessage("Invoice is deleted");
+        List<CardInvoiceResponse> invoiceResponses = objectMapper.convertValue(
+                message.getData(),
+                listType
+        );
+
+        if (invoiceResponses.isEmpty()) {
+            pushToInnerTopic(message);
         }
-        if (invoiceResponse.status() != InvoiceStatus.ACTIVE) {
-            message.setStatus(OrderStatus.REJECTED);
-            message.setMessage("Invoice is not active");
-        }
-        if (invoiceResponse.balance() != null && invoiceResponse.balance().compareTo(BigDecimal.ZERO) < 0) {
-            message.setStatus(OrderStatus.REJECTED);
-            message.setMessage("Invoice has negative balance");
+
+        for (var invoice : invoiceResponses) {
+            if (invoice.deleted().equals(Boolean.TRUE)) {
+                message.setStatus(OrderStatus.REJECTED);
+                message.setMessage("Invoice is deleted");
+            }
+            if (invoice.status() != InvoiceStatus.ACTIVE) {
+                message.setStatus(OrderStatus.REJECTED);
+                message.setMessage("Invoice is not active");
+            }
+            if (invoice.balance() != null && invoice.balance().compareTo(BigDecimal.ZERO) < 0) {
+                message.setStatus(OrderStatus.REJECTED);
+                message.setMessage("Invoice has negative balance");
+            }
         }
 
         if (message.getStatus() == OrderStatus.REJECTED) {
             producerService.sendWithWait(message);
-            return null;
+            return;
         }
 
-        var order = orderCardRepository.findById(message.getOrderId())
-                .orElseThrow(() -> new RuntimeException("Order not found: " + message.getOrderId()));
-        var dto = orderCardMapper.toDto(order);
-        orderInnerRequestKafkaProducerService.sendWithWait(dto);
-        return dto;
+        pushToInnerTopic(message);
     }
 
-    private BaseMessage sendMessage(OrderCard order) {
+    private void pushToInnerTopic(BaseMessage message) {
+        var dto = findOrder(message);
+        orderInnerRequestKafkaProducerService.sendWithWait(dto);
+    }
+
+    private OrderCardDto findOrder(BaseMessage message) {
+        var order = orderCardRepository.findById(message.getOrderId())
+                .orElseThrow(() -> new RuntimeException("Order not found: " + message.getOrderId()));
+
+        return orderCardMapper.toDto(order);
+    }
+
+    private void sendMessage(OrderCard order) {
         var message = orderCardMapper.toMessage(order);
         producerService.sendWithWait(message);
-        return message;
     }
 }

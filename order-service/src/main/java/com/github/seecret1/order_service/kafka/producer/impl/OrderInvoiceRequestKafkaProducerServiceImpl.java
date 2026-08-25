@@ -1,7 +1,7 @@
 package com.github.seecret1.order_service.kafka.producer.impl;
 
 import com.github.seecret1.order_service.config.kafka.properties.KafkaProperties;
-import com.github.seecret1.order_service.dto.card.OrderCardDto;
+import com.github.seecret1.order_service.dto.invoice.OrderInvoiceDto;
 import com.github.seecret1.order_service.kafka.producer.OrderInvoiceRequestKafkaProducerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,22 +23,22 @@ public class OrderInvoiceRequestKafkaProducerServiceImpl implements OrderInvoice
 
     private final RetryTemplate kafkaRetryTemplate;
 
-    private final KafkaTemplate<String, OrderCardDto> kafkaTemplate;
+    private final KafkaTemplate<String, OrderInvoiceDto> kafkaTemplate;
 
     @Override
-    public void sendNoWait(OrderCardDto message) {
+    public void sendNoWait(OrderInvoiceDto message) {
         logging(message);
-        ProducerRecord<String, OrderCardDto> record = getRecord(kafkaProperties.getInvoiceTopic(), message);
+        ProducerRecord<String, OrderInvoiceDto> record = getRecord(kafkaProperties.getInvoiceTopic(), message);
         kafkaTemplate.send(record);
     }
 
     @Override
-    public void sendWithWait(OrderCardDto message) {
+    public void sendWithWait(OrderInvoiceDto message) {
         kafkaRetryTemplate.execute(context -> {
             try {
                 logging(message);
 
-                ProducerRecord<String, OrderCardDto> record =
+                ProducerRecord<String, OrderInvoiceDto> record =
                         getRecord(kafkaProperties.getInvoiceTopic(), message);
                 kafkaTemplate.send(record).get(kafkaProperties.getTimeoutSeconds(), TimeUnit.SECONDS);
                 return null;
@@ -54,13 +54,12 @@ public class OrderInvoiceRequestKafkaProducerServiceImpl implements OrderInvoice
         });
     }
 
-    private ProducerRecord<String, OrderCardDto> getRecord(String topic, OrderCardDto message) {
+    private ProducerRecord<String, OrderInvoiceDto> getRecord(String topic, OrderInvoiceDto message) {
         return new ProducerRecord<>(topic, message.getTraceId(), message);
     }
 
-    private static void logging(OrderCardDto message) {
-        log.info("Response sent to Kafka: traceId={}, invoiceId={}, userId={}",
-                message.getTraceId(), message.getInvoiceId(),
-                message.getUserId());
+    private static void logging(OrderInvoiceDto message) {
+        log.info("Response sent to Kafka: traceId={}, cardId={}, userId={}",
+                message.getTraceId(), message.getCardId(), message.getUserId());
     }
 }

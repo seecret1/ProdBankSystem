@@ -49,7 +49,7 @@ public class OrderCardServiceImpl implements OrderCardService {
     private final AddressMapper addressMapper;
 
     @Override
-    @Transactional(isolation = Isolation.REPEATABLE_READ) //TODO: обавить метрики
+    @Transactional(isolation = Isolation.REPEATABLE_READ) //TODO: добавить метрики
     public BaseMessage createOrder(OrderCardDto event) {
 
         // TODO: добавить отправку сообщения через notification-service
@@ -66,8 +66,8 @@ public class OrderCardServiceImpl implements OrderCardService {
             }
 
             order = processReceivingMethod(order, event, personInfo);
-            orderInvoiceRequestKafkaProducerService.sendWithWait(event);
-            return sendMessage(orderCardRepository.save(order));
+            orderInvoiceRequestKafkaProducerService.sendWithWait(orderCardMapper.toInvoiceDto(event));
+            return sendMessage(orderCardRepository.save(order)); //TODO: сначала ждем ответа, потом sendMessage
 
         } catch (Exception ex) {
             log.error("Error creating order: traceId={}, error={}", event.getTraceId(), ex.getMessage(), ex);

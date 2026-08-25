@@ -1,10 +1,10 @@
 package com.github.seecret1.order_service.kafka.producer;
 
-import com.github.seecret1.order_service.dto.card.OrderCardDto;
+import com.github.seecret1.order_service.dto.invoice.OrderInvoiceDto;
 
 public interface OrderInvoiceRequestKafkaProducerService {
 
-    void sendNoWait(OrderCardDto message);
+    void sendNoWait(OrderInvoiceDto message);
 
-    void sendWithWait(OrderCardDto message);
+    void sendWithWait(OrderInvoiceDto message);
 }

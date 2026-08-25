@@ -26,7 +26,7 @@ public class OrderCard extends BaseOrderEntity {
     @Enumerated(EnumType.STRING)
     CardType cardType;
 
-    @Column(name = "invoice_id", nullable = false, unique = true)
+    @Column(name = "invoice_id", unique = true)
     String invoiceId;
 
     @Column(name = "card_receiving_method", nullable = false, length = 20)
@@ -36,4 +36,8 @@ public class OrderCard extends BaseOrderEntity {
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "order_card_delivery_id")
     OrderCardDelivery orderCardDelivery;
+
+    String currency;
+
+    BigDecimal balance;
 }

@@ -26,6 +26,7 @@ CREATE TABLE invoice_bank_history.card_invoices
     id VARCHAR NOT NULL,
     rev BIGINT NOT NULL,
     revtype SMALLINT NOT NULL,
+    user_id VARCHAR NOT NULL,
     deleted BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc'),
     updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),

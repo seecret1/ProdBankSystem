@@ -13,24 +13,24 @@ import java.time.Instant;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class OrderRequestsConsumer {
+public class OrderInvoiceCreateConsumer {
 
     private final InvoiceProcessed invoiceProcessed;
 
     @KafkaListener(
-            topics = "${app.kafka.request-topic}",
+            topics = "${app.kafka.topic}",
             groupId = "${app.kafka.group-id}",
             containerFactory = "orderRequestKafkaListenerContainerFactory"
     )
     public void listen(ConsumerRecord<String, OrderInvoiceDto> record) {
         OrderInvoiceDto dto = record.value();
-        log.info("Order received: traceId={}, userId={}, cardId={}",
-                dto.getTraceId(), dto.getUserId(), dto.getCardId());
+        log.info("Order received: traceId={}, userId={}, cardId={}, cardType={}",
+                dto.getTraceId(), dto.getUserId(), dto.getCardId(), dto.getCardType());
         log.info("Key: {}; Partition: {}; Topic: {}; Timestamp: {}",
                 record.key(), record.partition(), record.topic(), Instant.ofEpochMilli(record.timestamp()));
 
         try {
-            invoiceProcessed.processOrder(dto);
+            invoiceProcessed.createInvoice(dto);
             log.debug("[topic: {}][traceId: {}]Processing card order successfully", record.topic(), dto.getTraceId());
         } catch (Exception ex) {
             log.error("Error while creating order. Send to retry topic", ex);

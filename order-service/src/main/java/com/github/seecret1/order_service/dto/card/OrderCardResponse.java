@@ -5,7 +5,6 @@ import com.github.seecret1.order_service.entity.enums.CardType;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 
 @Data
@@ -17,7 +16,7 @@ public class OrderCardResponse {
 
     CardType cardType;
 
-    BigDecimal spendingLimit;
+    String invoiceId;
 
     Instant createdAt;
 

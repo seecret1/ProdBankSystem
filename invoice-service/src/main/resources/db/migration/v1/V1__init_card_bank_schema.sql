@@ -14,6 +14,7 @@ CREATE TABLE invoice_bank.operation
 CREATE TABLE invoice_bank.card_invoices
 (
     id VARCHAR PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id VARCHAR NOT NULL,
     deleted BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc'),
     updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),

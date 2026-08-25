@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface CardInvoiceRepository extends JpaRepository<CardInvoice, String> {
@@ -52,6 +53,8 @@ public interface CardInvoiceRepository extends JpaRepository<CardInvoice, String
     boolean existsByCardId(String cardId);
 
     Optional<CardInvoice> findByCardId(String cardId);
+
+    List<CardInvoice> findByUserId(String userId);
 
     Optional<CardInvoice> findByInvoiceNumber(String invoiceNumber);
 }

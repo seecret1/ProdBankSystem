@@ -1,7 +1,9 @@
 package com.github.seecret1.cardservice.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.seecret1.cardservice.dto.order.OrderStatus;
 import com.github.seecret1.cardservice.dto.order.message.BaseMessage;
+import com.github.seecret1.cardservice.dto.order.message.OrderCardResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -13,15 +15,18 @@ public class OrderProcessingService {
 
     private final CardService service;
 
+    private final ObjectMapper objectMapper;
+
     public void orderProcessing(BaseMessage order) {
         String cardId = order.getProductId();
         OrderStatus status = order.getStatus();
+        OrderCardResponse orderCardResponse = objectMapper.convertValue(order, OrderCardResponse.class);
 
         log.info("Processing order with status: {} for card: {}", status, cardId);
 
         switch (status) {
             case SUCCESS:
-                service.activateCard(cardId);
+                service.activateCard(cardId, orderCardResponse.getInvoiceId());
                 sendNotification();
                 break;
 
@@ -35,7 +40,7 @@ public class OrderProcessingService {
                 break;
 
             case ERROR:
-//                kafkaSenderDlt.sendMessageInDlt(order); TODO: продумать логику
+//                kafkaSenderDlt.sendMessageInDlt(order); TODO: заретраить
                 sendNotification();
                 break;
 

@@ -12,7 +12,7 @@ import java.util.Map;
 @Data
 @Component
 @ConfigurationProperties(prefix = "app.card")
-public class CardSpendingLimitsConfig {
+public class CardSpendingLimitsConfig { //TODO: перенести в invoice-service
 
     private Map<CardType, CardLimit> limits;
 

@@ -3,12 +3,15 @@ package com.github.seecret1.order_service.mapper;
 import com.github.seecret1.order_service.dto.BaseMessage;
 import com.github.seecret1.order_service.dto.card.CardDeliveryRequest;
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
-import com.github.seecret1.order_service.dto.card.OrderCardProcessingMessage;
+import com.github.seecret1.order_service.dto.card.OrderCardResponse;
+import com.github.seecret1.order_service.dto.invoice.OrderInvoiceDto;
 import com.github.seecret1.order_service.entity.OrderCard;
 import com.github.seecret1.order_service.entity.OrderCardDelivery;
 import com.github.seecret1.order_service.entity.enums.OrderStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.time.Instant;
 
 @Component
 @RequiredArgsConstructor
@@ -21,7 +24,6 @@ public class OrderCardManualMapper {
                 .traceId(event.getTraceId())
                 .userId(event.getUserId())
                 .cardId(event.getCardId())
-                .invoiceId(event.getInvoiceId())
                 .cardType(event.getCardType())
                 .status(status)
                 .cardReceivingMethod(event.getCardReceivingMethod())
@@ -31,12 +33,25 @@ public class OrderCardManualMapper {
                 .build();
     }
 
+    public OrderInvoiceDto toInvoiceDto(OrderCardDto event) {
+        return OrderInvoiceDto.builder()
+                .traceId(event.getTraceId())
+                .userId(event.getUserId())
+                .cardId(event.getCardId())
+                .cardType(event.getCardType())
+                .orderType(event.getOrderType())
+                .currency(event.getCurrency())
+                .balance(event.getBalance())
+                .comment(event.getComment())
+                .createdAt(Instant.now())
+                .build();
+    }
+
     public OrderCardDto toDto(OrderCard order) {
         var dto = new OrderCardDto();
         dto.setTraceId(order.getTraceId());
         dto.setUserId(order.getUserId());
         dto.setCardId(order.getCardId());
-        dto.setInvoiceId(order.getInvoiceId());
         dto.setCardType(order.getCardType());
         dto.setCardReceivingMethod(order.getCardReceivingMethod());
         dto.setComment(order.getComment());
@@ -52,9 +67,10 @@ public class OrderCardManualMapper {
         );
     }
 
-    private OrderCardProcessingMessage toResponse(OrderCard order) {
-        return OrderCardProcessingMessage.builder()
+    private OrderCardResponse toResponse(OrderCard order) {
+        return OrderCardResponse.builder()
                 .cardType(order.getCardType())
+                .invoiceId(order.getInvoiceId())
                 .cardReceivingMethod(order.getCardReceivingMethod())
                 .createdAt(order.getCreatedAt())
                 .build();

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.seecret1.invoice_service.config.kafka.properties.KafkaProperties;
 import com.github.seecret1.invoice_service.config.kafka.properties.RetryProperties;
 import com.github.seecret1.invoice_service.dto.order.BaseMessage;
-import com.github.seecret1.invoice_service.dto.order.OrderCardDto;
+import com.github.seecret1.invoice_service.dto.order.OrderInvoiceDto;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -44,8 +44,16 @@ public class KafkaConfig {
     private final ObjectMapper objectMapper;
 
     @Bean
-    public NewTopic orderTopic() {
+    public NewTopic invoiceTopic() {
         return TopicBuilder.name(kafkaProperties.getTopic())
+                .partitions(kafkaProperties.getPartitions())
+                .replicas(kafkaProperties.getReplicas())
+                .build();
+    }
+
+    @Bean
+    public NewTopic requestTopic() {
+        return TopicBuilder.name(kafkaProperties.getRequestTopic())
                 .partitions(kafkaProperties.getPartitions())
                 .replicas(kafkaProperties.getReplicas())
                 .build();
@@ -127,12 +135,12 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, OrderCardDto> consumerFactory() {
+    public ConsumerFactory<String, OrderInvoiceDto> consumerFactory() {
         Map<String, Object> config = getBaseConsumerConfig(kafkaProperties.getGroupId());
-        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, OrderCardDto.class.getName());
+        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, OrderInvoiceDto.class.getName());
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
 
-        return getDefaultKafkaConsumerFactory(config, OrderCardDto.class);
+        return getDefaultKafkaConsumerFactory(config, OrderInvoiceDto.class);
     }
 
     @Bean
@@ -145,11 +153,11 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, OrderCardDto> orderRequestKafkaListenerContainerFactory(
-            ConsumerFactory<String, OrderCardDto> consumerFactory,
-            KafkaTemplate<String, OrderCardDto> orderCreateKafkaTemplate
+    public ConcurrentKafkaListenerContainerFactory<String, OrderInvoiceDto> orderRequestKafkaListenerContainerFactory(
+            ConsumerFactory<String, OrderInvoiceDto> consumerFactory,
+            KafkaTemplate<String, OrderInvoiceDto> orderCreateKafkaTemplate
     ) {
-        ConcurrentKafkaListenerContainerFactory<String, OrderCardDto> factory =
+        ConcurrentKafkaListenerContainerFactory<String, OrderInvoiceDto> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
 
@@ -172,11 +180,11 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, OrderCardDto> retryOrderKafkaListenerContainerFactory(
-            ConsumerFactory<String, OrderCardDto> consumerFactory,
-            KafkaTemplate<String, OrderCardDto> orderCreateKafkaTemplate
+    public ConcurrentKafkaListenerContainerFactory<String, OrderInvoiceDto> retryOrderKafkaListenerContainerFactory(
+            ConsumerFactory<String, OrderInvoiceDto> consumerFactory,
+            KafkaTemplate<String, OrderInvoiceDto> orderCreateKafkaTemplate
     ) {
-        ConcurrentKafkaListenerContainerFactory<String, OrderCardDto> factory =
+        ConcurrentKafkaListenerContainerFactory<String, OrderInvoiceDto> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
 
