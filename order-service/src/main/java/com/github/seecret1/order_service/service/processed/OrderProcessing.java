@@ -1,6 +1,7 @@
 package com.github.seecret1.order_service.service.processed;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.seecret1.order_service.config.kafka.properties.KafkaProperties;
 import com.github.seecret1.order_service.dto.BaseMessage;
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
 import com.github.seecret1.order_service.dto.invoice.CardInvoiceResponse;
@@ -14,8 +15,10 @@ import com.github.seecret1.order_service.kafka.producer.OrderInvoiceRequestKafka
 import com.github.seecret1.order_service.kafka.producer.OrderMessageKafkaProducerService;
 import com.github.seecret1.order_service.mapper.OrderCardManualMapper;
 import com.github.seecret1.order_service.repository.OrderCardRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,11 +38,15 @@ public class OrderProcessing {
 
     private final OrderMessageKafkaProducerService producerService;
 
+    private final KafkaProperties kafkaProperties;
+
     private final OrderCardRepository orderCardRepository;
 
     private final OrderCardManualMapper orderCardMapper;
 
     private final ObjectMapper objectMapper;
+
+    private final OrderMessageKafkaProducerService orderMessageKafkaProducerService;
 
     //TODO: добавить метрики
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -60,8 +67,9 @@ public class OrderProcessing {
             log.error("Error processing order: traceId={}, error={}", event.getTraceId(), ex.getMessage(), ex);
             OrderCard errorOrder = orderCardMapper.toEntity(event, OrderStatus.ERROR);
             errorOrder.setComment("Error: " + ex.getMessage());
-            errorOrder = orderCardRepository.save(errorOrder); //TODO: выбрасывать в Prometheus
-            sendMessage(errorOrder);
+            orderCardRepository.save(errorOrder); //TODO: выбрасывать в Prometheus
+            var message = orderCardMapper.toMessage(errorOrder);
+            producerService.sendWithWait(kafkaProperties.getCardsTopic(), message);
         }
     }
 
@@ -92,13 +100,26 @@ public class OrderProcessing {
         }
 
         if (message.getStatus() == OrderStatus.REJECTED) {
-            producerService.sendWithWait(message);
+            producerService.sendWithWait(kafkaProperties.getCardsTopic(), message);
             log.debug("Rejected create card. Send message with cards topic");
             return;
         }
 
         pushToInnerTopic(message);
         log.debug("Send message with inner topic");
+    }
+
+    public void processMessageOnInvoiceService(ConsumerRecord<String, BaseMessage> record, BaseMessage message) {
+        if (record.topic().equals(kafkaProperties.getInvoiceTopic())) {
+            CardInvoiceResponse cardInvoiceResponse = objectMapper.convertValue(message.getData(), CardInvoiceResponse.class);
+            var order = orderCardRepository.findById(message.getOrderId())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Order not found by ID: " + message.getOrderId()
+                    ));
+            order.setInvoiceId(cardInvoiceResponse.id());
+            message.setData(orderCardMapper.toResponse(order));
+            orderMessageKafkaProducerService.sendWithWait(kafkaProperties.getCardsTopic(), message);
+        }
     }
 
     private void pushToInnerTopic(BaseMessage message) {
@@ -111,11 +132,6 @@ public class OrderProcessing {
                 .orElseThrow(() -> new RuntimeException("Order not found: " + message.getOrderId()));
 
         return orderCardMapper.toDto(order);
-    }
-
-    private void sendMessage(OrderCard order) {
-        var message = orderCardMapper.toMessage(order);
-        producerService.sendWithWait(message);
     }
 
     private List<CardInvoiceResponse> extractInvoices(Object data) {

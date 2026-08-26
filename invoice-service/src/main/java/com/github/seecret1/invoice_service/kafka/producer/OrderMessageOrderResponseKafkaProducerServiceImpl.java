@@ -25,20 +25,20 @@ public class OrderMessageOrderResponseKafkaProducerServiceImpl implements OrderM
     private final KafkaTemplate<String, BaseMessage> kafkaTemplate;
 
     @Override
-    public void sendNoWait(BaseMessage message) {
+    public void sendNoWait(String topic, BaseMessage message) {
         logging(message);
-        ProducerRecord<String, BaseMessage> record = getRecord(kafkaProperties.getOrdersTopic(), message);
+        ProducerRecord<String, BaseMessage> record = getRecord(topic, message);
         kafkaTemplate.send(record);
     }
 
     @Override
-    public void sendWithWait(BaseMessage message) {
+    public void sendWithWait(String topic, BaseMessage message) {
         kafkaRetryTemplate.execute(context -> {
             try {
                 logging(message);
 
                 ProducerRecord<String, BaseMessage> record =
-                        getRecord(kafkaProperties.getOrdersTopic(), message);
+                        getRecord(topic, message);
                 kafkaTemplate.send(record).get(kafkaProperties.getTimeoutSeconds(), TimeUnit.SECONDS);
                 return null;
 

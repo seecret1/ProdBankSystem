@@ -1,6 +1,7 @@
 package com.github.seecret1.invoice_service.service.process;
 
 import com.github.seecret1.invoice_service.config.SpendingAndFreeLimitsConfig;
+import com.github.seecret1.invoice_service.config.kafka.properties.KafkaProperties;
 import com.github.seecret1.invoice_service.dto.order.BaseMessage;
 import com.github.seecret1.invoice_service.dto.order.OrderInvoiceDto;
 import com.github.seecret1.invoice_service.dto.request.CardInvoiceCreateRequest;
@@ -9,7 +10,6 @@ import com.github.seecret1.invoice_service.entity.enums.CardType;
 import com.github.seecret1.invoice_service.entity.enums.OrderStatus;
 import com.github.seecret1.invoice_service.exception.InvoiceNotFoundException;
 import com.github.seecret1.invoice_service.kafka.producer.OrderMessageKafkaProducerService;
-import com.github.seecret1.invoice_service.kafka.producer.OrderResponseKafkaProducerService;
 import com.github.seecret1.invoice_service.mapper.CardInvoiceMapper;
 import com.github.seecret1.invoice_service.service.CardInvoiceService;
 import com.github.seecret1.invoice_service.utils.DocumentType;
@@ -29,13 +29,13 @@ public class InvoiceProcessed { //TODO: добавить интерфейс
 
     private final CardInvoiceService cardInvoiceService;
 
-    private final OrderResponseKafkaProducerService orderResponseKafkaProducerService;
-
     private final OrderMessageKafkaProducerService orderMessageKafkaProducerService;
+
+    private final KafkaProperties kafkaProperties;
 
     private final CardInvoiceMapper cardInvoiceMapper;
 
-    public BaseMessage processOrder(OrderInvoiceDto request) {
+    public void processOrder(OrderInvoiceDto request) {
         List<CardInvoiceResponse> invoice;
         BaseMessage message = new BaseMessage();
         try {
@@ -45,7 +45,7 @@ public class InvoiceProcessed { //TODO: добавить интерфейс
             if (invoice == null) {
                 throw new InvoiceNotFoundException("Invoice not found by card ID: " + request.getCardId());
             }
-            message = cardInvoiceMapper.toMessageList(request, invoice, OrderStatus.PENDING, "Successfully founded invoice");
+            message = cardInvoiceMapper.toMessageList(request, invoice, OrderStatus.SUCCESS, "Successfully founded invoice");
         } catch (InvoiceNotFoundException ex) {
             log.error("Invoice not found", ex);
             message.setMessage("Invoice not found" + ex.getMessage());
@@ -53,11 +53,10 @@ public class InvoiceProcessed { //TODO: добавить интерфейс
             message.setMessage("Error processing request" + ex.getMessage());
             throw ex;
         }
-        orderResponseKafkaProducerService.sendWithWait(message);
-        return message;
+        orderMessageKafkaProducerService.sendWithWait(kafkaProperties.getResponseOrdersTopic(), message);
     }
 
-    public BaseMessage createInvoice(OrderInvoiceDto request) {
+    public void createInvoice(OrderInvoiceDto request) {
         BaseMessage message = new BaseMessage();
         try {
             request.validate();
@@ -72,13 +71,12 @@ public class InvoiceProcessed { //TODO: добавить интерфейс
                             spendingAndFreeLimitsConfig.getCommissionLimitForType(request.getCardType())
                     )
             );
-            message = cardInvoiceMapper.toMessage(request, invoice, OrderStatus.PENDING, "Successfully founded invoice");
+            message = cardInvoiceMapper.toMessage(request, invoice, OrderStatus.SUCCESS, "Successfully created invoice");
         } catch (Exception ex) {
             message.setMessage("Error processing request" + ex.getMessage());
             throw ex;
         }
-        orderMessageKafkaProducerService.sendWithWait(message);
-        return message;
+        orderMessageKafkaProducerService.sendWithWait(kafkaProperties.getTranslateTopic(), message);
     }
 
     private DocumentType getDocumentTypeWithCardType(CardType cardType) {

@@ -233,7 +233,7 @@ public class KafkaConfig {
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, BaseMessage> responseOrderCardKafkaListenerContainerFactory(
             ConsumerFactory<String, BaseMessage> consumerFactory,
-            KafkaTemplate<String, BaseMessage> orderCreateKafkaTemplate
+            KafkaTemplate<String, Object> orderCreateKafkaTemplate
     ) {
         ConcurrentKafkaListenerContainerFactory<String, BaseMessage> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();

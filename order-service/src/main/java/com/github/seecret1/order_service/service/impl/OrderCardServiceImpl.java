@@ -1,5 +1,6 @@
 package com.github.seecret1.order_service.service.impl;
 
+import com.github.seecret1.order_service.config.kafka.properties.KafkaProperties;
 import com.github.seecret1.order_service.dto.BaseMessage;
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
 import com.github.seecret1.order_service.dto.delivery.OrderCardDeliveryDto;
@@ -38,6 +39,8 @@ public class OrderCardServiceImpl implements OrderCardService {
 
     private final OrderDeliveryRequestKafkaProducerService deliveryKafkaProducerService;
 
+    private final KafkaProperties kafkaProperties;
+
     private final OrderCardRepository orderCardRepository;
 
     private final UserServiceFeignClient userServiceFeignClient;
@@ -50,7 +53,7 @@ public class OrderCardServiceImpl implements OrderCardService {
 
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ) //TODO: добавить метрики
-    public BaseMessage createOrder(OrderCardDto event) {
+    public void createOrder(OrderCardDto event) {
 
         // TODO: добавить отправку сообщения через notification-service
         try {
@@ -62,7 +65,8 @@ public class OrderCardServiceImpl implements OrderCardService {
             order = userValidate(order, personInfo, event);
 
             if (order.getStatus() == OrderStatus.REJECTED) {
-                return sendMessage(order);
+                sendMessage(order);
+                return;
             }
 
             var savedOrder = processReceivingMethod(order, event, personInfo);
@@ -70,14 +74,14 @@ public class OrderCardServiceImpl implements OrderCardService {
             orderInvoiceRequestKafkaProducerService.sendWithWaitToInvoiceTopic(
                     orderCardMapper.toInvoiceDto(event, savedOrder.getId())
             );
-            return sendMessage(savedOrder); //TODO: сначала ждем ответа, потом sendMessage
+            sendMessage(savedOrder);
 
         } catch (Exception ex) {
             log.error("Error creating order: traceId={}, error={}", event.getTraceId(), ex.getMessage(), ex);
             OrderCard errorOrder = orderCardMapper.toEntity(event, OrderStatus.ERROR);
             errorOrder.setComment("Error: " + ex.getMessage());
             errorOrder = orderCardRepository.save(errorOrder);
-            return sendMessage(errorOrder);
+            sendMessage(errorOrder);
         }
     }
 
@@ -212,10 +216,8 @@ public class OrderCardServiceImpl implements OrderCardService {
         return order;
     }
 
-    // TODO: нельзя сразу отправлять ответ (при работе с delivery) нужно написатьь listener
-    private BaseMessage sendMessage(OrderCard order) {
-        var message = orderCardMapper.toMessage(order);
-        orderMessageKafkaProducerService.sendWithWait(message);
-        return message;
+    private void sendMessage(OrderCard order) {
+        var message = orderCardMapper.toMessage(order); //TODO: отправлять через translate-topic
+        orderMessageKafkaProducerService.sendWithWait(kafkaProperties.getCardsTopic(), message);
     }
 }

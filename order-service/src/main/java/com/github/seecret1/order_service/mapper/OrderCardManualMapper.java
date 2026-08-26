@@ -97,12 +97,10 @@ public class OrderCardManualMapper {
         );
     }
 
-    private OrderCardResponse toResponse(OrderCard order) {
+    public OrderCardResponse toResponse(OrderCard order) {
         return OrderCardResponse.builder()
-                .cardType(order.getCardType())
                 .invoiceId(order.getInvoiceId())
-                .cardReceivingMethod(order.getCardReceivingMethod())
-                .createdAt(order.getCreatedAt())
+                .createdAt(Instant.now())
                 .build();
     }
 

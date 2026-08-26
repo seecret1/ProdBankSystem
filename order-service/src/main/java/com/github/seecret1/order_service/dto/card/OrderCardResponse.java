@@ -1,7 +1,5 @@
 package com.github.seecret1.order_service.dto.card;
 
-import com.github.seecret1.order_service.entity.enums.CardReceivingMethod;
-import com.github.seecret1.order_service.entity.enums.CardType;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -14,11 +12,7 @@ import java.time.Instant;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderCardResponse {
 
-    CardType cardType;
-
     String invoiceId;
 
     Instant createdAt;
-
-    CardReceivingMethod cardReceivingMethod;
 }

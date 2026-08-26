@@ -17,6 +17,8 @@ public class KafkaProperties {
 
     private String topic;
 
+    private String translateTopic;
+
     private String innerTopic;
 
     private String retryTopic;
