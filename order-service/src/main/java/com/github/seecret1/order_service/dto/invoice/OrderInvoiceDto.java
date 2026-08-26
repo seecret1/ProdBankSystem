@@ -20,6 +20,8 @@ public class OrderInvoiceDto extends OrderDto {
 
     private String cardId;
 
+    private String orderId;
+
     private CardType cardType;
 
     private String currency;

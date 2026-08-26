@@ -217,14 +217,14 @@ public class CardServiceImpl implements CardService {
         log.info("Init order created card");
         var orderCard = cardMapper.toEntity(request, user.id());
 
-        cardRepository.save(orderCard);
+        var savedCard = cardRepository.save(orderCard);
 
         orderKafkaProducerService.sendNoWait(
-                cardMapper.toOrderCardDto(orderCard, request, userId)
+                cardMapper.toOrderCardDto(savedCard, request, userId)
         );
 
         log.info("Save card with status PENDING");
-        return cardMapper.toDtoResponse(orderCard);
+        return cardMapper.toDtoResponse(savedCard);
     }
 
     @Override

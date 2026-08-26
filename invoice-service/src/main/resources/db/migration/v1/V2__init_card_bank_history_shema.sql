@@ -4,7 +4,7 @@ CREATE TABLE invoice_bank_history.revinfo
     revtmstmp BIGINT
 );
 
-CREATE TABLE invoice_bank_history.operation
+CREATE TABLE invoice_bank_history.operation_history
 (
     id VARCHAR NOT NULL,
     rev BIGINT NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE invoice_bank_history.operation
     CONSTRAINT fk_operation_history_rev FOREIGN KEY (rev) REFERENCES invoice_bank_history.revinfo (rev)
 );
 
-CREATE TABLE invoice_bank_history.card_invoices
+CREATE TABLE invoice_bank_history.card_invoices_history
 (
     id VARCHAR NOT NULL,
     rev BIGINT NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE invoice_bank_history.card_invoices
     card_id VARCHAR(120) NOT NULL,
     status VARCHAR(30) NOT NULL,
     invoice_number VARCHAR(50) NOT NULL,
-    currency CHAR(3) NOT NULL,
+    currency VARCHAR NOT NULL,
     balance NUMERIC(18,2) NOT NULL DEFAULT 0,
     spending_limit NUMERIC(18,2) NOT NULL,
     operation_id VARCHAR,

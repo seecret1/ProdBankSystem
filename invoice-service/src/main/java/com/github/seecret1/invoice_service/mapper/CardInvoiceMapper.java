@@ -9,6 +9,7 @@ import com.github.seecret1.invoice_service.entity.enums.InvoiceStatus;
 import com.github.seecret1.invoice_service.entity.enums.OrderStatus;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,7 +18,6 @@ import java.util.stream.Collectors;
 public class CardInvoiceMapper {
 
     public CardInvoiceResponse toResponse(CardInvoice entity) {
-        String operationId = entity.getOperation() != null ? entity.getOperation().getId() : null;
         return new CardInvoiceResponse(
                 entity.getId(),
                 entity.getCardId(),
@@ -25,7 +25,6 @@ public class CardInvoiceMapper {
                 entity.getCurrency(),
                 entity.getStatus(),
                 entity.getBalance(),
-                operationId,
                 entity.getDeleted(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
@@ -48,6 +47,7 @@ public class CardInvoiceMapper {
                 .currency(request.currency())
                 .status(InvoiceStatus.ACTIVE)
                 .balance(request.balance())
+                .spendingLimit(request.spendingLimit())
                 .deleted(false)
                 .build();
     }
@@ -61,6 +61,8 @@ public class CardInvoiceMapper {
         return BaseMessage.builder()
                 .traceId(dto.getTraceId())
                 .userId(dto.getUserId())
+                .orderId(dto.getOrderId())
+                .productId(dto.getCardId())
                 .status(orderStatus)
                 .data(responses)
                 .message(message)
@@ -78,6 +80,7 @@ public class CardInvoiceMapper {
                 .traceId(dto.getTraceId())
                 .userId(dto.getUserId())
                 .productId(invoice.id())
+                .orderId(dto.getOrderId())
                 .status(orderStatus)
                 .data(invoice)
                 .message(message)

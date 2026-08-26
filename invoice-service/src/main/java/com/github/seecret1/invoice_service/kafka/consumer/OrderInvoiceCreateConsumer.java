@@ -24,8 +24,9 @@ public class OrderInvoiceCreateConsumer {
     )
     public void listen(ConsumerRecord<String, OrderInvoiceDto> record) {
         OrderInvoiceDto dto = record.value();
-        log.info("Order received: traceId={}, userId={}, cardId={}, cardType={}",
-                dto.getTraceId(), dto.getUserId(), dto.getCardId(), dto.getCardType());
+        log.info("Order received: traceId={}, userId={}, cardId={}, orderId={}, orderType={}, cardType={}",
+                dto.getTraceId(), dto.getUserId(), dto.getCardId(), dto.getOrderId(),
+                dto.getOrderType(), dto.getCardType());
         log.info("Key: {}; Partition: {}; Topic: {}; Timestamp: {}",
                 record.key(), record.partition(), record.topic(), Instant.ofEpochMilli(record.timestamp()));
 

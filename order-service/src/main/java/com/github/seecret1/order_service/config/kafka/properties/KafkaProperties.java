@@ -23,6 +23,8 @@ public class KafkaProperties {
 
     private String cardsTopic;
 
+    private String requestInvoiceTopic;
+
     private String invoiceTopic;
 
     private String groupId;

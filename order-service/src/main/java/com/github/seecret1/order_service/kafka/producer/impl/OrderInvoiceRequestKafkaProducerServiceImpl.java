@@ -33,13 +33,22 @@ public class OrderInvoiceRequestKafkaProducerServiceImpl implements OrderInvoice
     }
 
     @Override
-    public void sendWithWait(OrderInvoiceDto message) {
+    public void sendWithWaitToRequestInvoiceTopic(OrderInvoiceDto message) {
+        sendMessageToInvoiceService(message, kafkaProperties.getRequestInvoiceTopic());
+    }
+
+    @Override
+    public void sendWithWaitToInvoiceTopic(OrderInvoiceDto message) {
+        sendMessageToInvoiceService(message, kafkaProperties.getInvoiceTopic());
+    }
+
+    private void sendMessageToInvoiceService(OrderInvoiceDto message, String topic) {
         kafkaRetryTemplate.execute(context -> {
             try {
                 logging(message);
 
                 ProducerRecord<String, OrderInvoiceDto> record =
-                        getRecord(kafkaProperties.getInvoiceTopic(), message);
+                        getRecord(topic, message);
                 kafkaTemplate.send(record).get(kafkaProperties.getTimeoutSeconds(), TimeUnit.SECONDS);
                 return null;
 

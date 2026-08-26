@@ -85,6 +85,15 @@ public class KafkaConfig {
     }
 
     @Bean
+    public ProducerFactory<String, OrderInvoiceDto> orderInvoiceProducerFactory() {
+        return new DefaultKafkaProducerFactory<>(
+                getBaseProducerConfig(),
+                new StringSerializer(),
+                new JsonSerializer<>(objectMapper)
+        );
+    }
+
+    @Bean
     public ProducerFactory<String, Object> orderDltProducerFactory() {
         return new DefaultKafkaProducerFactory<>(
                 getBaseProducerConfig(),
@@ -114,6 +123,13 @@ public class KafkaConfig {
     @Bean
     public KafkaTemplate<String, BaseMessage> orderKafkaTemplate(
             ProducerFactory<String, BaseMessage> producerFactory
+    ) {
+        return new KafkaTemplate<>(producerFactory);
+    }
+
+    @Bean
+    public KafkaTemplate<String, OrderInvoiceDto> orderInvoiceKafkaTemplate(
+            ProducerFactory<String, OrderInvoiceDto> producerFactory
     ) {
         return new KafkaTemplate<>(producerFactory);
     }

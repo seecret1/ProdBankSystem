@@ -56,8 +56,7 @@ public class OrderKafkaProducerServiceImpl implements OrderKafkaProducerService 
     }
 
     private static void loggingMessage(OrderCardDto message) {
-        log.debug("Order message: traceId={}, userId={}, cardId={}, cardType={}, orderType={}, spendingLimit={}, comment={}, createdAt={}",
-                message.getTraceId(), message.getUserId(), message.getCardId(), message.getCardType(), message.getOrderType(),
-                message.getSpendingLimit(), message.getComment(), message.getCreatedAt());
+        log.debug("Order message: traceId={}, userId={}, cardId={}, cardType={}, orderType={}, comment={}, createdAt={}",
+                message.getTraceId(), message.getUserId(), message.getCardId(), message.getCardType(), message.getOrderType(), message.getComment(), message.getCreatedAt());
     }
 }

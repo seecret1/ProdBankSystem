@@ -6,7 +6,7 @@ spring:
     name: ${SERVICE_NAME:invoice-service}
 
   datasource:
-    url: ${INVOICE_DB_LOCAL_URL:jdbc:postgresql://${HOST:localhost}:${INVOICE_DB_PORT:5436}/${INVOICE_DB_NAME:invoice_db}}
+    url: ${INVOICE_DB_LOCAL_URL:jdbc:postgresql://${HOST:localhost}:${INVOICE_DB_PORT:5438}/${INVOICE_DB_NAME:invoice_db}}
     username: ${INVOICE_DB_USERNAME:postgres}
     password: ${INVOICE_DB_PASSWORD:postgres}
 
@@ -125,6 +125,21 @@ app:
     multiplier: 2
     max-interval: 10000
     timeout: 5
+
+  invoices:
+    limits:
+      DEBIT:
+        max-spending-limit: 200000
+        commission-spending-limit: 100000
+        description: "Дебетовая карта"
+      DEBIT_PERSONAL:
+        max-spending-limit: 300000
+        commission-spending-limit: 200000
+        description: "Именная дебетовая карта"
+      CREDIT:
+        max-spending-limit: 500000
+        commission-spending-limit: 300000
+        description: "Кредитная карта"
 
 services:
   api-key: ${INTERNAL_API_KEY:your-internal-api-key}

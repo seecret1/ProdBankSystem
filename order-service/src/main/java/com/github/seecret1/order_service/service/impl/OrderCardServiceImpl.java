@@ -14,7 +14,7 @@ import com.github.seecret1.order_service.feign.UserServiceFeignClient;
 import com.github.seecret1.order_service.kafka.producer.OrderDeliveryRequestKafkaProducerService;
 import com.github.seecret1.order_service.kafka.producer.OrderInvoiceRequestKafkaProducerService;
 import com.github.seecret1.order_service.kafka.producer.OrderMessageKafkaProducerService;
-import com.github.seecret1.order_service.mapper.AddressMapper;
+import com.github.seecret1.order_service.mapper.AddressManualMapper;
 import com.github.seecret1.order_service.mapper.OrderCardManualMapper;
 import com.github.seecret1.order_service.repository.OrderCardRepository;
 import com.github.seecret1.order_service.service.OrderCardService;
@@ -46,7 +46,7 @@ public class OrderCardServiceImpl implements OrderCardService {
 
     private final OrderCardManualMapper orderCardMapper;
 
-    private final AddressMapper addressMapper;
+    private final AddressManualMapper addressMapper;
 
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ) //TODO: добавить метрики
@@ -66,8 +66,9 @@ public class OrderCardServiceImpl implements OrderCardService {
             }
 
             order = processReceivingMethod(order, event, personInfo);
-            orderInvoiceRequestKafkaProducerService.sendWithWait(orderCardMapper.toInvoiceDto(event));
-            return sendMessage(orderCardRepository.save(order)); //TODO: сначала ждем ответа, потом sendMessage
+            var savedOrder = orderCardRepository.save(order);
+            orderInvoiceRequestKafkaProducerService.sendWithWaitToInvoiceTopic(orderCardMapper.toInvoiceDto(event, savedOrder.getId()));
+            return sendMessage(savedOrder); //TODO: сначала ждем ответа, потом sendMessage
 
         } catch (Exception ex) {
             log.error("Error creating order: traceId={}, error={}", event.getTraceId(), ex.getMessage(), ex);

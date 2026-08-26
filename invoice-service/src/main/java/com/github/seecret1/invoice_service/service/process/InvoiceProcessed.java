@@ -1,5 +1,6 @@
 package com.github.seecret1.invoice_service.service.process;
 
+import com.github.seecret1.invoice_service.config.SpendingLimitsConfig;
 import com.github.seecret1.invoice_service.dto.order.BaseMessage;
 import com.github.seecret1.invoice_service.dto.order.OrderInvoiceDto;
 import com.github.seecret1.invoice_service.dto.request.CardInvoiceCreateRequest;
@@ -21,6 +22,8 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class InvoiceProcessed { //TODO: добавить интерфейс
+
+    private final SpendingLimitsConfig spendingLimitsConfig;
 
     private final CardInvoiceService cardInvoiceService;
 
@@ -55,12 +58,13 @@ public class InvoiceProcessed { //TODO: добавить интерфейс
         try {
             request.validate();
             var invoice = cardInvoiceService.create(
-                    new CardInvoiceCreateRequest(
+                    new CardInvoiceCreateRequest( //TODO: вынести в маппер
                             request.getCardId(),
                             request.getUserId(),
                             getDocumentTypeWithCardType(request.getCardType()).name(),
-                            request.getCurrency(),
-                            request.getBalance()
+                            request.getCurrency() != null ? request.getCurrency() : "RUB", //TODO: вынести в утилиту на время (пока не задана сущность валюты)
+                            request.getBalance(),
+                            spendingLimitsConfig.getMaxLimitForType(request.getCardType())
                     )
             );
             message = cardInvoiceMapper.toMessage(request, invoice, OrderStatus.PENDING, "Successfully founded invoice");

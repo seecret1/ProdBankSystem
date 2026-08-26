@@ -2,23 +2,17 @@ package com.github.seecret1.invoice_service.service.impl;
 
 import com.github.seecret1.common.dto.PageResponse;
 import com.github.seecret1.common.model.PageModel;
-import com.github.seecret1.invoice_service.dto.order.OrderInvoiceDto;
 import com.github.seecret1.invoice_service.dto.request.CardInvoiceCreateRequest;
 import com.github.seecret1.invoice_service.dto.response.CardInvoiceResponse;
 import com.github.seecret1.invoice_service.dto.response.OperationResponse;
 import com.github.seecret1.invoice_service.entity.CardInvoice;
-import com.github.seecret1.invoice_service.entity.Operation;
-import com.github.seecret1.invoice_service.entity.enums.CardType;
 import com.github.seecret1.invoice_service.exception.InvoiceAlreadyDeletedException;
 import com.github.seecret1.invoice_service.exception.InvoiceAlreadyExistsException;
 import com.github.seecret1.invoice_service.exception.InvoiceNotFoundException;
 import com.github.seecret1.invoice_service.mapper.CardInvoiceMapper;
 import com.github.seecret1.invoice_service.mapper.OperationMapper;
 import com.github.seecret1.invoice_service.repository.CardInvoiceRepository;
-import com.github.seecret1.invoice_service.repository.OperationRepository;
 import com.github.seecret1.invoice_service.service.CardInvoiceService;
-import com.github.seecret1.invoice_service.utils.DocumentType;
-import com.github.seecret1.invoice_service.utils.InvoiceNumberGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,8 +29,6 @@ import java.util.List;
 public class CardInvoiceServiceImpl implements CardInvoiceService {
 
     private final CardInvoiceRepository cardInvoiceRepository;
-
-    private final OperationRepository operationRepository;
 
     private final CardInvoiceMapper cardInvoiceMapper;
 

@@ -50,8 +50,11 @@ public class OrderProcessing {
             }
 
             event.validate();
-            var invoice = orderCardMapper.toInvoiceDto(event);
-            orderInvoiceRequestKafkaProducerService.sendWithWait(invoice);
+            var order = orderCardMapper.toEntity(event, OrderStatus.PENDING);
+            var savedOrder = orderCardRepository.save(order);
+            var invoice = orderCardMapper.toInvoiceDto(event, savedOrder.getId());
+            log.info("Sending message by order ID: {}", savedOrder.getId());
+            orderInvoiceRequestKafkaProducerService.sendWithWaitToRequestInvoiceTopic(invoice);
 
         } catch (Exception ex) {
             log.error("Error processing order: traceId={}, error={}", event.getTraceId(), ex.getMessage(), ex);
@@ -74,6 +77,7 @@ public class OrderProcessing {
 
         if (invoiceResponses.isEmpty()) {
             pushToInnerTopic(message);
+            log.debug("Send message with inner topic");
         }
 
         for (var invoice : invoiceResponses) {
@@ -93,10 +97,12 @@ public class OrderProcessing {
 
         if (message.getStatus() == OrderStatus.REJECTED) {
             producerService.sendWithWait(message);
+            log.debug("Rejected create card. Send message with cards topic");
             return;
         }
 
         pushToInnerTopic(message);
+        log.debug("Send message with inner topic");
     }
 
     private void pushToInnerTopic(BaseMessage message) {

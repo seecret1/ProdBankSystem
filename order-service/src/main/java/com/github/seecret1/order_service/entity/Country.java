@@ -15,7 +15,7 @@ import java.time.Instant;
 @Setter
 @Getter
 @Entity
-@Table(name = "countries", schema = "person_bank")
+@Table(name = "countries", schema = "order_bank")
 public class Country implements Serializable {
 
     @Id

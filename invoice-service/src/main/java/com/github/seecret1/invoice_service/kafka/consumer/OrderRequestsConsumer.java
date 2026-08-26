@@ -24,8 +24,9 @@ public class OrderRequestsConsumer {
     )
     public void listen(ConsumerRecord<String, OrderInvoiceDto> record) {
         OrderInvoiceDto dto = record.value();
-        log.info("Order received: traceId={}, userId={}, cardId={}",
-                dto.getTraceId(), dto.getUserId(), dto.getCardId());
+        log.info("Order received: traceId={}, userId={}, cardId={}, orderId={}, orderType={}, cardType={}",
+                dto.getTraceId(), dto.getUserId(), dto.getCardId(), dto.getOrderId(),
+                dto.getOrderType(), dto.getCardType());
         log.info("Key: {}; Partition: {}; Topic: {}; Timestamp: {}",
                 record.key(), record.partition(), record.topic(), Instant.ofEpochMilli(record.timestamp()));
 

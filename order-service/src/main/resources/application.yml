@@ -81,6 +81,7 @@ logging:
   config: "classpath:logback.xml"
   level:
     com.github.seecret1.order_service: DEBUG
+    com.github.seecret1.order_service.service.processed: DEBUG
 
 management:
   endpoints:
@@ -115,6 +116,7 @@ app:
     topic: orders
     inner-topic: inner-orders
     response-topic: response-orders
+    request-invoice-topic: request-invoices
     invoice-topic: invoices
     cards-topic: cards
     retry-topic: retry-orders

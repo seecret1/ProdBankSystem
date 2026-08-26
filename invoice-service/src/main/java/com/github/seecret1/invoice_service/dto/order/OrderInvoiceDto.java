@@ -19,6 +19,8 @@ public class OrderInvoiceDto extends OrderDto {
 
     private String cardId;
 
+    private String orderId;
+
     private CardType cardType;
 
     private String currency;
@@ -27,10 +29,10 @@ public class OrderInvoiceDto extends OrderDto {
 
     @Override
     public void validate() {
-        if (userId == null || cardId == null || traceId == null) {
+        if (userId == null || cardId == null || traceId == null || orderId == null) {
             throw new ValidateException("Ids must not be null");
         }
-        if (userId.isBlank() || cardId.isBlank() || traceId.isBlank()) {
+        if (userId.isBlank() || cardId.isBlank() || traceId.isBlank() || orderId.isBlank()) {
             throw new ValidateException("Ids must not be blank");
         }
         if (cardType == null || orderType == null) {

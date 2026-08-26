@@ -6,5 +6,7 @@ public interface OrderInvoiceRequestKafkaProducerService {
 
     void sendNoWait(OrderInvoiceDto message);
 
-    void sendWithWait(OrderInvoiceDto message);
+    void sendWithWaitToRequestInvoiceTopic(OrderInvoiceDto message);
+
+    void sendWithWaitToInvoiceTopic(OrderInvoiceDto message);
 }

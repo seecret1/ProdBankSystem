@@ -24,6 +24,10 @@ public record CardInvoiceCreateRequest(
 
         @NotNull(message = "balance must be set")
         @Digits(integer = 18, fraction = 2, message = "balance format invalid")
-        BigDecimal balance
+        BigDecimal balance,
+
+        @NotNull(message = "spending limit must not be null")
+        @Positive(message = "spending limit must be only positive value")
+        BigDecimal spendingLimit
 ) {
 }

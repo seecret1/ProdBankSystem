@@ -19,14 +19,14 @@ import java.math.BigDecimal;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderCard extends BaseOrderEntity {
 
-    @Column(name = "card_id", nullable = false, unique = true)
+    @Column(name = "card_id", nullable = false)
     String cardId;
 
     @Column(name = "card_type", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
     CardType cardType;
 
-    @Column(name = "invoice_id", unique = true)
+    @Column(name = "invoice_id")
     String invoiceId;
 
     @Column(name = "card_receiving_method", nullable = false, length = 20)

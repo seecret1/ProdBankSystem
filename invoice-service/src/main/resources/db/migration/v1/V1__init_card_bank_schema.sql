@@ -23,7 +23,7 @@ CREATE TABLE invoice_bank.card_invoices
     card_id VARCHAR(120) UNIQUE NOT NULL,
     status VARCHAR(30) NOT NULL,
     invoice_number VARCHAR(50) UNIQUE NOT NULL,
-    currency CHAR(3) NOT NULL,
+    currency VARCHAR NOT NULL,
     balance NUMERIC(18,2) NOT NULL DEFAULT 0,
     spending_limit NUMERIC(18,2) NOT NULL,
     operation_id VARCHAR REFERENCES invoice_bank.operation(id)

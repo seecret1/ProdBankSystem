@@ -8,6 +8,7 @@ import com.github.seecret1.order_service.dto.invoice.OrderInvoiceDto;
 import com.github.seecret1.order_service.entity.OrderCard;
 import com.github.seecret1.order_service.entity.OrderCardDelivery;
 import com.github.seecret1.order_service.entity.enums.OrderStatus;
+import com.github.seecret1.order_service.entity.enums.OrderType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -17,9 +18,13 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class OrderCardManualMapper {
 
-    private final AddressMapper addressMapper;
+    private final AddressManualMapper addressMapper;
 
     public OrderCard toEntity(OrderCardDto event, OrderStatus status) {
+        OrderCardDelivery delivery = null;
+        if (event.getDeliveryRequest() != null) {
+            delivery = toOrderCardDelivery(event.getDeliveryRequest());
+        }
         return OrderCard.builder()
                 .traceId(event.getTraceId())
                 .userId(event.getUserId())
@@ -27,18 +32,29 @@ public class OrderCardManualMapper {
                 .cardType(event.getCardType())
                 .status(status)
                 .cardReceivingMethod(event.getCardReceivingMethod())
+                .orderCardDelivery(delivery)
                 .comment(event.getComment())
                 .requestTimestamp(event.getCreatedAt())
+                .balance(event.getBalance())
+                .currency(event.getCurrency())
                 .deleted(false)
                 .build();
     }
 
-    public OrderInvoiceDto toInvoiceDto(OrderCardDto event) {
+    public OrderCardDelivery toOrderCardDelivery(CardDeliveryRequest deliveryRequest) {
+        return OrderCardDelivery.builder()
+                .plannedDeliveryTime(deliveryRequest.plannedDeliveryTime())
+                .address(addressMapper.toAddress(deliveryRequest.address()))
+                .build();
+    }
+
+    public OrderInvoiceDto toInvoiceDto(OrderCardDto event, String orderId) {
         return OrderInvoiceDto.builder()
                 .traceId(event.getTraceId())
                 .userId(event.getUserId())
                 .cardId(event.getCardId())
                 .cardType(event.getCardType())
+                .orderId(orderId)
                 .orderType(event.getOrderType())
                 .currency(event.getCurrency())
                 .balance(event.getBalance())
@@ -53,10 +69,15 @@ public class OrderCardManualMapper {
         dto.setUserId(order.getUserId());
         dto.setCardId(order.getCardId());
         dto.setCardType(order.getCardType());
+        dto.setOrderType(OrderType.CARD);
         dto.setCardReceivingMethod(order.getCardReceivingMethod());
         dto.setComment(order.getComment());
+        dto.setCurrency(order.getCurrency());
+        dto.setBalance(order.getBalance());
         dto.setCreatedAt(order.getRequestTimestamp());
-        dto.setDeliveryRequest(toCardDeliveryRequest(order.getOrderCardDelivery()));
+        if (order.getOrderCardDelivery() != null){
+            dto.setDeliveryRequest(toCardDeliveryRequest(order.getOrderCardDelivery()));
+        }
         return dto;
     }
 
