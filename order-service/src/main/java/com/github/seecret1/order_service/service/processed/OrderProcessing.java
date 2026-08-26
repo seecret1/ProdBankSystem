@@ -1,6 +1,5 @@
 package com.github.seecret1.order_service.service.processed;
 
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.seecret1.order_service.dto.BaseMessage;
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
@@ -21,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.math.BigDecimal;
 
@@ -67,17 +67,13 @@ public class OrderProcessing {
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void processMessage(BaseMessage message) {
-        JavaType listType = objectMapper.getTypeFactory()
-                .constructCollectionType(List.class, CardInvoiceResponse.class);
-
-        List<CardInvoiceResponse> invoiceResponses = objectMapper.convertValue(
-                message.getData(),
-                listType
-        );
+        List<CardInvoiceResponse> invoiceResponses = extractInvoices(message.getData());
+        log.info("Invoice responses List: {}", invoiceResponses.size());
 
         if (invoiceResponses.isEmpty()) {
             pushToInnerTopic(message);
             log.debug("Send message with inner topic");
+            return;
         }
 
         for (var invoice : invoiceResponses) {
@@ -120,5 +116,39 @@ public class OrderProcessing {
     private void sendMessage(OrderCard order) {
         var message = orderCardMapper.toMessage(order);
         producerService.sendWithWait(message);
+    }
+
+    private List<CardInvoiceResponse> extractInvoices(Object data) {
+        if (data == null) {
+            return Collections.emptyList();
+        }
+
+        try {
+            // Если data уже является списком
+            if (data instanceof List) {
+                List<?> list = (List<?>) data;
+                if (list.isEmpty()) {
+                    return Collections.emptyList();
+                }
+
+                // Проверяем первый элемент
+                Object first = list.get(0);
+                if (first instanceof CardInvoiceResponse) {
+                    return (List<CardInvoiceResponse>) list;
+                }
+
+                // Если элементы - LinkedHashMap (Jackson десериализовал в Map)
+                return objectMapper.convertValue(data,
+                        objectMapper.getTypeFactory().constructCollectionType(List.class, CardInvoiceResponse.class));
+            }
+
+            // Если data - одиночный объект
+            CardInvoiceResponse single = objectMapper.convertValue(data, CardInvoiceResponse.class);
+            return List.of(single);
+
+        } catch (Exception ex) {
+            log.error("Failed to parse invoice data: {}", data, ex);
+            return Collections.emptyList();
+        }
     }
 }

@@ -35,7 +35,7 @@ public class OrderCard extends BaseOrderEntity {
 
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "order_card_delivery_id")
-    OrderCardDelivery orderCardDelivery;
+    OrderDelivery orderDelivery;
 
     String currency;
 

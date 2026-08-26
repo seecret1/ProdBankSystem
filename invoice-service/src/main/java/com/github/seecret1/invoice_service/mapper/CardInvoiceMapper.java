@@ -9,7 +9,6 @@ import com.github.seecret1.invoice_service.entity.enums.InvoiceStatus;
 import com.github.seecret1.invoice_service.entity.enums.OrderStatus;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,7 +28,9 @@ public class CardInvoiceMapper {
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
                 entity.getDeletedAt(),
-                entity.getDeletedBy()
+                entity.getDeletedBy(),
+                entity.getSpendingLimit(),
+                entity.getFreeLimit()
         );
     }
 
@@ -48,11 +49,12 @@ public class CardInvoiceMapper {
                 .status(InvoiceStatus.ACTIVE)
                 .balance(request.balance())
                 .spendingLimit(request.spendingLimit())
+                .freeLimit(request.freeLimit())
                 .deleted(false)
                 .build();
     }
 
-    public BaseMessage toMessage(
+    public BaseMessage toMessageList(
             OrderInvoiceDto dto,
             List<CardInvoiceResponse> responses,
             OrderStatus orderStatus,

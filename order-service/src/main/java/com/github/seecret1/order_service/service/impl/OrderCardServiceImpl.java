@@ -58,16 +58,18 @@ public class OrderCardServiceImpl implements OrderCardService {
             //  Реализовать через invoice-service
 
             var personInfo = userServiceFeignClient.getPersonInfo(event.getUserId());
-            OrderCard order = orderCardMapper.toEntity(event, OrderStatus.PENDING);
+            OrderCard order = orderCardRepository.findByTraceId(event.getTraceId());
             order = userValidate(order, personInfo, event);
 
             if (order.getStatus() == OrderStatus.REJECTED) {
                 return sendMessage(order);
             }
 
-            order = processReceivingMethod(order, event, personInfo);
-            var savedOrder = orderCardRepository.save(order);
-            orderInvoiceRequestKafkaProducerService.sendWithWaitToInvoiceTopic(orderCardMapper.toInvoiceDto(event, savedOrder.getId()));
+            var savedOrder = processReceivingMethod(order, event, personInfo);
+            orderCardRepository.save(savedOrder);
+            orderInvoiceRequestKafkaProducerService.sendWithWaitToInvoiceTopic(
+                    orderCardMapper.toInvoiceDto(event, savedOrder.getId())
+            );
             return sendMessage(savedOrder); //TODO: сначала ждем ответа, потом sendMessage
 
         } catch (Exception ex) {
@@ -157,6 +159,11 @@ public class OrderCardServiceImpl implements OrderCardService {
                 .destinationAddress(event.getDeliveryRequest().address())
                 .plannedDeliveryTime(event.getDeliveryRequest().plannedDeliveryTime())
                 .build();
+
+        var orderCardDelivery = orderCardMapper.toOrderCardDelivery(
+                orderDeliveryDto
+        );
+        order.setOrderDelivery(orderCardDelivery);
 
         if (office) {
             orderDeliveryDto.setOfficeId(mainOffice.id());

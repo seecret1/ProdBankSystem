@@ -16,7 +16,7 @@ import java.util.concurrent.TimeoutException;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OrderMessageKafkaProducerServiceImpl implements KafkaProducerService {
+public class OrderMessageOrderResponseKafkaProducerServiceImpl implements OrderMessageKafkaProducerService {
 
     private final KafkaProperties kafkaProperties;
 

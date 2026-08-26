@@ -21,6 +21,7 @@ public class AddressManualMapper {
         address.setZipCode(request.zipCode());
         address.setCity(request.city());
         address.setCountry(toCountry(request.countryCode()));
+        address.setDeleted(false);
         return address;
     }
 

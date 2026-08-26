@@ -31,6 +31,10 @@ public record CardInvoiceResponse(
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
         Instant deletedAt,
 
-        String deletedBy
+        String deletedBy,
+
+        BigDecimal spendingLimit,
+
+        BigDecimal freeLimit
 ) {
 }

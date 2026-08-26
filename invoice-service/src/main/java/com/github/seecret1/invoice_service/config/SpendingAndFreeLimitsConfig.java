@@ -12,7 +12,7 @@ import java.util.Map;
 @Data
 @Component
 @ConfigurationProperties(prefix = "app.invoices")
-public class SpendingLimitsConfig {
+public class SpendingAndFreeLimitsConfig {
 
     private Map<CardType, CardLimit> limits;
 

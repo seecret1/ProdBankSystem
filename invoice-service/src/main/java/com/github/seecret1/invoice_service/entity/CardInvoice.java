@@ -30,4 +30,7 @@ public class CardInvoice extends BaseInvoiceEntity implements Serializable {
 
     @Column(name = "spending_limit", nullable = false)
     private BigDecimal spendingLimit;
+
+    @Column(name = "free_limit", nullable = false)
+    private BigDecimal freeLimit;
 }

@@ -9,11 +9,13 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+@Audited
 @Getter
 @Setter
 @SuperBuilder
@@ -24,10 +26,10 @@ public abstract class BaseInvoiceEntity implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", nullable = false, updatable = false)
+    @Column(name = "id", nullable = false)
     private String id;
 
-    @Column(name = "user_id", nullable = false, updatable = false)
+    @Column(name = "user_id", nullable = false)
     private String userId;
 
     @Column(name = "invoice_number", nullable = false, unique = true, length = 50)
@@ -48,7 +50,7 @@ public abstract class BaseInvoiceEntity implements Serializable {
     private Boolean deleted;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
     @UpdateTimestamp

@@ -28,6 +28,10 @@ public record CardInvoiceCreateRequest(
 
         @NotNull(message = "spending limit must not be null")
         @Positive(message = "spending limit must be only positive value")
-        BigDecimal spendingLimit
+        BigDecimal spendingLimit,
+
+        @NotNull(message = "free limit must not be null")
+        @Positive(message = "free limit must be only positive value")
+        BigDecimal freeLimit
 ) {
 }

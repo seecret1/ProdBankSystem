@@ -26,5 +26,6 @@ CREATE TABLE invoice_bank.card_invoices
     currency VARCHAR NOT NULL,
     balance NUMERIC(18,2) NOT NULL DEFAULT 0,
     spending_limit NUMERIC(18,2) NOT NULL,
+    free_limit NUMERIC(18,2) NOT NULL,
     operation_id VARCHAR REFERENCES invoice_bank.operation(id)
 );

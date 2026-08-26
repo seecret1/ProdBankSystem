@@ -8,6 +8,8 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -27,7 +29,7 @@ public class OrderConsumer {
         log.info("Response order received: traceId={} orderId={}, userId={}, cardData={}, createdAt={}",
                 message.getTraceId(), message.getOrderId(), message.getUserId(), message.getProductId(), message.getTimestamp());
         log.info("Key: {}; Partition: {}; Topic: {}; Timestamp: {}",
-                order.key(), order.partition(), order.topic(), order.timestamp());
+                order.key(), order.partition(), order.topic(), Instant.ofEpochMilli(order.timestamp()));
 
         try {
             orderProcessingService.orderProcessing(message);

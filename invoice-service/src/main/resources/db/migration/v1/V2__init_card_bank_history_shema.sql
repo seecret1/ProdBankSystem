@@ -38,6 +38,7 @@ CREATE TABLE invoice_bank_history.card_invoices_history
     currency VARCHAR NOT NULL,
     balance NUMERIC(18,2) NOT NULL DEFAULT 0,
     spending_limit NUMERIC(18,2) NOT NULL,
+    free_limit NUMERIC(18,2) NOT NULL,
     operation_id VARCHAR,
 
     CONSTRAINT fk_card_invoices_history_rev FOREIGN KEY (rev) REFERENCES invoice_bank_history.revinfo (rev)
