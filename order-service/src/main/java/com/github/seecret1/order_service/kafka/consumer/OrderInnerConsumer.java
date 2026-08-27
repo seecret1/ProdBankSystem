@@ -1,7 +1,7 @@
 package com.github.seecret1.order_service.kafka.consumer;
 
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
-import com.github.seecret1.order_service.service.OrderCardService;
+import com.github.seecret1.order_service.service.OrderCardProcessingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -15,7 +15,7 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class OrderInnerConsumer {
 
-    private final OrderCardService service;
+    private final OrderCardProcessingService service;
 
     @KafkaListener(
             topics = "${app.kafka.inner-topic}",
