@@ -1,7 +1,6 @@
 package com.github.seecret1.order_service.service.impl;
 
 import com.github.seecret1.order_service.config.kafka.properties.KafkaProperties;
-import com.github.seecret1.order_service.dto.BaseMessage;
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
 import com.github.seecret1.order_service.dto.delivery.OrderCardDeliveryDto;
 import com.github.seecret1.order_service.dto.office.OfficeResponse;
@@ -74,7 +73,6 @@ public class OrderCardServiceImpl implements OrderCardService {
             orderInvoiceRequestKafkaProducerService.sendWithWaitToInvoiceTopic(
                     orderCardMapper.toInvoiceDto(event, savedOrder.getId())
             );
-            sendMessage(savedOrder);
 
         } catch (Exception ex) {
             log.error("Error creating order: traceId={}, error={}", event.getTraceId(), ex.getMessage(), ex);

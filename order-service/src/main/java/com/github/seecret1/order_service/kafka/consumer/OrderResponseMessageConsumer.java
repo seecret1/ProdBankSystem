@@ -1,7 +1,7 @@
 package com.github.seecret1.order_service.kafka.consumer;
 
 import com.github.seecret1.order_service.dto.BaseMessage;
-import com.github.seecret1.order_service.service.processed.OrderProcessing;
+import com.github.seecret1.order_service.service.processed.OrderCardProcessing;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -15,7 +15,7 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class OrderResponseMessageConsumer {
 
-    private final OrderProcessing orderProcessing;
+    private final OrderCardProcessing orderProcessing;
 
     @KafkaListener(
             topics = "${app.kafka.response-topic}",

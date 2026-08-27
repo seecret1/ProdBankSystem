@@ -181,7 +181,9 @@ public class CardServiceImpl implements CardService {
         if (card.getStatus() == CardStatus.PENDING) {
             card.setStatus(CardStatus.ACTIVE);
             card.setInvoiceId(invoiceId);
+            cardRepository.save(card);
             log.info("Successfully activate card: {}", id);
+            log.info("Linked card and invoice: {}", invoiceId);
             return cardMapper.toYourDtoResponse(card);
         }
         else if (card.getStatus() == CardStatus.ACTIVE) {

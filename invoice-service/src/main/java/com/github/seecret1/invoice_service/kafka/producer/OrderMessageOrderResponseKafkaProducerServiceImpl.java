@@ -9,6 +9,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -54,7 +56,16 @@ public class OrderMessageOrderResponseKafkaProducerServiceImpl implements OrderM
     }
 
     private ProducerRecord<String, BaseMessage> getRecord(String topic, BaseMessage message) {
-        return new ProducerRecord<>(topic, message.getTraceId(), message);
+        var record = new ProducerRecord<>(topic, message.getTraceId(), message);
+        Map<String, String> headers = Map.of(
+                "outgoing_topic", kafkaProperties.getTopic(),
+                "source-service", "order-service",
+                "timestamp", String.valueOf(System.currentTimeMillis())
+        );
+        headers.forEach((key, value) ->
+                record.headers().add(key, value.getBytes(StandardCharsets.UTF_8))
+        );
+        return record;
     }
 
     private static void logging(BaseMessage message) {

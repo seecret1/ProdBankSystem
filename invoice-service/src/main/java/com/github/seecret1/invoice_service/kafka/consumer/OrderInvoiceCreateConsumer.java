@@ -1,7 +1,7 @@
 package com.github.seecret1.invoice_service.kafka.consumer;
 
 import com.github.seecret1.invoice_service.dto.order.OrderInvoiceDto;
-import com.github.seecret1.invoice_service.service.process.InvoiceProcessed;
+import com.github.seecret1.invoice_service.service.process.InvoiceProcessing;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -15,7 +15,7 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class OrderInvoiceCreateConsumer {
 
-    private final InvoiceProcessed invoiceProcessed;
+    private final InvoiceProcessing invoiceProcessingImpl;
 
     @KafkaListener(
             topics = "${app.kafka.topic}",
@@ -31,7 +31,7 @@ public class OrderInvoiceCreateConsumer {
                 record.key(), record.partition(), record.topic(), Instant.ofEpochMilli(record.timestamp()));
 
         try {
-            invoiceProcessed.createInvoice(dto);
+            invoiceProcessingImpl.createInvoice(dto);
             log.debug("[topic: {}][traceId: {}]Processing card order successfully", record.topic(), dto.getTraceId());
         } catch (Exception ex) {
             log.error("Error while creating order. Send to retry topic", ex);

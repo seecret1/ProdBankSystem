@@ -131,6 +131,9 @@ app:
     replicas: 3
     timeout-seconds: 6
 
+    headers:
+      received-topic: received-topic
+
   retry:
     max-attempts: 3
     delay: 1500

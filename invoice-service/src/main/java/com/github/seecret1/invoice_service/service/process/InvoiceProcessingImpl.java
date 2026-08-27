@@ -23,7 +23,7 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class InvoiceProcessed { //TODO: добавить интерфейс
+public class InvoiceProcessingImpl implements InvoiceProcessing {
 
     private final SpendingAndFreeLimitsConfig spendingAndFreeLimitsConfig;
 
@@ -35,6 +35,7 @@ public class InvoiceProcessed { //TODO: добавить интерфейс
 
     private final CardInvoiceMapper cardInvoiceMapper;
 
+    @Override
     public void processOrder(OrderInvoiceDto request) {
         List<CardInvoiceResponse> invoice;
         BaseMessage message = new BaseMessage();
@@ -56,6 +57,7 @@ public class InvoiceProcessed { //TODO: добавить интерфейс
         orderMessageKafkaProducerService.sendWithWait(kafkaProperties.getResponseOrdersTopic(), message);
     }
 
+    @Override
     public void createInvoice(OrderInvoiceDto request) {
         BaseMessage message = new BaseMessage();
         try {

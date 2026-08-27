@@ -1,7 +1,7 @@
 package com.github.seecret1.cardservice.kafka.consumer;
 
 import com.github.seecret1.cardservice.dto.order.message.BaseMessage;
-import com.github.seecret1.cardservice.service.OrderProcessingService;
+import com.github.seecret1.cardservice.service.processing.OrderProcessingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class RetryConsumer {
 
-    private final OrderProcessingService orderProcessingService;
+    private final OrderProcessingService orderProcessingServiceImpl;
 
     @KafkaListener(
             topics = "${app.kafka.retry-topic}",
@@ -30,7 +30,7 @@ public class RetryConsumer {
                 order.key(), order.partition(), order.topic(), order.timestamp());
 
         try {
-            orderProcessingService.orderProcessing(message);
+            orderProcessingServiceImpl.orderProcessing(message);
             log.debug("Received retry response order body: {}", message);
         } catch (Exception e) {
             log.error("Error retry processing order: traceId={}, orderId={}, error={}",

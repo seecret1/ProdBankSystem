@@ -18,7 +18,6 @@ import com.github.seecret1.order_service.repository.OrderCardRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +29,8 @@ import java.math.BigDecimal;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class OrderProcessing {
+@Transactional(isolation = Isolation.READ_COMMITTED) //TODO: вынести transactional и работать только с сервисами
+public class OrderCardProcessingImpl implements OrderCardProcessing {
 
     private final OrderInnerRequestKafkaProducerService orderInnerRequestKafkaProducerService;
 
@@ -49,7 +49,7 @@ public class OrderProcessing {
     private final OrderMessageKafkaProducerService orderMessageKafkaProducerService;
 
     //TODO: добавить метрики
-    @Transactional(isolation = Isolation.READ_COMMITTED)
+    @Override
     public void processOrder(OrderCardDto event) {
         try {
             if (event.getOrderType() != OrderType.CARD) {
@@ -57,6 +57,7 @@ public class OrderProcessing {
             }
 
             event.validate();
+            //TODO: вынести в отдельный сервис
             var order = orderCardMapper.toEntity(event, OrderStatus.PENDING);
             var savedOrder = orderCardRepository.save(order);
             var invoice = orderCardMapper.toInvoiceDto(event, savedOrder.getId());
@@ -73,7 +74,7 @@ public class OrderProcessing {
         }
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED)
+    @Override
     public void processMessage(BaseMessage message) {
         List<CardInvoiceResponse> invoiceResponses = extractInvoices(message.getData());
         log.info("Invoice responses List: {}", invoiceResponses.size());
@@ -109,17 +110,25 @@ public class OrderProcessing {
         log.debug("Send message with inner topic");
     }
 
-    public void processMessageOnInvoiceService(ConsumerRecord<String, BaseMessage> record, BaseMessage message) {
-        if (record.topic().equals(kafkaProperties.getInvoiceTopic())) {
-            CardInvoiceResponse cardInvoiceResponse = objectMapper.convertValue(message.getData(), CardInvoiceResponse.class);
-            var order = orderCardRepository.findById(message.getOrderId())
+    //TODO: изменить логику, сначала делать проверку, получая сравнивая топики из header и kafkaProps
+    @Override
+    public void processMessageOnInvoiceService(BaseMessage message) {
+            var order = orderCardRepository.findById(message.getOrderId()) //TODO: вынести в отдельный сервис
                     .orElseThrow(() -> new EntityNotFoundException(
                             "Order not found by ID: " + message.getOrderId()
                     ));
-            order.setInvoiceId(cardInvoiceResponse.id());
-            message.setData(orderCardMapper.toResponse(order));
-            orderMessageKafkaProducerService.sendWithWait(kafkaProperties.getCardsTopic(), message);
-        }
+            if (message.getTraceId().equals(order.getTraceId())) {
+                order.setInvoiceId(message.getProductId());
+                orderCardRepository.save(order);
+                message.setData(orderCardMapper.toResponse(order));
+                message.setProductId(order.getCardId());
+                orderMessageKafkaProducerService.sendWithWait(kafkaProperties.getCardsTopic(), message);
+                log.debug("Setting invoiceId={} in order", message.getProductId());
+            }
+            else {
+                log.error("Message not processed: traceId={}, Order traceId={}",
+                        message.getTraceId(), order.getTraceId());
+            }
     }
 
     private void pushToInnerTopic(BaseMessage message) {
@@ -140,25 +149,20 @@ public class OrderProcessing {
         }
 
         try {
-            // Если data уже является списком
             if (data instanceof List) {
                 List<?> list = (List<?>) data;
                 if (list.isEmpty()) {
                     return Collections.emptyList();
                 }
 
-                // Проверяем первый элемент
                 Object first = list.get(0);
                 if (first instanceof CardInvoiceResponse) {
                     return (List<CardInvoiceResponse>) list;
                 }
 
-                // Если элементы - LinkedHashMap (Jackson десериализовал в Map)
                 return objectMapper.convertValue(data,
                         objectMapper.getTypeFactory().constructCollectionType(List.class, CardInvoiceResponse.class));
             }
-
-            // Если data - одиночный объект
             CardInvoiceResponse single = objectMapper.convertValue(data, CardInvoiceResponse.class);
             return List.of(single);
 

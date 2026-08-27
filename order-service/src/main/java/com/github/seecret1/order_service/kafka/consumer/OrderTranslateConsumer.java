@@ -1,7 +1,7 @@
 package com.github.seecret1.order_service.kafka.consumer;
 
 import com.github.seecret1.order_service.dto.BaseMessage;
-import com.github.seecret1.order_service.service.processed.OrderProcessing;
+import com.github.seecret1.order_service.service.processed.OrderCardProcessing;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -15,7 +15,7 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class OrderTranslateConsumer {
 
-    private final OrderProcessing orderProcessing;
+    private final OrderCardProcessing orderProcessing;
 
     @KafkaListener(
             topics = "${app.kafka.translate-topic}",
@@ -26,13 +26,14 @@ public class OrderTranslateConsumer {
             ConsumerRecord<String, BaseMessage> record
     ) {
         BaseMessage message = record.value();
-        log.info("Order received: traceId={}, userId={}, cardId={}, timestamp={}",
-                message.getTraceId(), message.getUserId(), message.getProductId(), message.getTimestamp());
+        log.info("Order received: traceId={}, userId={}, productId={}, orderStatus={} timestamp={}",
+                message.getTraceId(), message.getUserId(), message.getProductId(),
+                message.getStatus(), message.getTimestamp());
         log.info("Key: {}; Partition: {}; Topic: {}; Timestamp: {}",
                 record.key(), record.partition(), record.topic(), Instant.ofEpochMilli(record.timestamp()));
 
         try {
-            orderProcessing.processMessageOnInvoiceService(record, message);
+            orderProcessing.processMessageOnInvoiceService(message);
             log.debug("[topic: {}][traceId: {}]Send response in cards topic", record.topic(), message.getTraceId());
         } catch (Exception ex) {
             log.error("Error while creating order. Send to retry topic", ex);

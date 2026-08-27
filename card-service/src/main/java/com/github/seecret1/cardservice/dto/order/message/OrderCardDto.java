@@ -18,8 +18,6 @@ public class OrderCardDto extends OrderDto {
 
     private CardType cardType;
 
-    private String invoiceId;
-
     private CardReceivingMethod cardReceivingMethod;
 
     private CardDeliveryRequest deliveryRequest;

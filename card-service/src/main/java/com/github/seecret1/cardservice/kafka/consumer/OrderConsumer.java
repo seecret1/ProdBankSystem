@@ -1,7 +1,7 @@
 package com.github.seecret1.cardservice.kafka.consumer;
 
 import com.github.seecret1.cardservice.dto.order.message.BaseMessage;
-import com.github.seecret1.cardservice.service.OrderProcessingService;
+import com.github.seecret1.cardservice.service.processing.OrderProcessingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -15,7 +15,7 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class OrderConsumer {
 
-    private final OrderProcessingService orderProcessingService;
+    private final OrderProcessingService orderProcessingServiceImpl;
 
     @KafkaListener(
             topics = "${app.kafka.topic}",
@@ -26,13 +26,14 @@ public class OrderConsumer {
             ConsumerRecord<String, BaseMessage> order
     ) {
         BaseMessage message = order.value();
-        log.info("Response order received: traceId={} orderId={}, userId={}, cardData={}, createdAt={}",
-                message.getTraceId(), message.getOrderId(), message.getUserId(), message.getProductId(), message.getTimestamp());
+        log.info("Response order received: traceId={} orderId={}, userId={}, cardId={}, createdAt={}, data={}",
+                message.getTraceId(), message.getOrderId(), message.getUserId(),
+                message.getProductId(), message.getTimestamp(), message.getData());
         log.info("Key: {}; Partition: {}; Topic: {}; Timestamp: {}",
                 order.key(), order.partition(), order.topic(), Instant.ofEpochMilli(order.timestamp()));
 
         try {
-            orderProcessingService.orderProcessing(message);
+            orderProcessingServiceImpl.orderProcessing(message);
             log.debug("Received response order body: {}", message);
         } catch (Exception e) {
             log.error("Error processing order: traceId={}, orderId={}, error={}",
