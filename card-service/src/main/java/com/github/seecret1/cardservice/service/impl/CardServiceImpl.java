@@ -1,7 +1,6 @@
 package com.github.seecret1.cardservice.service.impl;
 
 import com.github.seecret1.cardservice.client.UserServiceClient;
-import com.github.seecret1.cardservice.config.CardSpendingLimitsConfig;
 import com.github.seecret1.cardservice.dto.request.CardRequest;
 import com.github.seecret1.cardservice.dto.response.CardResponse;
 import com.github.seecret1.cardservice.entity.Card;
@@ -39,8 +38,6 @@ import java.time.LocalDate;
 public class CardServiceImpl implements CardService {
 
     private final OrderKafkaProducerService orderKafkaProducerService;
-
-    private final CardSpendingLimitsConfig cardSpendingLimitsConfig;
 
     private final UserServiceClient userServiceClient;
 
@@ -176,14 +173,17 @@ public class CardServiceImpl implements CardService {
             allEntries = true
     )
     @CachePut(value = "${app.cache.cache-names.cardById}", key = "#id")
-    public CardResponse activateCard(String id) {
+    public CardResponse activateCard(String id, String invoiceId) {
         log.info("Activate card by id: {}", id);
 
         var card = findCardByIdUseLock(id);
 
         if (card.getStatus() == CardStatus.PENDING) {
             card.setStatus(CardStatus.ACTIVE);
+            card.setInvoiceId(invoiceId);
+            cardRepository.save(card);
             log.info("Successfully activate card: {}", id);
+            log.info("Linked card and invoice: {}", invoiceId);
             return cardMapper.toYourDtoResponse(card);
         }
         else if (card.getStatus() == CardStatus.ACTIVE) {
@@ -219,14 +219,14 @@ public class CardServiceImpl implements CardService {
         log.info("Init order created card");
         var orderCard = cardMapper.toEntity(request, user.id());
 
-        cardRepository.save(orderCard);
+        var savedCard = cardRepository.save(orderCard);
 
         orderKafkaProducerService.sendNoWait(
-                cardMapper.toOrderCardDto(orderCard, request, userId)
+                cardMapper.toOrderCardDto(savedCard, request, userId)
         );
 
         log.info("Save card with status PENDING");
-        return cardMapper.toDtoResponse(orderCard);
+        return cardMapper.toDtoResponse(savedCard);
     }
 
     @Override
@@ -286,12 +286,11 @@ public class CardServiceImpl implements CardService {
         return cardMapper.toDtoResponse(card);
     }
 
-    @Override
+    @Override //TODO: перенести в invoice-service
     public CardResponse refreshSpendingLimit(String cardId, CardType cardType) {
         var card = findCardByIdUseLock(cardId);
 
         log.info("Refresh spending limit for card by id: {}", cardId);
-        card.setSpendingLimit(cardSpendingLimitsConfig.getMaxLimitForType(cardType));
         var newCard = cardRepository.save(card);
         log.debug("Refreshed spending limit for card: {}", card);
         return cardMapper.toDtoResponse(newCard);

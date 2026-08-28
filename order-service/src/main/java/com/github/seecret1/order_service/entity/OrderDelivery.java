@@ -4,38 +4,46 @@ import com.github.seecret1.order_service.entity.enums.PersonType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.SuperBuilder;
 
 import java.time.Instant;
 
 @Getter
 @Setter
 @Entity
-@SuperBuilder
+@Builder
 @Table(name = "orders_card_delivery", schema = "order_bank")
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class OrderCardDelivery extends BaseOrderEntity {
+public class OrderDelivery {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String id;
 
     @Column(name = "planned_delivery_time", nullable = false)
     Instant plannedDeliveryTime;
 
-    @Column(name = "delivery_id", nullable = false, unique = true)
-    String deliveryId;
-
     @Embedded
     FullName fullName;
 
-    @Column(name = "contact_phone", nullable = false)
+    @Column(name = "contact_phone")
     String contactPhone;
 
     @Column(name = "office_id")
     String officeId;
 
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "original_address_id")
+    Address originalAddress;
+
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "destination_address_id", nullable = false)
+    Address destinationAddress;
+
     //TODO: сейчас не будет разделения на ФЛ и ЮЛ
     // Все клиенты будут ФЛ, в дальнейшем нужны буду сервисы анализа ФЛ и ЮР
     @Enumerated(EnumType.STRING)
-    @Column(name = "person_type", nullable = false)
+    @Column(name = "person_type")
     PersonType personType = PersonType.PHYSICAL;
 }

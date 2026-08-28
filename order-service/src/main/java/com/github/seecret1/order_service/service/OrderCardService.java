@@ -1,9 +1,9 @@
 package com.github.seecret1.order_service.service;
 
-import com.github.seecret1.order_service.dto.BaseMessage;
-import com.github.seecret1.order_service.dto.card.OrderCardDto;
+import com.github.seecret1.order_service.entity.OrderCard;
 
 public interface OrderCardService {
 
-    BaseMessage createOrder(OrderCardDto event);
+    OrderCard findById(String id);
+
 }

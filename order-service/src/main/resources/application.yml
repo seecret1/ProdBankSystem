@@ -18,7 +18,7 @@ spring:
     properties:
       org.hibernate.envers.audit_table_suffix: _history
       org.hibernate.envers.audit_table_prefix:
-      org.hibernate.envers.default_schema: person_bank_history
+      org.hibernate.envers.default_schema: order_bank_history
 
   flyway:
     enabled: true
@@ -81,6 +81,7 @@ logging:
   config: "classpath:logback.xml"
   level:
     com.github.seecret1.order_service: DEBUG
+    com.github.seecret1.order_service.service.processed: DEBUG
 
 management:
   endpoints:
@@ -113,6 +114,11 @@ app:
   kafka:
     bootstrap-servers: ${spring.kafka.bootstrap-servers}
     topic: orders
+    inner-topic: inner-orders
+    translate-topic: translate-orders
+    response-topic: response-orders
+    request-invoice-topic: request-invoices
+    invoice-topic: invoices
     cards-topic: cards
     retry-topic: retry-orders
     group-id: order-group-id
@@ -124,6 +130,9 @@ app:
     partitions: 3
     replicas: 3
     timeout-seconds: 6
+
+    headers:
+      received-topic: received-topic
 
   retry:
     max-attempts: 3

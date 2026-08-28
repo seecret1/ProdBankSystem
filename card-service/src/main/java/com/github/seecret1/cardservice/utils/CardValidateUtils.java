@@ -28,8 +28,7 @@ public class CardValidateUtils {
                 card.getDateExpiry().isAfter(LocalDate.now())) {
             throw new CardStatusUpdateException("The card status cannot be expired");
         }
-        if ((status == CardStatus.EXTENDED || status == CardStatus.ACTIVE) &&
-                card.getBalance().compareTo(BigDecimal.ZERO) < 0
+        if ((status == CardStatus.EXTENDED || status == CardStatus.ACTIVE)
         ) {
             throw new CardStatusUpdateException("Cannot change status of card with negative balance");
         }
@@ -45,8 +44,6 @@ public class CardValidateUtils {
         if (card.getStatus() == CardStatus.BLOCKED) {
             throw new CardStatusUpdateException("The card status BLOCKED");
         }
-        if (card.getBalance().compareTo(BigDecimal.ZERO) < 0)
-            throw new ExtendedException("Card status cannot be EXTENDED");
 
         if (card.getStatus() == CardStatus.EXPIRED ||
                 card.getStatus() == CardStatus.ACTIVE ||
