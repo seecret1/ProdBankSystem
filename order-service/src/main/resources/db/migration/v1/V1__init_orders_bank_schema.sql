@@ -26,15 +26,15 @@ CREATE TABLE order_bank.addresses
 CREATE TABLE order_bank.orders_card_delivery
 (
     id VARCHAR PRIMARY KEY DEFAULT uuid_generate_v4(),
-    planned_delivery_time TIMESTAMP WITHOUT TIME ZONE,
-    first_name VARCHAR(64) NOT NULL,
-    last_name VARCHAR(64) NOT NULL,
+    planned_delivery_time TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    first_name VARCHAR(64),
+    last_name VARCHAR(64),
     middle_name VARCHAR(64),
-    contact_phone VARCHAR(32) NOT NULL,
+    contact_phone VARCHAR(32),
     office_id VARCHAR,
-    original_address_id VARCHAR NOT NULL REFERENCES order_bank.addresses (id),
+    original_address_id VARCHAR REFERENCES order_bank.addresses (id),
     destination_address_id VARCHAR NOT NULL REFERENCES order_bank.addresses (id),
-    person_type VARCHAR(20) NOT NULL
+    person_type VARCHAR(20)
 );
 
 CREATE TABLE order_bank.orders_card

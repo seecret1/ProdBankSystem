@@ -12,6 +12,7 @@ import com.github.seecret1.order_service.entity.OrderCard;
 import com.github.seecret1.order_service.entity.OrderDelivery;
 import com.github.seecret1.order_service.entity.enums.OrderStatus;
 import com.github.seecret1.order_service.entity.enums.OrderType;
+import com.github.seecret1.order_service.entity.enums.PersonType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +32,7 @@ public class OrderCardManualMapper {
                 .cardType(event.getCardType())
                 .status(status)
                 .cardReceivingMethod(event.getCardReceivingMethod())
+                .orderDelivery(toCardDelivery(event.getDeliveryRequest()))
                 .comment(event.getComment())
                 .requestTimestamp(event.getCreatedAt())
                 .balance(event.getBalance())
@@ -88,6 +90,14 @@ public class OrderCardManualMapper {
             dto.setDeliveryRequest(toCardDeliveryRequest(order.getOrderDelivery()));
         }
         return dto;
+    }
+
+    private OrderDelivery toCardDelivery(CardDeliveryRequest delivery) {
+        return OrderDelivery.builder()
+                .plannedDeliveryTime(delivery.plannedDeliveryTime())
+                .destinationAddress(addressMapper.toAddress(delivery.address()))
+                .personType(PersonType.PHYSICAL)
+                .build();
     }
 
     private CardDeliveryRequest toCardDeliveryRequest(OrderDelivery delivery) {

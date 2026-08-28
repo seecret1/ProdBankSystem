@@ -18,6 +18,7 @@ import com.github.seecret1.order_service.mapper.AddressManualMapper;
 import com.github.seecret1.order_service.mapper.OrderCardManualMapper;
 import com.github.seecret1.order_service.repository.OrderCardRepository;
 import com.github.seecret1.order_service.service.OrderCardProcessingService;
+import com.github.seecret1.order_service.service.processed.OrderCardDeliveryService;
 import com.github.seecret1.order_service.utils.OrderValidateUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,13 +31,13 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OrderCardProcessingProcessingServiceImpl implements OrderCardProcessingService {
+public class OrderCardProcessingServiceImpl implements OrderCardProcessingService {
 
     private final OrderInvoiceRequestKafkaProducerService orderInvoiceRequestKafkaProducerService;
 
     private final OrderMessageKafkaProducerService orderMessageKafkaProducerService;
 
-    private final OrderDeliveryRequestKafkaProducerService deliveryKafkaProducerService;
+    private final OrderCardDeliveryService orderCardDeliveryService;
 
     private final KafkaProperties kafkaProperties;
 
@@ -47,8 +48,6 @@ public class OrderCardProcessingProcessingServiceImpl implements OrderCardProces
     private final OfficeServiceFeignClient officeServiceFeignClient;
 
     private final OrderCardManualMapper orderCardMapper;
-
-    private final AddressManualMapper addressMapper;
 
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ) //TODO: добавить метрики
@@ -100,7 +99,7 @@ public class OrderCardProcessingProcessingServiceImpl implements OrderCardProces
             case OFFICE:
                 return processOfficeMethod(city, order, event, personInfo);
             case DELIVERY_COURIER:
-                return processDeliveryCourierMethod(order, event, personInfo, false);
+                return orderCardDeliveryService.processDeliveryCourierMethod(order, event, personInfo, false);
             case DIGITAL:
                 return processDigitalMethod(order, personInfo);
             default:
@@ -120,9 +119,9 @@ public class OrderCardProcessingProcessingServiceImpl implements OrderCardProces
                 return processDebit(city, order);
             case DEBIT_PERSONAL:
                 OrderCard newOrder = processDebit(city, order);
-                processDeliveryCourierMethod(newOrder, event, personInfo, true);
+                orderCardDeliveryService.processDeliveryCourierMethod(newOrder, event, personInfo, true);
                 return newOrder;
-            case CREDIT: //TODO: заглушка на время
+            case CREDIT: //TODO: заглушка на время (в данной версии не реализовано)
                 order.setStatus(OrderStatus.REJECTED);
                 order.setComment("This version does not include support for create credit card");
                 return order;
@@ -133,46 +132,6 @@ public class OrderCardProcessingProcessingServiceImpl implements OrderCardProces
                 order.setComment("Unsupported card type: " + cardType);
                 return order;
         }
-    }
-
-    private OrderCard processDeliveryCourierMethod(
-            OrderCard order,
-            OrderCardDto event,
-            PersonInfo personInfo,
-            boolean office
-    ) {
-        var mainOffice = officeServiceFeignClient.findMainOfficeNearestByCity(); //TODO: исправить (это лишний запрос)
-
-        order.setStatus(OrderStatus.SUCCESS);
-        orderCardRepository.save(order);
-
-        var orderDeliveryDto = OrderCardDeliveryDto.builder()
-                .traceId(event.getTraceId())
-                .userId(event.getUserId())
-                .orderType(event.getOrderType())
-                .createdAt(event.getCreatedAt())
-                .comment(event.getComment())
-                .orderId(order.getId())
-                .cardType(event.getCardType())
-                .fullName(personInfo.fullName())
-                .contactPhone(personInfo.contactPhone())
-                .personType(PersonType.PHYSICAL) // TODO: временно задано жестко, пока нет работы с ФЛ и ЮЛ отдельно
-                .originAddress(addressMapper.toAddressRequest(mainOffice.address()))
-                .destinationAddress(event.getDeliveryRequest().address())
-                .plannedDeliveryTime(event.getDeliveryRequest().plannedDeliveryTime())
-                .build();
-
-        var orderCardDelivery = orderCardMapper.toOrderCardDelivery(
-                orderDeliveryDto
-        );
-        order.setOrderDelivery(orderCardDelivery);
-
-        if (office) {
-            orderDeliveryDto.setOfficeId(mainOffice.id());
-        }
-
-        deliveryKafkaProducerService.sendRequestWithWait(orderDeliveryDto);
-        return order;
     }
 
     private OrderCard processDigitalMethod(

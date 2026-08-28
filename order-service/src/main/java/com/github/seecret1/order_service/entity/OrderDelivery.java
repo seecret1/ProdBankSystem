@@ -27,7 +27,7 @@ public class OrderDelivery {
     @Embedded
     FullName fullName;
 
-    @Column(name = "contact_phone", nullable = false)
+    @Column(name = "contact_phone")
     String contactPhone;
 
     @Column(name = "office_id")
@@ -38,12 +38,12 @@ public class OrderDelivery {
     Address originalAddress;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "destination_address_id")
+    @JoinColumn(name = "destination_address_id", nullable = false)
     Address destinationAddress;
 
     //TODO: сейчас не будет разделения на ФЛ и ЮЛ
     // Все клиенты будут ФЛ, в дальнейшем нужны буду сервисы анализа ФЛ и ЮР
     @Enumerated(EnumType.STRING)
-    @Column(name = "person_type", nullable = false)
+    @Column(name = "person_type")
     PersonType personType = PersonType.PHYSICAL;
 }

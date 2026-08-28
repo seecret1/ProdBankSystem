@@ -1,12 +1,15 @@
-package com.github.seecret1.order_service.service.processed;
+package com.github.seecret1.order_service.service.processed.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.seecret1.order_service.dto.BaseMessage;
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
 import com.github.seecret1.order_service.dto.invoice.CardInvoiceResponse;
+import com.github.seecret1.order_service.entity.enums.CardReceivingMethod;
+import com.github.seecret1.order_service.entity.enums.CardType;
 import com.github.seecret1.order_service.entity.enums.OrderType;
 import com.github.seecret1.order_service.exception.OrderTypeException;
 import com.github.seecret1.order_service.service.OrderMessagesService;
+import com.github.seecret1.order_service.service.processed.OrderCardProcessing;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -27,7 +30,7 @@ public class OrderCardProcessingImpl implements OrderCardProcessing {
     @Override
     public void processOrder(OrderCardDto event) {
         try {
-            if (event.getOrderType() != OrderType.CARD) {
+            if (event.getOrderType() != OrderType.CARD) { //TODO: в данный момент произведена только работа с картами
                 throw new OrderTypeException("Order card service works only with OrderType=CARD");
             }
 
