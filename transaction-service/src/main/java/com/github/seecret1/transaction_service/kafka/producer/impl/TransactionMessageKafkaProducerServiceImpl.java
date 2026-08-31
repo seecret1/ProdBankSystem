@@ -2,7 +2,7 @@ package com.github.seecret1.transaction_service.kafka.producer.impl;
 
 import com.github.seecret1.transaction_service.config.kafka.properties.KafkaProperties;
 import com.github.seecret1.transaction_service.dto.message.TransactionMessage;
-import com.github.seecret1.transaction_service.kafka.producer.PaymentMessageKafkaProducerService;
+import com.github.seecret1.transaction_service.kafka.producer.TransactionMessageKafkaProducerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -17,7 +17,7 @@ import java.util.concurrent.TimeoutException;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PaymentMessageKafkaProducerServiceImpl implements PaymentMessageKafkaProducerService {
+public class TransactionMessageKafkaProducerServiceImpl implements TransactionMessageKafkaProducerService {
 
     private final KafkaProperties kafkaProperties;
 

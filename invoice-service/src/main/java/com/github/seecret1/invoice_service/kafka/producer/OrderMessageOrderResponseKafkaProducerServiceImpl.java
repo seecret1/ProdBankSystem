@@ -1,7 +1,7 @@
 package com.github.seecret1.invoice_service.kafka.producer;
 
 import com.github.seecret1.invoice_service.config.kafka.properties.KafkaProperties;
-import com.github.seecret1.invoice_service.dto.order.BaseMessage;
+import com.github.seecret1.invoice_service.dto.message.BaseMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;

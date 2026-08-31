@@ -1,5 +1,6 @@
 package com.github.seecret1.transaction_service.entity;
 
+import com.github.seecret1.transaction_service.entity.enums.TransactionStatus;
 import com.github.seecret1.transaction_service.entity.enums.TransactionType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,7 +11,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.resource.transaction.spi.TransactionStatus;
 
 import java.math.BigDecimal;
 
@@ -24,6 +24,10 @@ import java.math.BigDecimal;
 public class Transaction extends AbstractBaseEntity {
 
     private String paymentId;
+
+    private String sourceInvoiceId;
+
+    private String destinationInvoiceId;
 
     private BigDecimal amount;
 

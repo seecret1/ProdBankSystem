@@ -3,7 +3,7 @@ package com.github.seecret1.invoice_service.config.kafka;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.seecret1.invoice_service.config.kafka.properties.KafkaProperties;
 import com.github.seecret1.invoice_service.config.kafka.properties.RetryProperties;
-import com.github.seecret1.invoice_service.dto.order.BaseMessage;
+import com.github.seecret1.invoice_service.dto.message.BaseMessage;
 import com.github.seecret1.invoice_service.dto.order.OrderInvoiceDto;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;

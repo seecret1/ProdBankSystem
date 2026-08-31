@@ -1,6 +1,6 @@
 package com.github.seecret1.invoice_service.mapper;
 
-import com.github.seecret1.invoice_service.dto.order.BaseMessage;
+import com.github.seecret1.invoice_service.dto.message.BaseMessage;
 import com.github.seecret1.invoice_service.dto.order.OrderInvoiceDto;
 import com.github.seecret1.invoice_service.dto.request.CardInvoiceCreateRequest;
 import com.github.seecret1.invoice_service.dto.response.CardInvoiceResponse;
