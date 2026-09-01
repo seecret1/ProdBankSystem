@@ -29,11 +29,11 @@ public class Operation {
     @Column(name = "operation_type", nullable = false, length = 50)
     private OperationType operationType;
 
-    @Column(name = "amount_from", nullable = false, precision = 18, scale = 2)
-    private BigDecimal amountFrom;
+    @Column(name = "amount", nullable = false, precision = 18, scale = 2)
+    private BigDecimal amount;
 
-    @Column(name = "amount_to", precision = 18, scale = 2)
-    private BigDecimal amountTo;
+    @Column(name = "full_amount", nullable = false, precision = 18, scale = 2)
+    private BigDecimal fullAmount;
 
     @Column(name = "commission_percent", nullable = false, precision = 5, scale = 2)
     private BigDecimal commissionPercent;

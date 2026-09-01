@@ -6,6 +6,7 @@ import com.github.seecret1.invoice_service.dto.transaction.TransactionDto;
 import com.github.seecret1.invoice_service.entity.CardInvoice;
 import com.github.seecret1.invoice_service.entity.Operation;
 import com.github.seecret1.invoice_service.entity.enums.InvoiceStatus;
+import com.github.seecret1.invoice_service.entity.enums.OperationType;
 import com.github.seecret1.invoice_service.repository.CardInvoiceRepository;
 import com.github.seecret1.invoice_service.service.TransactionService;
 import com.github.seecret1.invoice_service.utils.OperationTypeHelper;
@@ -38,36 +39,49 @@ public class TransactionServiceImpl implements TransactionService {
 
         //TODO: написать работу с freeLimit, spendingLimit, и Balance
         BigDecimal sourceInvoiceBalance = sourceInvoice.getBalance();
-        BigDecimal destinationInvoiceBalance = sourceInvoice.getBalance();
+        BigDecimal destinationInvoiceBalance = destinationInvoice.getBalance();
 
         TransactionDto transactionDto = objectMapper.convertValue(message.getData(), TransactionDto.class);
 
         var amount = message.getAmount();
+        var fullSourceAmount = amount;
+        var fullDestinationAmount = amount;
+        var commissionAmount = BigDecimal.ZERO;
+        var commissionPercent = BigDecimal.ZERO;
+        var operationType = OperationTypeHelper.determineOperationType(transactionDto.transactionType(), message.getPaymentType());
 
         // TODO: вынести создание операции в OperationService
         //  и создать другой Operation для destination invoice
-        var operation = Operation.builder()
-                .amountFrom(amount)
-                .operationType(OperationTypeHelper.determineOperationType(transactionDto.transactionType(), message.getPaymentType()))
+        Operation operationSource = Operation.builder()
+                .amount(amount)
+                .operationType(operationType)
                 .build();
         var freeLimit = sourceInvoice.getFreeLimit();
         var spendingLimit = sourceInvoice.getSpendingLimit();
 
         if (freeLimit.compareTo(amount) < 0) {
-            var newAmount = PercentUtils.getAdditionalAmount(sourceInvoice, amount);
-            if (sourceInvoice.getBalance().compareTo(newAmount) < 0) {
+            commissionAmount = PercentUtils.getAdditionalAmount(sourceInvoice, amount);
+            commissionPercent = PercentUtils.getPercent(sourceInvoice, amount);
+            if (sourceInvoice.getBalance().compareTo(commissionAmount) < 0) {
                 throw new IllegalArgumentException("new amount > source invoice balance");
             }
-            operation.setCommissionPercent(PercentUtils.getPercent(sourceInvoice, amount));
-            operation.setCommissionAmount(newAmount);
-            sourceInvoice.setFreeLimit(freeLimit.subtract(newAmount));
-            sourceInvoice.setSpendingLimit(spendingLimit.subtract(newAmount));
+            fullSourceAmount = amount.add(commissionAmount);
+            operationSource.setCommissionPercent(commissionPercent);
+            operationSource.setCommissionAmount(commissionAmount);
+            sourceInvoice.setFreeLimit(freeLimit.subtract(fullSourceAmount));
+            sourceInvoice.setSpendingLimit(spendingLimit.subtract(fullSourceAmount));
+            operationSource.setFullAmount(fullSourceAmount);
         }
-        operation.setAmountTo(amount);
 
-        sourceInvoice.setBalance(sourceInvoiceBalance.subtract(amount));
+        fullDestinationAmount = amount.subtract(commissionAmount);
+        Operation destinationOperation = createOperation(
+                amount, fullDestinationAmount, commissionAmount, commissionPercent, operationType
+        );
+
+        sourceInvoice.setBalance(sourceInvoiceBalance.subtract(fullSourceAmount));
         destinationInvoice.setBalance(destinationInvoiceBalance.add(amount));
-        sourceInvoice.setOperation(operation);
+        sourceInvoice.setOperation(operationSource);
+        destinationInvoice.setOperation(destinationOperation);
     }
 
     private void validation(
@@ -112,5 +126,21 @@ public class TransactionServiceImpl implements TransactionService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Invoice not found by ID: " + id
                 ));
+    }
+
+    private Operation createOperation(
+            BigDecimal amount,
+            BigDecimal fullAmount,
+            BigDecimal commissionAmount,
+            BigDecimal commissionPercent,
+            OperationType operationType
+    ) {
+        return Operation.builder()
+                .amount(amount)
+                .fullAmount(fullAmount)
+                .commissionAmount(commissionAmount)
+                .commissionPercent(commissionPercent)
+                .operationType(operationType)
+                .build();
     }
 }

@@ -15,8 +15,8 @@ public class OperationMapper {
         return new OperationResponse(
                 entity.getId(),
                 entity.getOperationType(),
-                entity.getAmountFrom(),
-                entity.getAmountTo(),
+                entity.getAmount(),
+                entity.getFullAmount(),
                 entity.getCommissionPercent(),
                 entity.getCommissionAmount(),
                 entity.getIsActive(),
@@ -34,8 +34,8 @@ public class OperationMapper {
     public Operation toEntity(OperationCreateRequest request) {
         return Operation.builder()
                 .operationType(request.operationType())
-                .amountFrom(request.amountFrom())
-                .amountTo(request.amountTo())
+                .amount(request.amount())
+                .fullAmount(request.fullAmount())
                 .commissionPercent(request.commissionPercent())
                 .commissionAmount(request.commissionAmount() != null ? request.commissionAmount() : java.math.BigDecimal.ZERO)
                 .isActive(true)
