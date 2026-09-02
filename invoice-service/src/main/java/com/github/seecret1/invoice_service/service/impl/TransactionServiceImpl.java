@@ -37,7 +37,6 @@ public class TransactionServiceImpl implements TransactionService {
 
         validation(sourceInvoice, destinationInvoice, message);
 
-        //TODO: написать работу с freeLimit, spendingLimit, и Balance
         BigDecimal sourceInvoiceBalance = sourceInvoice.getBalance();
         BigDecimal destinationInvoiceBalance = destinationInvoice.getBalance();
 
@@ -45,42 +44,66 @@ public class TransactionServiceImpl implements TransactionService {
 
         var amount = message.getAmount();
         var fullSourceAmount = amount;
-        var fullDestinationAmount = amount;
         var commissionAmount = BigDecimal.ZERO;
         var commissionPercent = BigDecimal.ZERO;
         var operationType = OperationTypeHelper.determineOperationType(transactionDto.transactionType(), message.getPaymentType());
 
-        // TODO: вынести создание операции в OperationService
-        //  и создать другой Operation для destination invoice
-        Operation operationSource = Operation.builder()
+        Operation sourceOperation = Operation.builder()
                 .amount(amount)
                 .operationType(operationType)
                 .build();
         var freeLimit = sourceInvoice.getFreeLimit();
         var spendingLimit = sourceInvoice.getSpendingLimit();
 
-        if (freeLimit.compareTo(amount) < 0) {
-            commissionAmount = PercentUtils.getAdditionalAmount(sourceInvoice, amount);
-            commissionPercent = PercentUtils.getPercent(sourceInvoice, amount);
-            if (sourceInvoice.getBalance().compareTo(commissionAmount) < 0) {
+        if (freeLimit.compareTo(amount) >= 0) {
+            sourceInvoice.setFreeLimit(freeLimit.subtract(amount));
+            sourceInvoice.setSpendingLimit(spendingLimit.subtract(amount));
+            sourceOperation.setFullAmount(fullSourceAmount);
+        }
+        else {
+            var taxableAmount = amount.subtract(freeLimit);
+            commissionAmount = PercentUtils.getAdditionalAmount(sourceInvoice, taxableAmount);
+            commissionPercent = PercentUtils.getPercent(sourceInvoice, taxableAmount);
+            fullSourceAmount = amount.add(commissionAmount);
+
+            if (sourceInvoice.getBalance().compareTo(fullSourceAmount) < 0) {
                 throw new IllegalArgumentException("new amount > source invoice balance");
             }
-            fullSourceAmount = amount.add(commissionAmount);
-            operationSource.setCommissionPercent(commissionPercent);
-            operationSource.setCommissionAmount(commissionAmount);
-            sourceInvoice.setFreeLimit(freeLimit.subtract(fullSourceAmount));
-            sourceInvoice.setSpendingLimit(spendingLimit.subtract(fullSourceAmount));
-            operationSource.setFullAmount(fullSourceAmount);
+
+            sourceOperation.setCommissionPercent(commissionPercent);
+            sourceOperation.setCommissionAmount(commissionAmount);
+            sourceInvoice.setFreeLimit(BigDecimal.ZERO);
+            sourceInvoice.setSpendingLimit(spendingLimit.subtract(amount));
+            sourceOperation.setFullAmount(fullSourceAmount);
         }
 
-        fullDestinationAmount = amount.subtract(commissionAmount);
-        Operation destinationOperation = createOperation(
-                amount, fullDestinationAmount, commissionAmount, commissionPercent, operationType
-        );
+        Operation destinationOperation = createDestinationOperation(amount, operationType);
 
+        finishedTransaction(
+                sourceInvoice,
+                sourceInvoiceBalance,
+                fullSourceAmount,
+                destinationInvoice,
+                destinationInvoiceBalance,
+                amount,
+                sourceOperation,
+                destinationOperation
+        );
+    }
+
+    private void finishedTransaction(
+            CardInvoice sourceInvoice,
+            BigDecimal sourceInvoiceBalance,
+            BigDecimal fullSourceAmount,
+            CardInvoice destinationInvoice,
+            BigDecimal destinationInvoiceBalance,
+            BigDecimal amount,
+            Operation sourceOperation,
+            Operation destinationOperation
+    ) {
         sourceInvoice.setBalance(sourceInvoiceBalance.subtract(fullSourceAmount));
         destinationInvoice.setBalance(destinationInvoiceBalance.add(amount));
-        sourceInvoice.setOperation(operationSource);
+        sourceInvoice.setOperation(sourceOperation);
         destinationInvoice.setOperation(destinationOperation);
     }
 
@@ -115,10 +138,6 @@ public class TransactionServiceImpl implements TransactionService {
                 destinationInvoice.getStatus() == InvoiceStatus.FREEZE) {
             throw new IllegalArgumentException("Destination invoice is blocked or frozen");
         }
-        if (sourceInvoice.getUserId().equals(message.getUserId()) &&
-                destinationInvoice.getUserId().equals(message.getUserId())) {
-            throw new IllegalArgumentException("Source and destination invoices belong to the same user");
-        }
     }
 
     private CardInvoice findById(String id) {
@@ -128,18 +147,15 @@ public class TransactionServiceImpl implements TransactionService {
                 ));
     }
 
-    private Operation createOperation(
+    private Operation createDestinationOperation(
             BigDecimal amount,
-            BigDecimal fullAmount,
-            BigDecimal commissionAmount,
-            BigDecimal commissionPercent,
             OperationType operationType
     ) {
         return Operation.builder()
                 .amount(amount)
-                .fullAmount(fullAmount)
-                .commissionAmount(commissionAmount)
-                .commissionPercent(commissionPercent)
+                .fullAmount(amount)
+                .commissionAmount(BigDecimal.ZERO)
+                .commissionPercent(BigDecimal.ZERO)
                 .operationType(operationType)
                 .build();
     }
