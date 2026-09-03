@@ -32,7 +32,7 @@ public class OrderCardManualMapper {
                 .cardType(event.getCardType())
                 .status(status)
                 .cardReceivingMethod(event.getCardReceivingMethod())
-                .orderDelivery(toCardDelivery(event.getDeliveryRequest()))
+                .orderDelivery(event.getDeliveryRequest() != null ? toCardDelivery(event.getDeliveryRequest()) : null)
                 .comment(event.getComment())
                 .requestTimestamp(event.getCreatedAt())
                 .balance(event.getBalance())

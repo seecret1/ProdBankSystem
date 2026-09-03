@@ -69,7 +69,7 @@ public class OperationServiceImpl implements OperationService {
     @Override
     @Transactional
     public OperationResponse create(OperationCreateRequest request) {
-        log.info("Create operation: type={}, amountFrom={}", request.operationType(), request.amountFrom());
+        log.info("Create operation: type={}, amountFrom={}", request.operationType(), request.amount());
         Operation entity = operationMapper.toEntity(request);
         Operation saved = operationRepository.save(entity);
         log.info("Operation created with id: {}", saved.getId());

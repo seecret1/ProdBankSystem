@@ -2,8 +2,8 @@ CREATE TABLE invoice_bank.operation
 (
     id VARCHAR PRIMARY KEY DEFAULT uuid_generate_v4(),
     operation_type VARCHAR(50) NOT NULL,
-    amount_from NUMERIC(18,2) NOT NULL DEFAULT 0,
-    amount_to NUMERIC(18,2),
+    amount NUMERIC(18,2) NOT NULL,
+    full_amount NUMERIC(18,2) NOT NULL,
     commission_percent NUMERIC(5,2) NOT NULL,
     commission_amount NUMERIC(18,2) DEFAULT 0,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,

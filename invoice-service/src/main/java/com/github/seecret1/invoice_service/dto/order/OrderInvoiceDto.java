@@ -38,7 +38,7 @@ public class OrderInvoiceDto extends OrderDto {
         if (cardType == null || orderType == null) {
             throw new ValidateException("Must not be null fields");
         }
-        if (BigDecimal.ZERO.compareTo(balance) < 0) {
+        if (balance.compareTo(BigDecimal.ZERO) < 0) {
             throw new ValidateException("Balance must not be negative!");
         }
     }

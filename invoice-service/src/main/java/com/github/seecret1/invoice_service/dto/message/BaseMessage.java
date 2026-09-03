@@ -1,4 +1,4 @@
-package com.github.seecret1.invoice_service.dto.order;
+package com.github.seecret1.invoice_service.dto.message;
 
 import com.github.seecret1.invoice_service.entity.enums.OrderStatus;
 import lombok.AllArgsConstructor;

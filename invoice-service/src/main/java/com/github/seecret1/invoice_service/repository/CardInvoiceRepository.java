@@ -17,6 +17,12 @@ import java.util.List;
 @Repository
 public interface CardInvoiceRepository extends JpaRepository<CardInvoice, String> {
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT c FROM CardInvoice c WHERE c.id = :id
+    """)
+    Optional<CardInvoice> findByIdWithLock(String id);
+
     @Query("""
         SELECT c FROM CardInvoice c WHERE c.id = :id AND c.deleted = false
     """)

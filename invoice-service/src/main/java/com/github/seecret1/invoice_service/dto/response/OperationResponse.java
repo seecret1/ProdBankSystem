@@ -12,9 +12,9 @@ public record OperationResponse(
 
         OperationType operationType,
 
-        BigDecimal amountFrom,
+        BigDecimal amount,
 
-        BigDecimal amountTo,
+        BigDecimal fullAmount,
 
         BigDecimal commissionPercent,
 

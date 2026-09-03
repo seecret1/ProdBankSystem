@@ -1,6 +1,6 @@
 package com.github.seecret1.invoice_service.kafka.producer;
 
-import com.github.seecret1.invoice_service.dto.order.BaseMessage;
+import com.github.seecret1.invoice_service.dto.message.BaseMessage;
 
 public interface OrderMessageKafkaProducerService {
 

@@ -3,7 +3,8 @@ package com.github.seecret1.invoice_service.config.kafka;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.seecret1.invoice_service.config.kafka.properties.KafkaProperties;
 import com.github.seecret1.invoice_service.config.kafka.properties.RetryProperties;
-import com.github.seecret1.invoice_service.dto.order.BaseMessage;
+import com.github.seecret1.invoice_service.dto.message.BaseMessage;
+import com.github.seecret1.invoice_service.dto.message.TransactionMessage;
 import com.github.seecret1.invoice_service.dto.order.OrderInvoiceDto;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -52,6 +53,14 @@ public class KafkaConfig {
     }
 
     @Bean
+    public NewTopic invoiceTransactionTopic() {
+        return TopicBuilder.name(kafkaProperties.getInvoiceTransactionTopic())
+                .partitions(kafkaProperties.getPartitions())
+                .replicas(kafkaProperties.getReplicas())
+                .build();
+    }
+
+    @Bean
     public NewTopic requestTopic() {
         return TopicBuilder.name(kafkaProperties.getRequestTopic())
                 .partitions(kafkaProperties.getPartitions())
@@ -73,6 +82,15 @@ public class KafkaConfig {
                 .partitions(kafkaProperties.getPartitions())
                 .replicas(kafkaProperties.getReplicas())
                 .build();
+    }
+
+    @Bean
+    public ProducerFactory<String, TransactionMessage> transactionProducerFactory() {
+        return new DefaultKafkaProducerFactory<>(
+                getBaseProducerConfig(),
+                new StringSerializer(),
+                new JsonSerializer<>(objectMapper)
+        );
     }
 
     @Bean
@@ -121,6 +139,13 @@ public class KafkaConfig {
     }
 
     @Bean
+    public KafkaTemplate<String, TransactionMessage> transactionKafkaTemplate(
+            ProducerFactory<String, TransactionMessage> producerFactory
+    ) {
+        return new KafkaTemplate<>(producerFactory);
+    }
+
+    @Bean
     public KafkaTemplate<String, BaseMessage> orderKafkaTemplate(
             ProducerFactory<String, BaseMessage> producerFactory
     ) {
@@ -139,6 +164,15 @@ public class KafkaConfig {
             ProducerFactory<String, Object> producerFactory
     ) {
         return new KafkaTemplate<>(producerFactory);
+    }
+
+    @Bean
+    public ConsumerFactory<String, TransactionMessage> consumerTransactionMessageFactory() {
+        Map<String, Object> config = getBaseConsumerConfig(kafkaProperties.getGroupId());
+        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, TransactionMessage.class.getName());
+        config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+
+        return getDefaultKafkaConsumerFactory(config, TransactionMessage.class);
     }
 
     @Bean
@@ -166,6 +200,33 @@ public class KafkaConfig {
         config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, Object.class.getName());
 
         return getDefaultKafkaConsumerFactory(config, Object.class);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, TransactionMessage> transactionKafkaListenerContainerFactory(
+            ConsumerFactory<String, TransactionMessage> consumerFactory,
+            KafkaTemplate<String, TransactionMessage> orderCreateKafkaTemplate
+    ) {
+        ConcurrentKafkaListenerContainerFactory<String, TransactionMessage> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory);
+
+        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(
+                orderCreateKafkaTemplate,
+                (record, exception) -> new org.apache.kafka.common.TopicPartition(
+                        kafkaProperties.getRetryTopic(),
+                        record.partition()
+                )
+        );
+
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(
+                recoverer,
+                new FixedBackOff(retryProperties.getDelay(), retryProperties.getMaxAttempts())
+        );
+        errorHandler.setRetryListeners();
+
+        factory.setCommonErrorHandler(errorHandler);
+        return factory;
     }
 
     @Bean

@@ -15,11 +15,15 @@ public class KafkaProperties {
 
     private String topic;
 
+    private String invoiceTransactionTopic;
+
     private String requestTopic;
 
     private String retryTopic;
 
     private String translateTopic;
+
+    private String transactionResponseTopic;
 
     private String responseOrdersTopic;
 

@@ -10,12 +10,12 @@ public record OperationCreateRequest(
         @NotNull(message = "operationType must be set")
         OperationType operationType,
 
-        @NotNull(message = "amountFrom must be set")
-        @Digits(integer = 18, fraction = 2, message = "amountFrom format invalid")
-        BigDecimal amountFrom,
+        @NotNull(message = "amount must be set")
+        @Digits(integer = 18, fraction = 2, message = "amount format invalid")
+        BigDecimal amount,
 
-        @Digits(integer = 18, fraction = 2, message = "amountTo format invalid")
-        BigDecimal amountTo,
+        @Digits(integer = 18, fraction = 2, message = "fullAmount format invalid")
+        BigDecimal fullAmount,
 
         @NotNull(message = "commissionPercent must be set")
         @Digits(integer = 5, fraction = 2, message = "commissionPercent format invalid")
