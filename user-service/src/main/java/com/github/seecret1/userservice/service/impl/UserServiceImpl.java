@@ -7,10 +7,7 @@ import com.github.seecret1.userservice.dto.request.UpdateUserRequest;
 import com.github.seecret1.userservice.dto.response.UserResponse;
 import com.github.seecret1.userservice.entity.User;
 import com.github.seecret1.userservice.entity.enums.UserStatus;
-import com.github.seecret1.userservice.exception.AuthException;
-import com.github.seecret1.userservice.exception.PersonException;
-import com.github.seecret1.userservice.exception.RegisterUserException;
-import com.github.seecret1.userservice.exception.UserNotFoundException;
+import com.github.seecret1.userservice.exception.*;
 import com.github.seecret1.userservice.mapper.UserMapper;
 import com.github.seecret1.userservice.model.UserFilterModel;
 import com.github.seecret1.userservice.repository.UserRepository;
@@ -128,7 +125,6 @@ public class UserServiceImpl implements UserService, InternalUserService {
     }
 
     @Override
-    @Cacheable(value = "${app.cache.cache-names.userById}", key = "#id")
     @Transactional(readOnly = true)
     public UserResponse findById(String id, String apiKey) {
 
@@ -242,7 +238,7 @@ public class UserServiceImpl implements UserService, InternalUserService {
             return userMapper.toResponse(userUpdate);
 
         } catch (DataIntegrityViolationException ex) {
-            throw new AuthException(ex.getMessage());
+            throw new PersonDataExistsException("Person data updated exists: " + ex.getMessage());
         }
     }
 

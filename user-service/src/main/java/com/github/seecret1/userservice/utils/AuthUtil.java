@@ -24,19 +24,6 @@ public class AuthUtil {
         }
     }
 
-    public void userRecordPersonalData(User user) {
-        if (user.getDeleted()) {
-            throw new PersonException("Your profile is deleted");
-        }
-        if (user.getStatus() != UserStatus.PENDING_PROFILE) {
-            throw new PersonException(
-                    "User id=%s cannot complete profile, status=%s",
-                    user.getId(),
-                    user.getStatus()
-            );
-        }
-    }
-
     public void checkValidUser(User user) {
         if (user.getStatus() == UserStatus.BLOCKED) {
             throw new AuthException("User account: %s is blocked", user.getUsername());

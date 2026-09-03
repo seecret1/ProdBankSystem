@@ -41,9 +41,8 @@ public class Card extends BaseEntity implements Serializable {
     @Enumerated(EnumType.STRING)
     private CardStatus status;
 
-    private BigDecimal balance;
-
-    private BigDecimal spendingLimit;
+    @Column(name = "invoice_id", unique = true)
+    private String invoiceId;
 
     @Column(name = "user_id", nullable = false)
     private String userId;

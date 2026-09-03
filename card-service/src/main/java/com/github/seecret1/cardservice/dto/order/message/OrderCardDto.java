@@ -18,11 +18,13 @@ public class OrderCardDto extends OrderDto {
 
     private CardType cardType;
 
-    private BigDecimal spendingLimit;
-
     private CardReceivingMethod cardReceivingMethod;
 
     private CardDeliveryRequest deliveryRequest;
+
+    private String currency;
+
+    private BigDecimal balance;
 
     @Override
     public void validate() {
@@ -32,8 +34,12 @@ public class OrderCardDto extends OrderDto {
         if (userId.isBlank() || cardId.isBlank() || traceId.isBlank()) {
             throw new ValidationException("Ids must not be blank");
         }
-        if (cardType == null || orderType == null || spendingLimit == null) {
+        if (cardType == null || orderType == null) {
             throw new ValidationException("Must not be null fields");
+        }
+        if ((cardReceivingMethod == CardReceivingMethod.DELIVERY_COURIER || cardType == CardType.DEBIT_PERSONAL)
+                && (deliveryRequest == null || deliveryRequest.address() == null)) {
+            throw new ValidationException("Must be set valid delivery request if selected the delivery method");
         }
     }
 }

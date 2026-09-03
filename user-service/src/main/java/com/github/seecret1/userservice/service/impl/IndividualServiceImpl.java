@@ -8,7 +8,7 @@ import com.github.seecret1.userservice.entity.Individual;
 import com.github.seecret1.userservice.entity.User;
 import com.github.seecret1.userservice.entity.enums.UserStatus;
 import com.github.seecret1.userservice.exception.PersonException;
-import com.github.seecret1.userservice.exception.IndividualDataExistsException;
+import com.github.seecret1.userservice.exception.PersonDataExistsException;
 import com.github.seecret1.userservice.mapper.IndividualMapper;
 import com.github.seecret1.userservice.repository.IndividualRepository;
 import com.github.seecret1.userservice.repository.UserRepository;
@@ -108,7 +108,6 @@ public class IndividualServiceImpl implements IndividualService {
         }
 
         checkPassportAndPhone(request);
-        AuthUtil.userRecordPersonalData(user);
 
         Individual individual = individualMapper.toEntity(request);
         individual.setUser(user);
@@ -151,7 +150,6 @@ public class IndividualServiceImpl implements IndividualService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         "User not found by id: " + userId
                 ));
-        AuthUtil.checkUserPersonalData(user);
         loggingIndividualInfo(request);
         var individual = user.getIndividual();
         return updateIndividual(individual, request);
@@ -198,6 +196,13 @@ public class IndividualServiceImpl implements IndividualService {
     private IndividualResponse updateIndividual(Individual individual, IndividualRequest request) {
         checkPassportAndPhone(individual, request);
 
+        var user = individual.getUser();
+
+        if (user.getStatus() == UserStatus.INACTIVE) {
+            user.setStatus(UserStatus.ACTIVE);
+            userRepository.save(user);
+        }
+
         individualMapper.update(individual, request);
         individualRepository.save(individual);
         return individualMapper.toResponseDto(individual);
@@ -210,7 +215,7 @@ public class IndividualServiceImpl implements IndividualService {
             String currentPassportEncrypted = individual.getPassportNumber();
             if (!newPassportEncrypted.equals(currentPassportEncrypted)) {
                 if (individualRepository.existsIndividualByPassportNumber(newPassportEncrypted)) {
-                    throw new IndividualDataExistsException(
+                    throw new PersonDataExistsException(
                             "Passport number already exists"
                     );
                 }
@@ -223,7 +228,7 @@ public class IndividualServiceImpl implements IndividualService {
             String currentPhoneEncrypted = individual.getPhoneNumber();
             if (!newPhoneEncrypted.equals(currentPhoneEncrypted)) {
                 if (individualRepository.existsIndividualByPhoneNumber(newPhoneEncrypted)) {
-                    throw new IndividualDataExistsException(
+                    throw new PersonDataExistsException(
                             "Phone number already exists"
                     );
                 }
@@ -236,14 +241,14 @@ public class IndividualServiceImpl implements IndividualService {
         if (passportNumber != null && !passportNumber.isEmpty()) {
             String passportEncrypted = encryptionUtils.encrypt(passportNumber);
             if (individualRepository.existsIndividualByPassportNumber(passportEncrypted)) {
-                throw new IndividualDataExistsException("Passport number already exists");
+                throw new PersonDataExistsException("Passport number already exists");
             }
         }
         String phoneNumber = request.phoneNumber();
         if (phoneNumber != null && !phoneNumber.isEmpty()) {
             String phoneEncrypted = encryptionUtils.encrypt(phoneNumber);
             if (individualRepository.existsIndividualByPhoneNumber(phoneEncrypted)) {
-                throw new IndividualDataExistsException("Phone number already exists");
+                throw new PersonDataExistsException("Phone number already exists");
             }
         }
     }

@@ -9,6 +9,8 @@ public interface CourierService {
 
     CourierDto create(CourierDto dto);
 
+    CourierDto register(CourierDto dto);
+
     List<CourierDto> findAll();
 
     CourierDto findAvailable();

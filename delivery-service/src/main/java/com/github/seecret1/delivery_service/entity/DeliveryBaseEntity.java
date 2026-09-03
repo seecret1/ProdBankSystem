@@ -8,12 +8,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.JdbcType;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.dialect.PostgreSQLIntervalSecondJdbcType;
 
 import java.io.Serializable;
-import java.time.Duration;
 import java.time.Instant;
 
 @Getter
@@ -54,9 +51,8 @@ public abstract class DeliveryBaseEntity implements Serializable {
     @Column(name = "status", nullable = false)
     private DeliveryStatus status;
 
-    @Column(name = "delivery_duration", columnDefinition = "INTERVAL DAY TO SECOND")
-    @JdbcType(PostgreSQLIntervalSecondJdbcType.class)
-    private Duration deliveryDuration;
+    @Column(name = "delivery_duration")
+    private String deliveryDuration;
 
     @Column(name = "pickup_date")
     private Instant pickupDate;

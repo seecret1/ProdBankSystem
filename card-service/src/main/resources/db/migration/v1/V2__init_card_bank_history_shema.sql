@@ -19,9 +19,8 @@ CREATE TABLE card_bank_history.cards_history
     date_activation DATE NOT NULL,
     date_expiry DATE NOT NULL,
     status VARCHAR(10) NOT NULL,
-    balance DECIMAL(19, 2) NOT NULL,
-    spending_limit DECIMAL(19, 2) NOT NULL,
     user_id VARCHAR NOT NULL,
+    invoice_id VARCHAR UNIQUE,
 
     CONSTRAINT fk_cards_history_rev FOREIGN KEY (rev) REFERENCES card_bank_history.revinfo (rev)
 );

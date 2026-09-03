@@ -22,11 +22,10 @@ public record CardRequest (
     @NotNull(message = "Date expiry must be set!")
     LocalDate dateExpiry,
 
+    String currency,
+
     @PositiveOrZero(message = "Balance can't be negative value!")
     BigDecimal balance,
-
-    @Positive(message = "spending limit must only positive value!")
-    BigDecimal spendingLimit, //TODO: удалить из request, задавать в сервисе
 
     @NotNull(message = "Receiving method must be set!")
     CardReceivingMethod receivingMethod,

@@ -1,0 +1,74 @@
+package com.github.seecret1.order_service.kafka.producer.impl;
+
+import com.github.seecret1.order_service.config.kafka.properties.KafkaProperties;
+import com.github.seecret1.order_service.dto.invoice.OrderInvoiceDto;
+import com.github.seecret1.order_service.kafka.producer.OrderInvoiceRequestKafkaProducerService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.retry.support.RetryTemplate;
+import org.springframework.stereotype.Service;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class OrderInvoiceRequestKafkaProducerServiceImpl implements OrderInvoiceRequestKafkaProducerService {
+
+    private final KafkaProperties kafkaProperties;
+
+    private final RetryTemplate kafkaRetryTemplate;
+
+    private final KafkaTemplate<String, OrderInvoiceDto> kafkaTemplate;
+
+    @Override
+    public void sendNoWait(OrderInvoiceDto message) {
+        logging(message);
+        ProducerRecord<String, OrderInvoiceDto> record = getRecord(kafkaProperties.getInvoiceTopic(), message);
+        kafkaTemplate.send(record);
+    }
+
+    @Override
+    public void sendWithWaitToRequestInvoiceTopic(OrderInvoiceDto message) {
+        sendMessageToInvoiceService(message, kafkaProperties.getRequestInvoiceTopic());
+    }
+
+    @Override
+    public void sendWithWaitToInvoiceTopic(OrderInvoiceDto message) {
+        sendMessageToInvoiceService(message, kafkaProperties.getInvoiceTopic());
+    }
+
+    private void sendMessageToInvoiceService(OrderInvoiceDto message, String topic) {
+        kafkaRetryTemplate.execute(context -> {
+            try {
+                logging(message);
+
+                ProducerRecord<String, OrderInvoiceDto> record =
+                        getRecord(topic, message);
+                kafkaTemplate.send(record).get(kafkaProperties.getTimeoutSeconds(), TimeUnit.SECONDS);
+                return null;
+
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.error("Failed to send message to Kafka", e);
+                throw new IllegalStateException("Interrupted while waiting for Kafka send", e);
+            } catch (ExecutionException | TimeoutException ex) {
+                log.error("Failed to send request to Kafka", ex);
+                throw new RuntimeException("Failed to send request to Kafka", ex);
+            }
+        });
+    }
+
+    private ProducerRecord<String, OrderInvoiceDto> getRecord(String topic, OrderInvoiceDto message) {
+        return new ProducerRecord<>(topic, message.getTraceId(), message);
+    }
+
+    private static void logging(OrderInvoiceDto message) {
+        log.info("Response sent to Kafka: traceId={}, cardId={}, userId={}",
+                message.getTraceId(), message.getCardId(), message.getUserId());
+    }
+}

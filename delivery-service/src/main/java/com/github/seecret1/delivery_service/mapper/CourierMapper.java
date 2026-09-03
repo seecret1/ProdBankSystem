@@ -14,6 +14,6 @@ public interface CourierMapper {
     CourierDto toDto(Courier courier);
 
     @Mapping(target = "deleted", constant = "false")
-    @Mapping(target = "busy", constant = "true")
+    @Mapping(target = "busy", constant = "false")
     Courier toEntity(CourierDto courierDto);
 }

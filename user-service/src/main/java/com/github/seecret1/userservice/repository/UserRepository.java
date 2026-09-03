@@ -22,33 +22,82 @@ public interface UserRepository extends JpaRepository<User, String>, JpaSpecific
     @Override
     Page<User> findAll(Pageable pageable);
 
-    @Query("""
-        SELECT u FROM User u
-        WHERE u.deleted = false
-        AND u.birthDate IS NOT NULL
-        AND u.individual IS NOT NULL
+    @Query(value = """
+        SELECT u.* FROM person_bank.users u
+        WHERE u.deleted = FALSE
+        AND u.birth_date IS NOT NULL
+        AND EXISTS (SELECT 1 FROM person_bank.individuals i WHERE i.user_id = u.id)
         AND (
-            FUNCTION('DATE_ADD', u.birthDate, 20, 'YEAR') = CURRENT_DATE
-            OR 
-            FUNCTION('DATE_ADD', u.birthDate, 45, 'YEAR') = CURRENT_DATE
+            u.birth_date + make_interval(years => :firstAge) = CURRENT_DATE
+            OR
+            u.birth_date + make_interval(years => :secondAge) = CURRENT_DATE
         )
-        """)
-    Page<User> findUsersUpdatePassport(Pageable pageable);
+        """, countQuery = """
+        SELECT count(u.id) FROM person_bank.users u
+        WHERE u.deleted = FALSE
+        AND u.birth_date IS NOT NULL
+        AND EXISTS (SELECT 1 FROM person_bank.individuals i WHERE i.user_id = u.id)
+        AND (
+            u.birth_date + make_interval(years => :firstAge) = CURRENT_DATE
+            OR
+            u.birth_date + make_interval(years => :secondAge) = CURRENT_DATE
+        )
+        """, nativeQuery = true)
+    Page<User> findUsersUpdatePassport(Pageable pageable, int firstAge, int secondAge);
 
-    @Query("""
-        SELECT u FROM User u
-        WHERE u.deleted = false
-        AND u.birthDate IS NOT NULL
-        AND u.individual IS NOT NULL
+    @Query(value = """
+        SELECT u.* FROM person_bank.users u
+        WHERE u.deleted = FALSE
+        AND u.birth_date IS NOT NULL
+        AND EXISTS (SELECT 1 FROM person_bank.individuals i WHERE i.user_id = u.id)
         AND (
-            FUNCTION('DATE_ADD', u.birthDate, 20, 'YEAR') <= CURRENT_DATE
-            AND FUNCTION('DATE_ADD', u.birthDate, 20, 'YEAR') >= FUNCTION('DATE_ADD', CURRENT_DATE, -90, 'DAY')
-            OR 
-            FUNCTION('DATE_ADD', u.birthDate, 45, 'YEAR') <= CURRENT_DATE
-            AND FUNCTION('DATE_ADD', u.birthDate, 45, 'YEAR') >= FUNCTION('DATE_ADD', CURRENT_DATE, -90, 'DAY')
+            u.birth_date + make_interval(years => :firstAge) <= CURRENT_DATE
+            AND u.birth_date + make_interval(years => :firstAge) >= CURRENT_DATE - make_interval(days => :daysThreshold)
+            OR
+            u.birth_date + make_interval(years => :secondAge) <= CURRENT_DATE
+            AND u.birth_date + make_interval(years => :secondAge) >= CURRENT_DATE - make_interval(days => :daysThreshold)
         )
-        """)
-    Page<User> findUsersWhoMissedPassportRenewalDeadline(Pageable pageable);
+        """, countQuery = """
+        SELECT count(u.id) FROM person_bank.users u
+        WHERE u.deleted = FALSE
+        AND u.birth_date IS NOT NULL
+        AND EXISTS (SELECT 1 FROM person_bank.individuals i WHERE i.user_id = u.id)
+        AND (
+            u.birth_date + make_interval(years => :firstAge) <= CURRENT_DATE
+            AND u.birth_date + make_interval(years => :firstAge) >= CURRENT_DATE - make_interval(days => :daysThreshold)
+            OR
+            u.birth_date + make_interval(years => :secondAge) <= CURRENT_DATE
+            AND u.birth_date + make_interval(years => :secondAge) >= CURRENT_DATE - make_interval(days => :daysThreshold)
+        )
+        """, nativeQuery = true)
+    Page<User> findUsersWithExpiredPassport(Pageable pageable, int firstAge, int secondAge, int daysThreshold);
+
+    @Query(value = """
+        SELECT u.* FROM person_bank.users u
+        WHERE u.deleted = FALSE
+        AND u.birth_date IS NOT NULL
+        AND EXISTS (SELECT 1 FROM person_bank.individuals i WHERE i.user_id = u.id)
+        AND (
+            u.birth_date + make_interval(years => :firstAge) <= CURRENT_DATE
+            AND u.birth_date + make_interval(years => :firstAge) >= CURRENT_DATE - make_interval(days => :daysNotified)
+            OR
+            u.birth_date + make_interval(years => :secondAge) <= CURRENT_DATE
+            AND u.birth_date + make_interval(years => :secondAge) >= CURRENT_DATE - make_interval(days => :daysNotified)
+        )
+        """, countQuery = """
+        SELECT count(u.id) FROM person_bank.users u
+        WHERE u.deleted = FALSE
+        AND u.birth_date IS NOT NULL
+        AND EXISTS (SELECT 1 FROM person_bank.individuals i WHERE i.user_id = u.id)
+        AND (
+            u.birth_date + make_interval(years => :firstAge) <= CURRENT_DATE
+            AND u.birth_date + make_interval(years => :firstAge) >= CURRENT_DATE - make_interval(days => :daysNotified)
+            OR
+            u.birth_date + make_interval(years => :secondAge) <= CURRENT_DATE
+            AND u.birth_date + make_interval(years => :secondAge) >= CURRENT_DATE - make_interval(days => :daysNotified)
+        )
+        """, nativeQuery = true)
+    Page<User> findUsersWhoMissedPassportRenewalDeadline(Pageable pageable, int firstAge, int secondAge, int daysNotified);
 
     @Query("SELECT u FROM User u WHERE u.deleted = false")
     Page<User> findAllActiveUsers(Pageable pageable);

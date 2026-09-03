@@ -6,6 +6,7 @@ import com.github.seecret1.order_service.config.kafka.properties.RetryProperties
 import com.github.seecret1.order_service.dto.BaseMessage;
 import com.github.seecret1.order_service.dto.card.OrderCardDto;
 import com.github.seecret1.order_service.dto.delivery.OrderCardDeliveryDto;
+import com.github.seecret1.order_service.dto.invoice.OrderInvoiceDto;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -96,6 +97,15 @@ public class KafkaConfig {
     }
 
     @Bean
+    public ProducerFactory<String, OrderInvoiceDto> invoiceProducerFactory() {
+        return new DefaultKafkaProducerFactory<>(
+                getBaseProducerConfig(),
+                new StringSerializer(),
+                new JsonSerializer<>(objectMapper)
+        );
+    }
+
+    @Bean
     public ProducerFactory<String, Object> orderDltProducerFactory() {
         return new DefaultKafkaProducerFactory<>(
                 getBaseProducerConfig(),
@@ -139,6 +149,13 @@ public class KafkaConfig {
     @Bean
     public KafkaTemplate<String, OrderCardDto> orderCreateKafkaTemplate(
             ProducerFactory<String, OrderCardDto> producerFactory
+    ) {
+        return new KafkaTemplate<>(producerFactory);
+    }
+
+    @Bean
+    public KafkaTemplate<String, OrderInvoiceDto> orderInvoiceKafkaTemplate(
+            ProducerFactory<String, OrderInvoiceDto> producerFactory
     ) {
         return new KafkaTemplate<>(producerFactory);
     }
@@ -192,6 +209,33 @@ public class KafkaConfig {
             KafkaTemplate<String, OrderCardDto> orderCreateKafkaTemplate
     ) {
         ConcurrentKafkaListenerContainerFactory<String, OrderCardDto> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory);
+
+        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(
+                orderCreateKafkaTemplate,
+                (record, exception) -> new org.apache.kafka.common.TopicPartition(
+                        kafkaProperties.getRetryTopic(),
+                        record.partition()
+                )
+        );
+
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(
+                recoverer,
+                new FixedBackOff(retryProperties.getDelay(), retryProperties.getMaxAttempts())
+        );
+        errorHandler.setRetryListeners();
+
+        factory.setCommonErrorHandler(errorHandler);
+        return factory;
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, BaseMessage> responseOrderCardKafkaListenerContainerFactory(
+            ConsumerFactory<String, BaseMessage> consumerFactory,
+            KafkaTemplate<String, Object> orderCreateKafkaTemplate
+    ) {
+        ConcurrentKafkaListenerContainerFactory<String, BaseMessage> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
 

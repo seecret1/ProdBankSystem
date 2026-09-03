@@ -1,7 +1,9 @@
 package com.github.seecret1.userservice.controller.publics;
 
+import com.github.seecret1.userservice.aop.RequireUserStatus;
 import com.github.seecret1.userservice.dto.request.UpdateUserRequest;
 import com.github.seecret1.userservice.dto.response.UserResponse;
+import com.github.seecret1.userservice.entity.enums.UserStatus;
 import com.github.seecret1.userservice.service.UserService;
 import com.github.seecret1.userservice.utils.AuthUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,6 +43,7 @@ public class UserPublicController {
 
     @PatchMapping
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MANAGER')")
+    @RequireUserStatus(allowed = {UserStatus.PENDING_PROFILE, UserStatus.ACTIVE, UserStatus.INACTIVE})
     @Operation(summary = "Update own profile", description = "Update current user's profile")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success update user`s profile"),

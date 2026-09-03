@@ -11,7 +11,6 @@ import org.hibernate.envers.Audited;
 
 import java.time.Instant;
 
-@Audited
 @Getter
 @Setter
 @Entity
