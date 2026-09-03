@@ -59,14 +59,6 @@ public class KafkaConfig {
     }
 
     @Bean
-    public NewTopic responseTopic() {
-        return TopicBuilder.name(kafkaProperties.getResponseTopic())
-                .partitions(kafkaProperties.getPartitions())
-                .replicas(kafkaProperties.getReplicas())
-                .build();
-    }
-
-    @Bean
     public NewTopic innerTopic() {
         return TopicBuilder.name(kafkaProperties.getInnerTopic())
                 .partitions(kafkaProperties.getPartitions())

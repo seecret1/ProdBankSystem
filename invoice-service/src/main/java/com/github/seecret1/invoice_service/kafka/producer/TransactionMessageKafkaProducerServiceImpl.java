@@ -1,8 +1,7 @@
-package com.github.seecret1.transaction_service.kafka.producer.impl;
+package com.github.seecret1.invoice_service.kafka.producer;
 
-import com.github.seecret1.transaction_service.config.kafka.properties.KafkaProperties;
-import com.github.seecret1.transaction_service.dto.message.TransactionMessage;
-import com.github.seecret1.transaction_service.kafka.producer.TransactionMessageKafkaProducerService;
+import com.github.seecret1.invoice_service.config.kafka.properties.KafkaProperties;
+import com.github.seecret1.invoice_service.dto.message.TransactionMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -26,20 +25,19 @@ public class TransactionMessageKafkaProducerServiceImpl implements TransactionMe
     private final KafkaTemplate<String, TransactionMessage> kafkaTemplate;
 
     @Override
-    public void sendNoWait(String topic, TransactionMessage message) {
+    public void sendNoWait(TransactionMessage message) {
         logging(message);
-        ProducerRecord<String, TransactionMessage> record = getRecord(topic, message);
+        ProducerRecord<String, TransactionMessage> record = getRecord(message);
         kafkaTemplate.send(record);
     }
 
     @Override
-    public void sendWithWait(String topic, TransactionMessage message) {
+    public void sendWithWait(TransactionMessage message) {
         kafkaRetryTemplate.execute(context -> {
             try {
                 logging(message);
 
-                ProducerRecord<String, TransactionMessage> record =
-                        getRecord(topic, message);
+                ProducerRecord<String, TransactionMessage> record = getRecord(message);
                 kafkaTemplate.send(record).get(kafkaProperties.getTimeoutSeconds(), TimeUnit.SECONDS);
                 return null;
 
@@ -54,12 +52,13 @@ public class TransactionMessageKafkaProducerServiceImpl implements TransactionMe
         });
     }
 
-    private ProducerRecord<String, TransactionMessage> getRecord(String topic, TransactionMessage message) {
-        return new ProducerRecord<>(topic, message.getTraceId(), message);
+    private ProducerRecord<String, TransactionMessage> getRecord(TransactionMessage message) {
+        return new ProducerRecord<>(kafkaProperties.getTransactionResponseTopic(), message.getTraceId(), message);
     }
 
     private static void logging(TransactionMessage message) {
-        log.info("Response sent to Kafka: traceId={}, data={}, timestamp={}",
-                message.getTraceId(), message.getData(), message.getTimestamp());
+        log.info("Response sent to Kafka: traceId={}, data={}, type={}, status={}, timestamp={}",
+                message.getTraceId(), message.getData(), message.getPaymentType(),
+                message.getStatus(), message.getTimestamp());
     }
 }

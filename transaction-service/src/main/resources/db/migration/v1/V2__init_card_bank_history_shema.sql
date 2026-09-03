@@ -7,8 +7,12 @@ CREATE TABLE transaction_bank_history.revinfo
 CREATE TABLE transaction_bank_history.transactions_history
 (
     id VARCHAR NOT NULL,
+    rev BIGINT NOT NULL,
+    revtype SMALLINT NOT NULL,
     user_id VARCHAR NOT NULL,
-    paymentId VARCHAR NOT NULL,
+    payment_id VARCHAR NOT NULL,
+    source_invoice_id VARCHAR NOT NULL,
+    destination_invoice_id VARCHAR NOT NULL,
     amount NUMERIC(18,2) NOT NULL,
     currency VARCHAR NOT NULL,
     transaction_type VARCHAR(50) NOT NULL,

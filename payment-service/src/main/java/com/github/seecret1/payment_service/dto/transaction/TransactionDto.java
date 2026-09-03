@@ -1,7 +1,7 @@
-package com.github.seecret1.transaction_service.dto.transaction;
+package com.github.seecret1.payment_service.dto.transaction;
 
-import com.github.seecret1.transaction_service.entity.enums.TransactionStatus;
-import com.github.seecret1.transaction_service.entity.enums.TransactionType;
+import com.github.seecret1.payment_service.entity.enums.TransactionStatus;
+import com.github.seecret1.payment_service.entity.enums.TransactionType;
 
 import java.math.BigDecimal;
 

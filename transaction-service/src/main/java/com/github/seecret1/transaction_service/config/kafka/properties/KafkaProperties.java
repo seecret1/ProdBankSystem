@@ -19,6 +19,8 @@ public class KafkaProperties {
 
     private String responseTopic;
 
+    private String paymentTopic;
+
     private String retryTopic;
 
     private String transactionTopic;

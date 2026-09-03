@@ -108,7 +108,8 @@ app:
     bootstrap-servers: ${spring.kafka.bootstrap-servers}
     request-topic: transaction-request
     response-topic: transaction-response
-    invoice-topic: invoice
+    payment-topic: payment-response
+    invoice-topic: invoice-transaction
     retry-topic: transaction-retry
     group-id: transaction-group-id
     retry-group-id: transaction-retry-group-id

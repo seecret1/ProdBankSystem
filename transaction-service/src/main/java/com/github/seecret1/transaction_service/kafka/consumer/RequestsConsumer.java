@@ -20,18 +20,18 @@ public class RequestsConsumer {
     @KafkaListener(
             topics = "${app.kafka.request-topic}",
             groupId = "${app.kafka.group-id}",
-            containerFactory = "orderRequestKafkaListenerContainerFactory"
+            containerFactory = "kafkaListenerContainerFactory"
     )
     public void listen(ConsumerRecord<String, TransactionMessage> record) {
         TransactionMessage dto = record.value();
-        log.info("Order received: traceId={}, userId={}, sourceInvoiceId={}, destinationInvoiceId={}, paymentType={}",
+        log.info("Payment received: traceId={}, userId={}, sourceInvoiceId={}, destinationInvoiceId={}, paymentType={}",
                 dto.getTraceId(), dto.getUserId(), dto.getSourceInvoiceId(), dto.getDestinationInvoiceId(),
                 dto.getPaymentType());
         log.info("Key: {}; Partition: {}; Topic: {}; Timestamp: {}",
                 record.key(), record.partition(), record.topic(), Instant.ofEpochMilli(record.timestamp()));
 
         try {
-            transactionService.process(dto);
+            transactionService.processRequest(dto);
             log.debug("[topic: {}][traceId: {}]Processing card order successfully", record.topic(), dto.getTraceId());
         } catch (Exception ex) {
             log.error("Error while creating order. Send to retry topic", ex);

@@ -1,7 +1,7 @@
 package com.github.seecret1.payment_service.config.kafka;
 
-import com.github.seecret1.invoice_service.config.kafka.properties.KafkaSecurityProperties;
-import com.github.seecret1.invoice_service.config.kafka.properties.SslProperties;
+import com.github.seecret1.payment_service.config.kafka.properties.KafkaSecurityProperties;
+import com.github.seecret1.payment_service.config.kafka.properties.SslProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.CommonClientConfigs;

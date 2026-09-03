@@ -107,8 +107,10 @@ app:
   kafka:
     bootstrap-servers: ${spring.kafka.bootstrap-servers}
     topic: invoices
+    invoice-transaction-topic: invoice-transaction
     request-topic: request-invoices
     translate-topic: translate-orders
+    transaction-response-topic: transaction-response
     response-orders-topic: response-orders
     orders-topic: response-orders
     retry-topic: retry-invoices

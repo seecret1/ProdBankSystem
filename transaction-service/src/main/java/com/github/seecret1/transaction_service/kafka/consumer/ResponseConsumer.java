@@ -18,9 +18,9 @@ public class ResponseConsumer {
     private final TransactionService transactionService;
 
     @KafkaListener(
-            topics = "${app.kafka.request-topic}",
+            topics = "${app.kafka.response-topic}",
             groupId = "${app.kafka.group-id}",
-            containerFactory = "orderRequestKafkaListenerContainerFactory"
+            containerFactory = "kafkaListenerContainerFactory"
     )
     public void listen(ConsumerRecord<String, TransactionMessage> record) {
         TransactionMessage dto = record.value();
@@ -31,7 +31,7 @@ public class ResponseConsumer {
                 record.key(), record.partition(), record.topic(), Instant.ofEpochMilli(record.timestamp()));
 
         try {
-            transactionService.process(dto);
+            transactionService.processResponse(dto);
             log.debug("[topic: {}][traceId: {}]Processing card order successfully", record.topic(), dto.getTraceId());
         } catch (Exception ex) {
             log.error("Error while creating order. Send to retry topic", ex);

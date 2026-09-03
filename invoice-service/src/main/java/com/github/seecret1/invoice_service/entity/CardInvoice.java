@@ -24,7 +24,7 @@ public class CardInvoice extends BaseInvoiceEntity implements Serializable {
     @Column(name = "card_id", nullable = false, unique = true, length = 120)
     private String cardId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "operation_id", referencedColumnName = "id")
     private Operation operation;
 

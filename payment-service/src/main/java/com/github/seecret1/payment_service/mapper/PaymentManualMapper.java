@@ -30,7 +30,8 @@ public class PaymentManualMapper {
     }
 
     public TransactionMessage toTransactionMessage(
-            Payment payment
+            Payment payment,
+            PaymentResponse paymentResponse
     ) {
         return TransactionMessage.builder()
                 .traceId(UUID.randomUUID().toString())
@@ -41,6 +42,7 @@ public class PaymentManualMapper {
                 .currency(payment.getCurrency())
                 .paymentType(payment.getPaymentType())
                 .status(payment.getStatus())
+                .data(paymentResponse)
                 .timestamp(Instant.now())
                 .build();
     }

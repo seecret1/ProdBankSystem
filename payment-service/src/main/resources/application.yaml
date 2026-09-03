@@ -101,7 +101,7 @@ app:
   kafka:
     bootstrap-servers: ${spring.kafka.bootstrap-servers}
     topic: payment
-    response-topic: payment-response
+    transaction-topic: transaction-request
     inner-topic: payment-inner
     retry-topic: payment-retry
     group-id: payment-group-id
@@ -120,5 +120,6 @@ app:
     max-interval: 10000
     timeout: 5
 
-services:
-  api-key: ${INTERNAL_API_KEY:your-internal-api-key}
+user-service:
+  jwt:
+    secret: ${SECRET_KEY:MyVeryLongAndSecureSecretKeyForJWTTokenSigningThatIsAtLeast64CharactersLongToMeetHS512Requirements123456789}

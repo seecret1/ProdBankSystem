@@ -14,8 +14,6 @@ public record PaymentRequest(
 
         PaymentType type,
 
-        String currency,
-
-        String comment
+        String currency
 
 ) { }

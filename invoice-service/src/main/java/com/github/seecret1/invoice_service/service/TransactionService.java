@@ -4,5 +4,5 @@ import com.github.seecret1.invoice_service.dto.message.TransactionMessage;
 
 public interface TransactionService {
 
-    void transactionProcessing(TransactionMessage message);
+    TransactionMessage transactionProcessing(TransactionMessage message);
 }

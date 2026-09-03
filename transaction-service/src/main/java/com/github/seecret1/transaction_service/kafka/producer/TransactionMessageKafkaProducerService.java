@@ -4,7 +4,7 @@ import com.github.seecret1.transaction_service.dto.message.TransactionMessage;
 
 public interface TransactionMessageKafkaProducerService {
 
-    void sendNoWait(TransactionMessage message);
+    void sendNoWait(String topic, TransactionMessage message);
 
-    void sendWithWait(TransactionMessage message);
+    void sendWithWait(String topic, TransactionMessage message);
 }

@@ -1,16 +1,14 @@
 package com.github.seecret1.payment_service.entity.enums;
 
-public enum PaymentStatus {
+public enum TransactionStatus {
 
-    CREATED,
-
-    REJECTED,
+    PENDING,
 
     PROCESSING,
 
     COMPLETED,
 
-    FAILED,
+    REJECTED,
 
-    CANCELLED
+    FAILED
 }

@@ -18,7 +18,7 @@ public class ResponsePaymentConsumer {
     private final PaymentProcessingService paymentProcessingService;
 
     @KafkaListener(
-            topics = "${app.kafka.response-topic}",
+            topics = "${app.kafka.topic}",
             groupId = "${app.kafka.group-id}",
             containerFactory = "kafkaListenerContainerFactory"
     )

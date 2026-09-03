@@ -7,6 +7,8 @@ CREATE TABLE payment_bank_history.revinfo
 CREATE TABLE payment_bank_history.payments_history
 (
     id VARCHAR,
+    rev BIGINT NOT NULL,
+    revtype SMALLINT NOT NULL,
     user_id VARCHAR NOT NULL,
     source_invoice_id VARCHAR NOT NULL,
     destination_invoice_id VARCHAR,

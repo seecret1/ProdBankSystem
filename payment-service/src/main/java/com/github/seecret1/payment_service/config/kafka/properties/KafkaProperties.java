@@ -15,8 +15,6 @@ public class KafkaProperties {
 
     private String topic;
 
-    private String responseTopic;
-
     private String innerTopic;
 
     private String retryTopic;
