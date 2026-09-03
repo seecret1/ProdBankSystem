@@ -1,0 +1,109 @@
+server:
+  port: 0
+spring:
+  application:
+    name: invoice-service-test
+  datasource:
+    url: jdbc:h2:mem:invoice_test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    generate-ddl: true
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+        hbm2ddl:
+          create_namespaces: true
+        use_sql_comments: true
+      org.hibernate.envers.audit_table_suffix: _history
+      org.hibernate.envers.audit_table_prefix:
+      org.hibernate.envers.default_schema: invoice_bank_history
+  flyway:
+    enabled: false
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  kafka:
+    bootstrap-servers: localhost:9092
+    properties:
+      security:
+        protocol: PLAINTEXT
+    ssl:
+      enabled: false
+user-service:
+  jwt:
+    secret: TXlWZXJ5TG9uZ0FuZFNlY3VyZVNlY3JldEtleUZvckpXVG9rZW5TaWduaW5nVGhhdElzQXRMZWFzdDY0Q2hhcnNsb25nVG9NZWV0SFM1MTJSZXF1aXJlbWVudHMxMjM0NTY3ODk=
+  client:
+    base-url: http://localhost:8091
+    api-key: test-api-key
+    x-internal-key: X-Internal-Api-Key
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+app:
+  kafka:
+    bootstrap-servers: localhost:9092
+    topic: invoices-test
+    invoice-transaction-topic: invoice-transaction-test
+    request-topic: request-invoices-test
+    translate-topic: translate-orders-test
+    transaction-response-topic: transaction-response-test
+    response-orders-topic: response-orders-test
+    orders-topic: response-orders-test
+    retry-topic: retry-invoices-test
+    group-id: invoice-group-id-test
+    retry-group-id: invoice-retry-group-id-test
+    dlt-topic: invoice.DLT.test
+    dlt-group-id: invoice-group-id.dlt.test
+    max-pull-records: 10
+    partitions: 1
+    replicas: 1
+    timeout-seconds: 5
+  retry:
+    max-attempts: 2
+    delay: 100
+    multiplier: 1
+    max-interval: 500
+    timeout: 5
+  scheduler:
+    limit:
+      cron: "0 0 4 * * *"
+    status:
+      cron: "0 0 0 * * *"
+    expiry:
+      cron: "0 0 3 * * *"
+      retention-years: 3
+    deleted:
+      cron: "0 0 2 * * *"
+      retention-years: 4
+    pageSize: 10
+  invoices:
+    limits:
+      DEBIT:
+        max-spending-limit: 200000
+        commission-spending-limit: 100000
+        description: "Дебетовая карта"
+      DEBIT_PERSONAL:
+        max-spending-limit: 300000
+        commission-spending-limit: 200000
+        description: "Именная дебетовая карта"
+      CREDIT:
+        max-spending-limit: 500000
+        commission-spending-limit: 300000
+        description: "Кредитная карта"
+services:
+  api-key: test-api-key
+management:
+  tracing:
+    enabled: false
+logging:
+  level:
+    com.github.seecret1.invoice_service: DEBUG
