@@ -1,5 +1,6 @@
 package com.github.seecret1.invoice_service.dto.request;
 
+import com.github.seecret1.invoice_service.entity.enums.CardType;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
@@ -9,6 +10,9 @@ public record CardInvoiceCreateRequest(
         @NotBlank(message = "cardId must be set")
         @Size(max = 120, message = "cardId max size is 120")
         String cardId,
+
+        @NotNull(message = "cardType must be set")
+        CardType cardType,
 
         @NotBlank(message = "userId must be set")
         @Size(max = 120, message = "userId max size is 120")

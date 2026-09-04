@@ -1,5 +1,6 @@
 package com.github.seecret1.invoice_service.entity;
 
+import com.github.seecret1.invoice_service.entity.enums.CardType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,6 +24,10 @@ public class CardInvoice extends BaseInvoiceEntity implements Serializable {
 
     @Column(name = "card_id", nullable = false, unique = true, length = 120)
     private String cardId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "card_type", nullable = false, length = 20)
+    private CardType cardType;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "operation_id", referencedColumnName = "id")

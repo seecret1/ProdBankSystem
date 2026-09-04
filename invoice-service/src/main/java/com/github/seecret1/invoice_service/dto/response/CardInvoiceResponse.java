@@ -1,6 +1,7 @@
 package com.github.seecret1.invoice_service.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.github.seecret1.invoice_service.entity.enums.CardType;
 import com.github.seecret1.invoice_service.entity.enums.InvoiceStatus;
 
 import java.math.BigDecimal;
@@ -11,6 +12,8 @@ public record CardInvoiceResponse(
         String id,
 
         String cardId,
+
+        CardType cardType,
 
         String invoiceNumber,
 

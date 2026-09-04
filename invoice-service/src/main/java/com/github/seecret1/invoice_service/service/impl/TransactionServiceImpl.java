@@ -10,6 +10,7 @@ import com.github.seecret1.invoice_service.entity.enums.OperationType;
 import com.github.seecret1.invoice_service.entity.enums.PaymentStatus;
 import com.github.seecret1.invoice_service.repository.CardInvoiceRepository;
 import com.github.seecret1.invoice_service.repository.OperationRepository;
+import com.github.seecret1.invoice_service.service.InvoiceEntityService;
 import com.github.seecret1.invoice_service.service.TransactionService;
 import com.github.seecret1.invoice_service.utils.OperationTypeHelper;
 import com.github.seecret1.invoice_service.utils.PercentUtils;
@@ -28,6 +29,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TransactionServiceImpl implements TransactionService {
 
+    private final InvoiceEntityService invoiceEntityService;
+
     private final CardInvoiceRepository invoiceRepository;
 
     private final OperationRepository operationRepository;
@@ -42,8 +45,8 @@ public class TransactionServiceImpl implements TransactionService {
             log.info("Processing transaction: {}", message);
             message.setStatus(PaymentStatus.PROCESSING);
 
-            var sourceInvoice = findById(message.getSourceInvoiceId());
-            var destinationInvoice = findById(message.getDestinationInvoiceId());
+            var sourceInvoice = invoiceEntityService.findNotDeletedByIdForUpdate(message.getSourceInvoiceId());
+            var destinationInvoice = invoiceEntityService.findNotDeletedByIdForUpdate(message.getDestinationInvoiceId());
 
             validation(sourceInvoice, destinationInvoice, message);
 
@@ -172,13 +175,6 @@ public class TransactionServiceImpl implements TransactionService {
             message.setStatus(PaymentStatus.REJECTED);
             throw new IllegalArgumentException("Destination invoice is blocked or frozen");
         }
-    }
-
-    private CardInvoice findById(String id) {
-        return invoiceRepository.findByIdWithLock(id)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Invoice not found by ID: " + id
-                ));
     }
 
     private Operation createDestinationOperation(

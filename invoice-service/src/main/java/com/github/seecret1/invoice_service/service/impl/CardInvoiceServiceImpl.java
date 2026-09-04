@@ -2,17 +2,19 @@ package com.github.seecret1.invoice_service.service.impl;
 
 import com.github.seecret1.common.dto.PageResponse;
 import com.github.seecret1.common.model.PageModel;
+import com.github.seecret1.invoice_service.config.SpendingAndFreeLimitsConfig;
 import com.github.seecret1.invoice_service.dto.request.CardInvoiceCreateRequest;
 import com.github.seecret1.invoice_service.dto.response.CardInvoiceResponse;
 import com.github.seecret1.invoice_service.dto.response.OperationResponse;
 import com.github.seecret1.invoice_service.entity.CardInvoice;
-import com.github.seecret1.invoice_service.exception.InvoiceAlreadyDeletedException;
+import com.github.seecret1.invoice_service.entity.enums.CardType;
 import com.github.seecret1.invoice_service.exception.InvoiceAlreadyExistsException;
 import com.github.seecret1.invoice_service.exception.InvoiceNotFoundException;
 import com.github.seecret1.invoice_service.mapper.CardInvoiceMapper;
 import com.github.seecret1.invoice_service.mapper.OperationMapper;
 import com.github.seecret1.invoice_service.repository.CardInvoiceRepository;
 import com.github.seecret1.invoice_service.service.CardInvoiceService;
+import com.github.seecret1.invoice_service.service.InvoiceEntityService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +29,10 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class CardInvoiceServiceImpl implements CardInvoiceService {
+
+    private final SpendingAndFreeLimitsConfig spendingAndFreeLimitsConfig;
+
+    private final InvoiceEntityService invoiceEntityService;
 
     private final CardInvoiceRepository cardInvoiceRepository;
 
@@ -107,7 +113,7 @@ public class CardInvoiceServiceImpl implements CardInvoiceService {
     @Transactional
     public void softDelete(String id, String deletedBy) {
         log.info("Soft delete invoice by id: {}", id);
-        CardInvoice invoice = findNotDeletedByIdForUpdate(id);
+        CardInvoice invoice = invoiceEntityService.findNotDeletedByIdForUpdate(id);
         String author = (deletedBy != null && !deletedBy.isBlank()) ? deletedBy : "system";
         invoice.softDelete(author);
         cardInvoiceRepository.save(invoice);
@@ -127,19 +133,6 @@ public class CardInvoiceServiceImpl implements CardInvoiceService {
     private CardInvoice findNotDeletedById(String id) {
         return cardInvoiceRepository.findByIdNotDeleted(id)
                 .orElseThrow(() -> new InvoiceNotFoundException("Invoice not found by id: " + id));
-    }
-
-    private CardInvoice findNotDeletedByIdForUpdate(String id) {
-        return cardInvoiceRepository.findByIdForUpdate(id)
-                .orElseThrow(() -> {
-                    var deletedOpt = cardInvoiceRepository.findByIdIncludingDeleted(id);
-                    if (deletedOpt.isPresent() && Boolean.TRUE.equals(deletedOpt.get().getDeleted())) {
-                        return new InvoiceAlreadyDeletedException(
-                                "Invoice already soft-deleted by id: " + id + " by " + deletedOpt.get().getDeletedBy()
-                        );
-                    }
-                    return new InvoiceNotFoundException("Invoice not found by id: " + id);
-                });
     }
 
     private CardInvoice generateCardInvoice(CardInvoiceCreateRequest request) {

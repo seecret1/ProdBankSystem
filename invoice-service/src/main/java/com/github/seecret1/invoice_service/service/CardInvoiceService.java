@@ -5,7 +5,7 @@ import com.github.seecret1.common.model.PageModel;
 import com.github.seecret1.invoice_service.dto.request.CardInvoiceCreateRequest;
 import com.github.seecret1.invoice_service.dto.response.CardInvoiceResponse;
 import com.github.seecret1.invoice_service.dto.response.OperationResponse;
-import com.github.seecret1.invoice_service.entity.enums.CardType;
+import com.github.seecret1.invoice_service.entity.CardInvoice;
 
 import java.util.List;
 

@@ -33,6 +33,7 @@ CREATE TABLE invoice_bank_history.card_invoices_history
     deleted_at TIMESTAMP WITHOUT TIME ZONE,
     deleted_by VARCHAR(128),
     card_id VARCHAR(120) NOT NULL,
+    cardType VARCHAR(50) NOT NULL,
     status VARCHAR(30) NOT NULL,
     invoice_number VARCHAR(50) NOT NULL,
     currency VARCHAR NOT NULL,

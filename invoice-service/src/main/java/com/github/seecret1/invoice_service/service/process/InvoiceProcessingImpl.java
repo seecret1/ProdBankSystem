@@ -65,6 +65,7 @@ public class InvoiceProcessingImpl implements InvoiceProcessing {
             var invoice = cardInvoiceService.create(
                     new CardInvoiceCreateRequest( //TODO: вынести в маппер
                             request.getCardId(),
+                            request.getCardType(),
                             request.getUserId(),
                             InvoiceNumberGenerator.generateWithPrefix(getDocumentTypeWithCardType(request.getCardType()).name()),
                             request.getCurrency() != null ? request.getCurrency() : "RUB", //TODO: вынести в утилиту на время (пока не задана сущность валюты)

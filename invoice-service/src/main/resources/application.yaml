@@ -132,12 +132,7 @@ app:
 
   scheduler:
     limit:
-      cron: "0 0 4 * * *"
-    status:
       cron: "0 0 0 * * *"
-    expiry:
-      cron: "0 0 3 * * *"
-      retention-years: 3
     deleted:
       cron: "0 0 2 * * *"
       retention-years: 4

@@ -5,11 +5,9 @@ import com.github.seecret1.common.model.PageModel;
 import com.github.seecret1.invoice_service.dto.request.OperationCreateRequest;
 import com.github.seecret1.invoice_service.dto.response.OperationResponse;
 import com.github.seecret1.invoice_service.entity.Operation;
-import com.github.seecret1.invoice_service.exception.InvoiceNotFoundException;
 import com.github.seecret1.invoice_service.exception.OperationAlreadyDeletedException;
 import com.github.seecret1.invoice_service.exception.OperationNotFoundException;
 import com.github.seecret1.invoice_service.mapper.OperationMapper;
-import com.github.seecret1.invoice_service.repository.CardInvoiceRepository;
 import com.github.seecret1.invoice_service.repository.OperationRepository;
 import com.github.seecret1.invoice_service.service.OperationService;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class OperationServiceImpl implements OperationService {
-
-    private final CardInvoiceRepository cardInvoiceRepository;
 
     private final OperationRepository operationRepository;
 

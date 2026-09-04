@@ -20,6 +20,7 @@ public class CardInvoiceMapper {
         return new CardInvoiceResponse(
                 entity.getId(),
                 entity.getCardId(),
+                entity.getCardType(),
                 entity.getInvoiceNumber(),
                 entity.getCurrency(),
                 entity.getStatus(),
@@ -43,6 +44,7 @@ public class CardInvoiceMapper {
     public CardInvoice toEntity(CardInvoiceCreateRequest request) {
         return CardInvoice.builder()
                 .cardId(request.cardId())
+                .cardType(request.cardType())
                 .userId(request.userId())
                 .invoiceNumber(request.invoiceNumber())
                 .currency(request.currency())

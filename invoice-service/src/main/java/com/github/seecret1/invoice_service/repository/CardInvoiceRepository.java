@@ -45,6 +45,12 @@ public interface CardInvoiceRepository extends JpaRepository<CardInvoice, String
     Page<CardInvoice> findAllNotDeleted(Pageable pageable);
 
     @Query("""
+        SELECT c FROM CardInvoice c 
+            WHERE c.deleted = false AND c.status = 'ACTIVE'
+    """)
+    Page<CardInvoice> findAllActive(Pageable pageable);
+
+    @Query("""
         SELECT c FROM CardInvoice c WHERE c.deleted = true AND c.deletedAt <= :deleteDate
     """)
     Page<CardInvoice> findDeletedBefore(Instant deleteDate, Pageable pageable);
