@@ -1,0 +1,133 @@
+server:
+  port: 8091
+
+spring:
+  datasource:
+    url: ${USER_DB_LOCAL_URL:jdbc:postgresql://localhost:5433/user_db}
+    username: ${USER_DB_USERNAME:postgres}
+    password: ${USER_DB_PASSWORD:postgres}
+
+  jpa:
+    generate-ddl: false
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      org.hibernate.envers.audit_table_suffix: _history
+      org.hibernate.envers.audit_table_prefix:
+      org.hibernate.envers.default_schema: person_bank_history
+
+  flyway:
+    enabled: true
+
+  data:
+    redis:
+      host: ${HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:secret}
+
+  encryption:
+    algorithm: ${ENCRYPTION_ALGORITHM:AES}
+    transformation: ${ENCRYPTION_TRANSFORMATION:AES/ECB/PKCS5Padding}
+    secret-key: ${ENCRYPTION_SECRET_SECRET_KEY:your-32-byte-secret-key-here!!!!}
+
+user-service:
+  jwt:
+    secret: ${SECRET_KEY:MyVeryLongAndSecureSecretKeyForJWTTokenSigningThatIsAtLeast64CharactersLongToMeetHS512Requirements123456789}
+    tokenExpiration: ${TOKEN_EXPIRED:60m}
+    refreshTokenExpiration: ${REFRESH_TOKEN_EXPIRED:360m}
+  passport:
+    first-age: ${FIRST_AGE_PASSPORT_EXPIRED:20}
+    second-age: ${SECOND_AGE_PASSPORT_EXPIRED:45}
+    days-notified: ${DAYS_NOTIFIED:90}
+    days-threshold: ${DAYS_THRESHOLD:30}
+
+springdoc:
+  api-docs:
+    path: /api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operationsSorter: method
+    tagsSorter: alpha
+    try-it-out-enabled: true
+    filter: true
+  show-actuator: true
+  packages-to-scan: com.github.seecret1.userservice.controller
+  paths-to-match: /api/v1/**
+
+logging:
+  config: "classpath:logback.xml"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    prometheus:
+      access: read_only
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+
+otel:
+  exporter:
+    otlp:
+      endpoint: ${OTLP_EXPORTER_ENDPOINT:http://localhost:4318}
+      protocol: http/protobuf
+  logs:
+    exporter: none
+  metrics:
+    exporter: none
+
+app:
+  cache:
+    cache-names:
+      - userAll
+      - userActiveAll
+      - userById
+      - userByEmail
+      - userByUsername
+      - userFilter
+      - individualAll
+      - individualById
+      - individualByPhoneNumber
+    caches:
+      userAll:
+        expiry: 30m
+      userActiveAll:
+        expiry: 30m
+      userById:
+        expiry: 30m
+      userByEmail:
+        expiry: 15m
+      userByUsername:
+        expiry: 15m
+      userFilter:
+        expiry: 10m
+      individualAll:
+        expiry: 30m
+      individualById:
+        expiry: 30m
+      individualByPhoneNumber:
+        expiry: 10m
+
+  scheduler:
+    passport-validity:
+      upcoming:
+        cron: "0 0 22 * * *"
+      missed:
+        cron: "0 0 20 * * *"
+      deactivate:
+        cron: "0 0 23 * * *"
+    pageSize: 100
+
+services:
+  api-key: ${INTERNAL_API_KEY:your-internal-api-key}

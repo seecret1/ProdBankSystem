@@ -1,23 +1,6 @@
-services:
-  auth-postgres:
-    image: postgres:17
-    container_name: auth-postgres
-    environment:
-      POSTGRES_USER: ${AUTH_DB_USERNAME}
-      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
-      POSTGRES_DB: ${AUTH_DB_NAME}
-    restart: on-failure
-    volumes:
-      - auth_postgres_data:/var/lib/postgresql/data
-      - ./infrastructure/databases/bank_system:/docker-entrypoint-initdb.d:ro
-    ports:
-      - "${AUTH_DB_PORT}:${POSTGRES_DB_PORT}"
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${AUTH_DB_USERNAME} -p ${POSTGRES_DB_PORT}" ]
-      interval: 10s
-      timeout: 5s
-      retries: 20
+version: "3.8"
 
+services:
   user-postgres:
     image: postgres:17
     container_name: user-postgres
@@ -28,7 +11,7 @@ services:
     restart: on-failure
     volumes:
       - user_postgres_data:/var/lib/postgresql/data
-      - ./infrastructure/databases/bank_system:/docker-entrypoint-initdb.d:ro
+      - ./infrastructure/databases/bank:/docker-entrypoint-initdb.d:ro
     ports:
       - "${USER_DB_PORT}:${POSTGRES_DB_PORT}"
     healthcheck:
@@ -47,7 +30,7 @@ services:
     restart: on-failure
     volumes:
       - card_postgres_data:/var/lib/postgresql/data
-      - ./infrastructure/databases/bank_system:/docker-entrypoint-initdb.d:ro
+      - ./infrastructure/databases/bank:/docker-entrypoint-initdb.d:ro
     ports:
       - "${CARD_DB_PORT}:${POSTGRES_DB_PORT}"
     healthcheck:
@@ -66,7 +49,7 @@ services:
     restart: on-failure
     volumes:
       - order_postgres_data:/var/lib/postgresql/data
-      - ./infrastructure/databases/bank_system:/docker-entrypoint-initdb.d:ro
+      - ./infrastructure/databases/bank:/docker-entrypoint-initdb.d:ro
     ports:
       - "${ORDER_DB_PORT}:${POSTGRES_DB_PORT}"
     healthcheck:
@@ -85,7 +68,7 @@ services:
     restart: on-failure
     volumes:
       - payment_postgres_data:/var/lib/postgresql/data
-      - ./infrastructure/databases/bank_system:/docker-entrypoint-initdb.d:ro
+      - ./infrastructure/databases/bank:/docker-entrypoint-initdb.d:ro
     ports:
       - "${PAYMENT_DB_PORT}:${POSTGRES_DB_PORT}"
     healthcheck:
@@ -104,7 +87,7 @@ services:
     restart: on-failure
     volumes:
       - transaction_postgres_data:/var/lib/postgresql/data
-      - ./infrastructure/databases/bank_system:/docker-entrypoint-initdb.d:ro
+      - ./infrastructure/databases/bank:/docker-entrypoint-initdb.d:ro
     ports:
       - "${TRANSACTION_DB_PORT}:${POSTGRES_DB_PORT}"
     healthcheck:
@@ -123,7 +106,7 @@ services:
     restart: on-failure
     volumes:
       - invoice_postgres_data:/var/lib/postgresql/data
-      - ./infrastructure/databases/bank_system:/docker-entrypoint-initdb.d:ro
+      - ./infrastructure/databases/bank:/docker-entrypoint-initdb.d:ro
     ports:
       - "${INVOICE_DB_PORT}:${POSTGRES_DB_PORT}"
     healthcheck:
@@ -142,7 +125,7 @@ services:
     restart: on-failure
     volumes:
       - notification_postgres_data:/var/lib/postgresql/data
-      - ./infrastructure/databases/bank_system:/docker-entrypoint-initdb.d:ro
+      - ./infrastructure/databases/bank:/docker-entrypoint-initdb.d:ro
     ports:
       - "${NOTIFICATION_DB_PORT}:${POSTGRES_DB_PORT}"
     healthcheck:
@@ -151,16 +134,43 @@ services:
       timeout: 5s
       retries: 20
 
-  auth-postgres-exporter:
-    image: prometheuscommunity/postgres-exporter:latest
-    container_name: auth-postgres-exporter
-    depends_on:
-      auth-postgres:
-        condition: service_healthy
+  office-postgres:
+    image: postgres:17
+    container_name: office-postgres
     environment:
-      DATA_SOURCE_NAME: postgresql://${AUTH_DB_USERNAME}:${AUTH_DB_PASSWORD}@${AUTH_HOST}:${POSTGRES_DB_PORT}/${AUTH_DB_NAME}?sslmode=disable
+      POSTGRES_USER: ${OFFICE_DB_USERNAME}
+      POSTGRES_PASSWORD: ${OFFICE_DB_PASSWORD}
+      POSTGRES_DB: ${OFFICE_DB_NAME}
+    restart: on-failure
+    volumes:
+      - office_postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/databases/bank:/docker-entrypoint-initdb.d:ro
     ports:
-      - "${AUTH_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
+      - "${OFFICE_DB_PORT}:${POSTGRES_DB_PORT}"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${OFFICE_DB_USERNAME} -p ${POSTGRES_DB_PORT}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  delivery-postgres:
+    image: postgres:17
+    container_name: delivery-postgres
+    environment:
+      POSTGRES_USER: ${DELIVERY_DB_USERNAME}
+      POSTGRES_PASSWORD: ${DELIVERY_DB_PASSWORD}
+      POSTGRES_DB: ${DELIVERY_DB_NAME}
+    restart: on-failure
+    volumes:
+      - delivery_postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/databases/bank:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${DELIVERY_DB_PORT}:${POSTGRES_DB_PORT}"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DELIVERY_DB_USERNAME} -p ${POSTGRES_DB_PORT}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
 
   user-postgres-exporter:
     image: prometheuscommunity/postgres-exporter:latest
@@ -169,7 +179,7 @@ services:
       user-postgres:
         condition: service_healthy
     environment:
-      DATA_SOURCE_NAME: postgresql://${USER_DB_USERNAME}:${USER_DB_PASSWORD}@${USER_HOST}:${POSTGRES_DB_PORT}/${USER_DB_NAME}?sslmode=disable
+      DATA_SOURCE_NAME: postgresql://${USER_DB_USERNAME}:${USER_DB_PASSWORD}@${USER_HOST}:${POSTGRES_DB_PORT}/${USER_DB_USERNAME}?sslmode=disable
     ports:
       - "${USER_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
 
@@ -180,7 +190,7 @@ services:
       card-postgres:
         condition: service_healthy
     environment:
-      DATA_SOURCE_NAME: postgresql://${CARD_DB_USERNAME}:${CARD_DB_PASSWORD}@${CARD_HOST}:${POSTGRES_DB_PORT}/${CARD_DB_NAME}?sslmode=disable
+      DATA_SOURCE_NAME: postgresql://${CARD_DB_USERNAME}:${CARD_DB_PASSWORD}@${CARD_HOST}:${POSTGRES_DB_PORT}/${CARD_DB_USERNAME}?sslmode=disable
     ports:
       - "${CARD_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
 
@@ -191,7 +201,7 @@ services:
       order-postgres:
         condition: service_healthy
     environment:
-      DATA_SOURCE_NAME: postgresql://${ORDER_DB_USERNAME}:${ORDER_DB_PASSWORD}@${ORDER_HOST}:${POSTGRES_DB_PORT}/${ORDER_DB_NAME}?sslmode=disable
+      DATA_SOURCE_NAME: postgresql://${ORDER_DB_USERNAME}:${ORDER_DB_PASSWORD}@${ORDER_HOST}:${POSTGRES_DB_PORT}/${ORDER_DB_USERNAME}?sslmode=disable
     ports:
       - "${ORDER_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
 
@@ -202,7 +212,7 @@ services:
       payment-postgres:
         condition: service_healthy
     environment:
-      DATA_SOURCE_NAME: postgresql://${PAYMENT_DB_USERNAME}:${PAYMENT_DB_PASSWORD}@${PAYMENT_HOST}:${POSTGRES_DB_PORT}/${PAYMENT_DB_NAME}?sslmode=disable
+      DATA_SOURCE_NAME: postgresql://${PAYMENT_DB_USERNAME}:${PAYMENT_DB_PASSWORD}@${PAYMENT_HOST}:${POSTGRES_DB_PORT}/${PAYMENT_DB_USERNAME}?sslmode=disable
     ports:
       - "${PAYMENT_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
 
@@ -213,7 +223,7 @@ services:
       transaction-postgres:
         condition: service_healthy
     environment:
-      DATA_SOURCE_NAME: postgresql://${TRANSACTION_DB_USERNAME}:${TRANSACTION_DB_PASSWORD}@${TRANSACTION_HOST}:${POSTGRES_DB_PORT}/${TRANSACTION_DB_NAME}?sslmode=disable
+      DATA_SOURCE_NAME: postgresql://${TRANSACTION_DB_USERNAME}:${TRANSACTION_DB_PASSWORD}@${TRANSACTION_HOST}:${POSTGRES_DB_PORT}/${TRANSACTION_DB_USERNAME}?sslmode=disable
     ports:
       - "${TRANSACTION_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
 
@@ -224,7 +234,7 @@ services:
       invoice-postgres:
         condition: service_healthy
     environment:
-      DATA_SOURCE_NAME: postgresql://${INVOICE_DB_USERNAME}:${INVOICE_DB_PASSWORD}@${INVOICE_HOST}:${POSTGRES_DB_PORT}/${INVOICE_DB_NAME}?sslmode=disable
+      DATA_SOURCE_NAME: postgresql://${INVOICE_DB_USERNAME}:${INVOICE_DB_PASSWORD}@${INVOICE_HOST}:${POSTGRES_DB_PORT}/${INVOICE_DB_USERNAME}?sslmode=disable
     ports:
       - "${INVOICE_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
 
@@ -235,13 +245,36 @@ services:
       notification-postgres:
         condition: service_healthy
     environment:
-      DATA_SOURCE_NAME: postgresql://${NOTIFICATION_DB_USERNAME}:${NOTIFICATION_DB_PASSWORD}@${NOTIFICATION_HOST}:${POSTGRES_DB_PORT}/${NOTIFICATION_DB_NAME}?sslmode=disable
+      DATA_SOURCE_NAME: postgresql://${NOTIFICATION_DB_USERNAME}:${NOTIFICATION_DB_PASSWORD}@${NOTIFICATION_HOST}:${POSTGRES_DB_PORT}/${NOTIFICATION_DB_USERNAME}?sslmode=disable
     ports:
       - "${NOTIFICATION_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
+
+  office-postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: office-postgres-exporter
+    depends_on:
+      notification-postgres:
+        condition: service_healthy
+    environment:
+      DATA_SOURCE_NAME: postgresql://${OFFICE_DB_USERNAME}:${OFFICE_DB_PASSWORD}@${OFFICE_HOST}:${POSTGRES_DB_PORT}/${OFFICE_DB_USERNAME}?sslmode=disable
+    ports:
+      - "${OFFICE_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
+
+  delivery-postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: delivery-postgres-exporter
+    depends_on:
+      notification-postgres:
+        condition: service_healthy
+    environment:
+      DATA_SOURCE_NAME: postgresql://${DELIVERY_DB_USERNAME}:${DELIVERY_DB_PASSWORD}@${DELIVERY_HOST}:${POSTGRES_DB_PORT}/${DELIVERY_DB_NAME}?sslmode=disable
+    ports:
+      - "${DELIVERY_EXPORTER_PORT}:${POSTGRES_EXPORTER_PORT}"
 
   nexus:
     image: sonatype/nexus3:3.76.0
     container_name: nexus
+    restart: unless-stopped
     ports:
       - "${NEXUS_PORT}:${NEXUS_PORT}"
     environment:
@@ -250,7 +283,7 @@ services:
     volumes:
       - nexus-data:/nexus-data
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://${HOST}:${NEXUS_PORT}/service/rest/v1/status" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/service/rest/v1/status" ]
       interval: 5s
       timeout: 10s
       retries: 30
@@ -263,7 +296,7 @@ services:
     volumes:
       - ./infrastructure/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     healthcheck:
-      test: [ "CMD", "wget", "--spider", "http://${HOST}:${PROMETHEUS_PORT}/-/healthy" ]
+      test: [ "CMD", "wget", "--spider", "http://localhost:9090/-/healthy" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -276,7 +309,7 @@ services:
     volumes:
       - ./infrastructure/loki/loki-config.yaml:/etc/loki/loki-config.yaml:ro
     healthcheck:
-      test: [ "CMD", "wget", "--spider", "-q", "http://${HOST}:${LOKI_PORT}/ready" ]
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:3100/ready" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -290,8 +323,6 @@ services:
       - tempo_data:/var/tempo
     ports:
       - "${TEMPO_DEF_PORT}:${TEMPO_DEF_PORT}"
-      - "${OTLP_GRPC_PORT}:${OTLP_GRPC_PORT}"
-      - "${OTLP_HTTP_PORT}:${OTLP_HTTP_PORT}"
 
   alloy:
     image: grafana/alloy:latest
@@ -307,7 +338,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/log:/var/log:ro
     environment:
-      GRAFANA_LOKI_URL: http://loki:${LOKI_PORT}/loki/api/v1/push
+      GRAFANA_LOKI_URL: http://loki:3100/loki/api/v1/push
     command:
       - run
       - --server.http.listen-addr=0.0.0.0:${ALLOY_PORT}
@@ -339,13 +370,14 @@ services:
       - ./infrastructure/grafana/dashboards:/var/lib/grafana/dashboards
       - nexus-data:/nexus-data
     healthcheck:
-      test: [ "CMD", "wget", "--spider", "http://${HOST}:${GRAFANA_PORT}/api/health" ]
+      test: [ "CMD", "wget", "--spider", "http://localhost:3000/api/health" ]
       interval: 10s
       timeout: 5s
       retries: 10
 
   zookeeper:
     image: confluentinc/cp-zookeeper:6.2.0
+    container_name: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_PORT}
       ZOOKEEPER_TICK_TIME: 2000
@@ -358,6 +390,7 @@ services:
 
   kafka1:
     image: confluentinc/cp-kafka:6.2.0
+    container_name: kafka1
     depends_on:
       - zookeeper
     ports:
@@ -383,6 +416,7 @@ services:
 
   kafka2:
     image: confluentinc/cp-kafka:6.2.0
+    container_name: kafka2
     depends_on:
       - zookeeper
     ports:
@@ -408,6 +442,7 @@ services:
 
   kafka3:
     image: confluentinc/cp-kafka:6.2.0
+    container_name: kafka3
     depends_on:
       - zookeeper
     ports:
@@ -431,8 +466,10 @@ services:
     volumes:
       - kafka3_data:/var/lib/kafka/data
 
+  # TODO: исправить RabbitMQ
   rabbitmq:
     image: rabbitmq:3.10.7-management
+    container_name: rabbitmq
     ports:
       - "${RABBITMQ_PORT}:${RABBITMQ_PORT}"
       - "${RABBITMQ_WEB_PORT}:${RABBITMQ_WEB_PORT}"
@@ -450,17 +487,57 @@ services:
 
   redis:
     image: redis:8.2.1
-    restart: on-failure
     ports:
       - "${REDIS_PORT}:${REDIS_PORT}"
-    command: redis-server --appendonly yes
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+
+  wiremock:
+    image: wiremock/wiremock:latest
+    container_name: wiremock
+    ports:
+      - "${WIREMOCK_PORT}:8080"
     volumes:
-      - redis_data:/data
+      - ./wiremock/mappings:/home/wiremock/mappings
+      - ./wiremock/__files:/home/wiremock/__files
+    command: --global-response-templating --verbose
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/__admin/health" ]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - "${USER_SERVICE_PORT}:${USER_SERVICE_PORT}"
+    working_dir: /app
+    environment:
+      USER_DB_LOCAL_URL: jdbc:postgresql://user-postgres:5432/user_db
+      USER_DB_USERNAME: ${USER_DB_USERNAME:-postgres}
+      USER_DB_PASSWORD: ${USER_DB_PASSWORD:-postgres}
+      HOST: redis
+      REDIS_PORT: 6379
+      REDIS_TIMEOUT: 2000ms
+      REDIS_POOL_MAX_ACTIVE: 8
+      REDIS_POOL_MAX_IDLE: 8
+      REDIS_POOL_MIN_IDLE: 0
+      SECRET_KEY: ${SECRET_KEY:-MyVeryLongAndSecureSecretKeyForJWTTokenSigningThatIsAtLeast64CharactersLongToMeetHS512Requirements123456789}
+      ENCRYPTION_SECRET: ${ENCRYPTION_SECRET:-your-strong-secret-key-here-change-in-production}
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-your-internal-api-key}
+      OTLP_EXPORTER_ENDPOINT: http://tempo:4318
+    depends_on:
+      user-postgres:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-i", "http://localhost:8091/actuator/health" ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
 
 volumes:
   artifacts:
@@ -471,7 +548,6 @@ volumes:
   loki_index:
   loki_rules:
 
-  auth_postgres_data:
   user_postgres_data:
   card_postgres_data:
   order_postgres_data:
@@ -479,6 +555,8 @@ volumes:
   transaction_postgres_data:
   invoice_postgres_data:
   notification_postgres_data:
+  office_postgres_data:
+  delivery_postgres_data:
 
   zookeeper_data:
   zookeeper_log:

@@ -1,0 +1,81 @@
+server:
+  port: 0
+spring:
+  application:
+    name: transaction-service-test
+  datasource:
+    url: jdbc:h2:mem:transaction_test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    generate-ddl: true
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+        hbm2ddl:
+          create_namespaces: true
+        use_sql_comments: true
+      org.hibernate.envers.audit_table_suffix: _history
+      org.hibernate.envers.audit_table_prefix:
+      org.hibernate.envers.default_schema: transaction_bank_history
+  flyway:
+    enabled: false
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  kafka:
+    bootstrap-servers: localhost:9092
+    properties:
+      security:
+        protocol: PLAINTEXT
+    ssl:
+      enabled: false
+user-service:
+  jwt:
+    secret: TXlWZXJ5TG9uZ0FuZFNlY3VyZVNlY3JldEtleUZvckpXVG9rZW5TaWduaW5nVGhhdElzQXRMZWFzdDY0Q2hhcnNsb25nVG9NZWV0SFM1MTJSZXF1aXJlbWVudHMxMjM0NTY3ODk=
+  client:
+    base-url: http://localhost:8091
+    api-key: test-api-key
+    x-internal-key: X-Internal-Api-Key
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+app:
+  kafka:
+    bootstrap-servers: localhost:9092
+    request-topic: transaction-request-test
+    response-topic: transaction-response-test
+    payment-topic: payment-response-test
+    invoice-topic: invoice-transaction-test
+    transaction-topic: transaction-topic-test
+    retry-topic: transaction-retry-test
+    group-id: transaction-group-id-test
+    retry-group-id: transaction-retry-group-id-test
+    dlt-topic: transaction.DLT.test
+    dlt-group-id: transaction-group-id.dlt.test
+    max-pull-records: 10
+    partitions: 1
+    replicas: 1
+    timeout-seconds: 5
+  retry:
+    max-attempts: 2
+    delay: 100
+    multiplier: 1
+    max-interval: 500
+    timeout: 5
+services:
+  api-key: test-api-key
+management:
+  tracing:
+    enabled: false
+logging:
+  level:
+    com.github.seecret1.transaction_service: DEBUG

@@ -1,0 +1,162 @@
+server:
+  port: 8092
+
+spring:
+  application:
+    name: card-service
+
+  datasource:
+    url: ${CARD_DB_LOCAL_URL:jdbc:postgresql://${HOST:localhost}:${CARD_DB_PORT:5434}/${CARD_DB_NAME:card_db}}
+    username: ${CARD_DB_USERNAME:postgres}
+    password: ${CARD_DB_PASSWORD:postgres}
+
+  jpa:
+    generate-ddl: false
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      org.hibernate.envers.audit_table_suffix: _history
+      org.hibernate.envers.audit_table_prefix:
+      org.hibernate.envers.default_schema: person_bank_history
+
+  flyway:
+    enabled: true
+
+  kafka:
+    bootstrap-servers: ${HOST:localhost}:${KAFKA1_PORT:9092}, ${HOST:localhost}:${KAFKA2_PORT:9093}, ${HOST:localhost}:${KAFKA3_PORT:9094}
+    ssl:
+      enabled: ${KAFKA_SSL_ENABLED:false}
+      trust-store-location: ${KAFKA_TRUSTSTORE_LOCATION:file:./kafka.truststore.jks}
+      trust-store-password: ${KAFKA_TRUSTSTORE_PASSWORD:changeit}
+      key-store-location: ${KAFKA_KEYSTORE_LOCATION:file:./kafka.keystore.jks}
+      key-store-password: ${KAFKA_KEYSTORE_PASSWORD:changeit}
+      key-password: ${KAFKA_KEY_PASSWORD:changeit}
+      protocol: ${KAFKA_SSL_PROTOCOL:SSL}
+      enabled-protocols: TLSv1.2,TLSv1.3
+
+    # Security properties
+    properties:
+      security:
+        protocol: ${KAFKA_SECURITY_PROTOCOL:PLAINTEXT}
+      ssl:
+        endpoint:
+          identification:
+            algorithm: ${KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM:https}
+
+  data:
+    redis:
+      host: ${HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:secret}
+
+user-service:
+  jwt:
+    secret: ${SECRET_KEY:MyVeryLongAndSecureSecretKeyForJWTTokenSigningThatIsAtLeast64CharactersLongToMeetHS512Requirements123456789}
+  client:
+    base-url: ${USER_CLIENT_BASE_URL:http://localhost:8091}
+    api-key: ${INTERNAL_API_KEY:your-internal-api-key}
+    x-internal-key: ${INTERNAL_KEY:X-Internal-Api-Key}
+
+springdoc:
+  api-docs:
+    path: /api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operationsSorter: method
+    tagsSorter: alpha
+    try-it-out-enabled: true
+    filter: true
+  show-actuator: true
+  packages-to-scan: com.github.seecret1.cardservice.controller
+  paths-to-match: /api/v1/**
+
+logging:
+  config: "classpath:logback.xml"
+  level:
+    com.github.seecret1.cardservice: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    prometheus:
+      access: read_only
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+
+otel:
+  exporter:
+    otlp:
+      endpoint: ${OTLP_EXPORTER_ENDPOINT:http://localhost:4318}
+      protocol: http/protobuf
+  logs:
+    exporter: none
+  metrics:
+    exporter: none
+
+app:
+  kafka:
+    bootstrap-servers: ${spring.kafka.bootstrap-servers}
+    topic: cards
+    retry-topic: cards-retry
+    orders-topic: orders
+    group-id: cards-group-id
+    retry-group-id: cards-retry-group-id
+    dlt-topic: cards.DLT
+    dlt-group-id: cards-group-id.dlt
+    max-pull-records: 10
+    partitions: 3
+    replicas: 3
+
+  retry:
+    max-attempts: 3
+    delay: 1500
+    multiplier: 2
+    max-interval: 10000
+    timout: 5
+
+  cache:
+    cache-names:
+      - cardAll
+      - cardOnlyNotDeleted
+      - cardFilter
+      - cardYour
+      - cardById
+      - cardByNumber
+    caches:
+      cardAll:
+        expiry: 30m
+      cardOnlyNotDeleted:
+        expiry: 30m
+      cardFilter:
+        expiry: 20m
+      cardYour:
+        expiry: 30m
+      cardById:
+        expiry: 20m
+      cardByNumber:
+        expiry: 10m
+
+  scheduler:
+    limit:
+      cron: "0 0 4 * * *"
+    status:
+      cron: "0 0 0 * * *"
+    expiry:
+      cron: "0 0 3 * * *"
+      retention-years: 3
+    deleted:
+      cron: "0 0 2 * * *"
+      retention-years: 4
+    pageSize: 100
