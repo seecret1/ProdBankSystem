@@ -8,6 +8,11 @@ public enum PaymentType {
 
     CREDIT_PAYMENT,
 
+    INSURANCE,
+
+    REFUND,
+
+    /// В данной версии нет реализации под эти типы оплаты
     CREDIT_INTEREST,
 
     DEPOSIT,
@@ -15,10 +20,6 @@ public enum PaymentType {
     DEPOSIT_INTEREST,
 
     COMMISSION,
-
-    INSURANCE,
-
-    REFUND,
 
     WITHDRAWAL
 }
