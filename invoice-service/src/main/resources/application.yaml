@@ -136,7 +136,7 @@ app:
     deleted:
       cron: "0 0 2 * * *"
       retention-years: 4
-    pageSize: 100
+    pageSize: 500
 
   invoices:
     limits:

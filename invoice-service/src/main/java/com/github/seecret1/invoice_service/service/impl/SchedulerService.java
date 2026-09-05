@@ -68,7 +68,9 @@ public class SchedulerService {
                 log.error("Error updated limit card: id={}, error={}", invoice.getId(), e.getMessage());
             }
         }
-        //TODO: добавить сохранение батчем
+        if (!updatedInvoices.isEmpty()) {
+            invoiceEntityService.saveAll(updatedInvoices);
+        }
         return updated;
     }
 }

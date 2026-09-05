@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -53,5 +55,13 @@ public class InvoiceEntityServiceImpl implements InvoiceEntityService {
         invoice.setSpendingLimit(spendingAndFreeLimitsConfig.getMaxLimitForType(invoice.getCardType()));
         invoice.setFreeLimit(spendingAndFreeLimitsConfig.getCommissionLimitForType(invoice.getCardType()));
         return invoice;
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void saveAll(List<CardInvoice> invoiceList) {
+        log.info("Save all invoices, size: {}", invoiceList.size());
+        cardInvoiceRepository.saveAll(invoiceList);
+        log.debug("Invoice list successfully save");
     }
 }
