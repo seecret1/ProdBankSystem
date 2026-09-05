@@ -1,11 +1,7 @@
 package com.github.seecret1.invoice_service.exception.handler;
 
 import com.github.seecret1.common.dto.ErrorResponse;
-import com.github.seecret1.invoice_service.exception.InvoiceAlreadyDeletedException;
-import com.github.seecret1.invoice_service.exception.InvoiceAlreadyExistsException;
-import com.github.seecret1.invoice_service.exception.InvoiceNotFoundException;
-import com.github.seecret1.invoice_service.exception.OperationAlreadyDeletedException;
-import com.github.seecret1.invoice_service.exception.OperationNotFoundException;
+import com.github.seecret1.invoice_service.exception.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -54,6 +50,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleOperationAlreadyDeleted(OperationAlreadyDeletedException ex) {
         log.warn("Operation already deleted: {}", ex.getMessage());
         return buildResponse(HttpStatus.GONE, ex.getMessage());
+    }
+
+    @ExceptionHandler(InvoiceException.class)
+    public ResponseEntity<ErrorResponse> handleInvoiceException(InvoiceException ex) {
+        log.warn("Invoice exception: {}", ex.getMessage());
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
